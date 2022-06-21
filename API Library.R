@@ -62,7 +62,7 @@ api.status <- function() {
 
 ## Get API
 
-api.get <- function(endpoint){
+api.get <- function(endpoint,supress_message){
   # get endpoint
   endpoint_url <- paste(api_url, endpoint, sep = '/')
   
@@ -83,6 +83,14 @@ api.get <- function(endpoint){
   
   assign(output_name, api_output,
          envir = parent.frame())
+  
+  if(missing(supress_message)){
+    supress_message <- F
+  }
+  
+  if(supress_message==F){
+    print(sprintf('Output %s generated.',output_name))
+  }
 
   } else{
     
@@ -94,7 +102,7 @@ api.get <- function(endpoint){
 ##
 api.get_equip_types <- function(){
   
-api.get('equiptype')
+api.get('equiptype',supress_message = T)
 
 subtype<-rrapply(equiptype$sub_types,how='melt') %>% 
   mutate_at(vars(value),
@@ -126,11 +134,11 @@ print('Dataframe equip_types generated.')
 # Enter T for write_file if you want to save to directory
 api.get_point_types <- function(){
   
-  api.get('pointtypes')
+  api.get('pointtypes',supress_message = T)
   
-  api.get('unit')
+  api.get('unit',supress_message = T)
   
-  api.get('measurements')  
+  api.get('measurements', supress_message = T)  
   
   # Get measurements and their associated units
   measurement_unit_df <- data.frame()
@@ -188,7 +196,7 @@ api.get_point_types <- function(){
 api.get_building_info <- function(id,name){
   
   #Query all buildings and filter by name
-  api.get('buildings')
+  api.get('buildings',supress_message = T)
   
   assign('buldings',buildings,envir=parent.frame())
   
@@ -237,10 +245,12 @@ api.get_metadata <- function(id,name){
   api.get_building_info(id,name)
   
   # Grab Equipment Data for the specified Building ID
-  api.get(paste0('buildings/', id, '/equipment'))
+  api.get(paste0('buildings/', id, '/equipment'),
+          supress_message = T)
   
   # Grab Points Data for the specified Building ID
-  api.get(paste0('buildings/', id, '/points'))
+  api.get(paste0('buildings/', id, '/points'),
+          supress_message = T)
   
   #Create a metadata for the specified building ID
   metadata <- inner_join(equipment,points,
@@ -422,8 +432,7 @@ api.upload_staging <- function(id,name,
     print(sprintf(
       'Success %s %s tapiopics in building id: %s',
       operation,nrow(skip_topics),id))
-  }
-  else {
+  }else {
     
     stop(print(sprintf('Status Code is %s',post_endpoint$status_code)))
     
@@ -485,13 +494,13 @@ api.get_deployments <- function(api_type){
 api.get_users <- function(api_type){
   
   #Get roles db
-  api.get('roles')
+  api.get('roles',supress_message = T)
   
   roles <- roles$data %>% 
     select(id,role=name)
   
   #Get user db
-  api.get('users')
+  api.get('users',supress_message = T)
   
   #onb users
   
