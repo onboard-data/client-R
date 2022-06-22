@@ -28,15 +28,15 @@ api.get('whoami') #Verify your access to Onboard's API scopes. Generates a list 
 #### Query Data Model & Metadata
 
 ```R
-api.get_equip_types() #Query all equipment type in Onboard's Data Model
+get_equip_types() #Query all equipment type in Onboard's Data Model
 
-api.get_point_types() #Query all point types in Onboard's Data Model
+get_point_types() #Query all point types in Onboard's Data Model
 
 api.get('buildings') #Query site data for all buildings in your organization
 
-api.get_metadata(id=428) # Query metadata for building id 428
+get_metadata(id=428) # Query metadata for building id 428
 
-api.get_metadata(name='Laboratory') #Query metadata for building name: Laboratory
+get_metadata(name='Laboratory') #Query metadata for building name: Laboratory
 ```
 
 
@@ -45,10 +45,10 @@ api.get_metadata(name='Laboratory') #Query metadata for building name: Laborator
 This example requires an Onboard API key with scopes `admin`, `collection:admin`, and `staging` 
 
 ```R
-api.get_staged_data(id=428) # Query staged data for building id 428
+get_staged_data(id=428) # Query staged data for building id 428
 
-api.get_staged_data(name='Laboratory') # Query staged data for building name:Laboratory
+get_staged_data(name='Laboratory') # Query staged data for building name:Laboratory
 
-api.get_users() #Qeury all users in your organization
+get_users() #Qeury all users in your organization
 
 ```

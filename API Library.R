@@ -58,7 +58,7 @@ api.status <- function() {
 }
 
 
-# Retrieve Database -------------------------------------------------------
+# Basic API Query with endpoint -------------------------------------------
 
 ## Get API
 
@@ -73,34 +73,110 @@ api.get <- function(endpoint,supress_message){
   if (request_endpoint$status_code == 200) {
     api_output <-
       content(request_endpoint, as = 'text', encoding = 'UTF-8')  %>% 
-       fromJSON(flatten = T) 
+      fromJSON(flatten = T) 
     
-      # api_output_df <- as.data.frame(do.call(bind_cols, 
-      #                                     api_output),
-      #                             stringAsFactors=F)
-  
-  output_name <- str_extract(endpoint,'[^\\/]+$')
-  
-  assign(output_name, api_output,
-         envir = parent.frame())
-  
-  if(missing(supress_message)){
-    supress_message <- F
-  }
-  
-  if(supress_message==F){
-    print(sprintf('Output %s generated.',output_name))
-  }
-
+    # api_output_df <- as.data.frame(do.call(bind_cols, 
+    #                                     api_output),
+    #                             stringAsFactors=F)
+    
+    output_name <- str_extract(endpoint,'[^\\/]+$')
+    
+    assign(output_name, api_output,
+           envir = parent.frame())
+    
+    if(missing(supress_message)){
+      supress_message <- F
+    }
+    
+    if(supress_message==F){
+      print(sprintf('Output %s generated.',output_name))
+    }
+    
   } else{
     
     stop(paste0('API Status Code: ', request_endpoint$status_code))
-
+    
   }
 }
 
-##
-api.get_equip_types <- function(){
+
+# Retrieve Database -------------------------------------------------------
+
+##Orgs
+get_orgs <- function(id){
+  api.get('organizations',supress_message = T)
+  
+  organizations <- organizations$data
+  
+  if(!missing(id)){
+    id = as.data.frame(id)
+    
+    organizations <- semi_join(organizations,id,
+                               by='id')
+  }
+  assign('organizations',organizations,parent.frame())
+}
+
+## Get User info
+get_users <- function(api_type){
+  
+  #Get roles db
+  api.get('roles',supress_message = T)
+  
+  roles <- roles$data %>% 
+    select(id,role=name)
+  
+  #Get user db
+  api.get('users',supress_message = T)
+  
+  #onb users
+  
+  users <<- users$data %>%
+    select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>% 
+    mutate_at(vars(password_reset, last_login, created ),
+              ~ as_datetime(as.numeric(substr(., 1, 10))),
+              tz = 'America/New_York') %>% 
+    mutate_at(vars(roles),
+              ~gsub('c\\(|\\)','',.)) %>% 
+    mutate_at(vars(roles),
+              ~gsub(':',', ',.)) %>% 
+    separate(col = 'roles',
+             into=c('role1','role2','role3','role4'),
+             sep=', ',fill = 'right') %>% 
+    pivot_longer(cols = c(4:7),values_to ='role_id') %>% 
+    filter(!is.na(role_id)) %>% 
+    mutate_at(vars(role_id),~as.integer(.))  %>% 
+    left_join(roles,
+              by=c('role_id'='id')) %>% 
+    select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active) 
+  
+  
+  print('Dataframe users generated.')
+}
+
+## Get Deployment Stats
+get_deployments <- function(api_type){
+  
+  api.get('deployment')
+  
+  deployments<- deployment %>%
+    mutate_at(vars(last_heartbeat),
+              ~ as_datetime(as.numeric(substr(., 1, 10)),
+                            tz = 'America/New_York')) %>%
+    select(-api_key,-wg_pubkey) 
+  
+  assign('deployments',deployments,envir=parent.frame())
+  
+  
+  print('Dataframe deployments generated.')
+  
+}
+
+
+# Query Data Model --------------------------------------------------------
+
+##Query All Equipment Types
+get_equip_types <- function(){
   
 api.get('equiptype',supress_message = T)
 
@@ -132,7 +208,7 @@ print('Dataframe equip_types generated.')
 
 ## Get Point types, measurements and their units in a clean output
 # Enter T for write_file if you want to save to directory
-api.get_point_types <- function(){
+get_point_types <- function(){
   
   api.get('pointtypes',supress_message = T)
   
@@ -193,7 +269,7 @@ api.get_point_types <- function(){
 
 # Get Building data ---------------------------------------------------------
 
-api.get_building_info <- function(id,name){
+get_building_info <- function(id,name){
   
   #Query all buildings and filter by name
   api.get('buildings',supress_message = T)
@@ -240,9 +316,9 @@ api.get_building_info <- function(id,name){
 }
 
 ##Get metadata from live building
-api.get_metadata <- function(id,name){
+get_metadata <- function(id,name){
   
-  api.get_building_info(id,name)
+  get_building_info(id,name)
   
   # Grab Equipment Data for the specified Building ID
   api.get(paste0('buildings/', id, '/equipment'),
@@ -304,9 +380,9 @@ api.get_metadata <- function(id,name){
 # Staging Area API  ---------------------------------------------------------
 
 ##Get metadata from staging area
-api.get_staged_data <- function(id,name){
+get_staged_data <- function(id,name){
   
-  api.get_building_info(id,name)
+  get_building_info(id,name)
   
   #get endpoint
   endpoint_url <- paste0(api_url,'/staging/',id,'?points=True')
@@ -379,11 +455,11 @@ api.get_staged_data <- function(id,name){
 ##Upload data to the staging area or assign __SKIP__ equip_id to topics on the staging area
 ##skip_topics is optional (T or F)(Use with Caution)
 
-api.upload_staging <- function(id,name,
+upload_staging <- function(id,name,
                                data_to_upload,
                                skip_topics){
   
-  api.get_building_info(id,name)
+  get_building_info(id,name)
   
   if (missing(skip_topics)){
     skip_topics <- F
@@ -441,10 +517,10 @@ api.upload_staging <- function(id,name,
 
 ##Promote valid data on the staging area to the live building 
 
-api.promote_staged_data <- function(id,name,
+promote_staged_data <- function(id,name,
                                     data_to_promote){
   
-  api.get_building_info(id,name)
+  get_building_info(id,name)
   
   if(missing(data_to_promote)){
     
@@ -539,7 +615,7 @@ api.promote_staged_data <- function(id,name,
 # Delete equipment or points from live buildings --------------------------
 
 ##Delete points/equipment from live data. Use with caution
-api.delete <- function(endpoint,data_to_delete){
+delete_data <- function(endpoint,data_to_delete){
   
   for (i in 1:nrow(data_to_delete)) {
     
@@ -563,62 +639,3 @@ api.delete <- function(endpoint,data_to_delete){
   }
 }
 
-
-# Get Deployment Stats ----------------------------------------------------
-
-
-api.get_deployments <- function(api_type){
-  
-  api.get('deployment')
-  
-  deployments<- deployment %>%
-    mutate_at(vars(last_heartbeat),
-              ~ as_datetime(as.numeric(substr(., 1, 10)),
-                            tz = 'America/New_York')) %>%
-    select(-api_key,-wg_pubkey) 
-  
-  assign('deployments',deployments,envir=parent.frame())
-  
-  
-  print('Dataframe deployments generated.')
-  
-}
-
-
-# Get User info ------------------------------------------------------------
-
-api.get_users <- function(api_type){
-  
-  #Get roles db
-  api.get('roles',supress_message = T)
-  
-  roles <- roles$data %>% 
-    select(id,role=name)
-  
-  #Get user db
-  api.get('users',supress_message = T)
-  
-  #onb users
-  
-  users <<- users$data %>%
-    select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>% 
-    mutate_at(vars(password_reset, last_login, created ),
-              ~ as_datetime(as.numeric(substr(., 1, 10))),
-              tz = 'America/New_York') %>% 
-    mutate_at(vars(roles),
-              ~gsub('c\\(|\\)','',.)) %>% 
-    mutate_at(vars(roles),
-              ~gsub(':',', ',.)) %>% 
-    separate(col = 'roles',
-             into=c('role1','role2','role3','role4'),
-             sep=', ',fill = 'right') %>% 
-    pivot_longer(cols = c(4:7),values_to ='role_id') %>% 
-    filter(!is.na(role_id)) %>% 
-    mutate_at(vars(role_id),~as.integer(.))  %>% 
-    left_join(roles,
-              by=c('role_id'='id')) %>% 
-    select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active) 
-  
-  
-  print('Dataframe users generated.')
-}
