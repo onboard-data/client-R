@@ -430,8 +430,8 @@ api.upload_staging <- function(id,name,
   if (post_endpoint$status_code == 200) {
     
     print(sprintf(
-      'Success %s %s tapiopics in building id: %s',
-      operation,nrow(skip_topics),id))
+      'Success %s %s topics for building id: %s',
+      operation,nrow(data_to_upload),id))
   }else {
     
     stop(print(sprintf('Status Code is %s',post_endpoint$status_code)))
@@ -439,6 +439,102 @@ api.upload_staging <- function(id,name,
   }
 }
 
+##Promote valid data on the staging area to the live building 
+
+api.promote_staged_data <- function(id,name,
+                                    data_to_promote){
+  
+  api.get_building_info(id,name)
+  
+  if(missing(data_to_promote)){
+    
+    proceed <- askYesNo(sprintf('Do you want to proceed with promoting all valid topics for %s?',name))
+    
+    if(proceed==T){
+      
+      promote_json <- list(equip_ids='',topics='') %>% toJSON()
+      
+      promote_json <- gsub('\\["','[',promote_json)
+      promote_json <- gsub('"\\]',']',promote_json)
+      
+      operation <- 'promote_all'
+      
+    } else {
+      stop('Stopping Operation.')
+      
+    }} else if (!('p.topic' %in% names(data_to_promote))) {
+      print('p.topic column not found in data_to_promote.')
+      
+    } else if (!('e.equip_id' %in% names(data_to_promote))) {
+      stop('e.equip_id column not found in data_to_promote')
+    } else {
+      
+      equip_count <-length(unique(data_to_promote$e.equip_id))
+      
+      proceed <-
+        askYesNo(
+          sprintf(
+            'Do you want to proceed with promoting %s equipment and their valid topics to %s?',equip_count,name))
+      
+      if(proceed==T){
+        
+        promote_json <- list(equip_ids=data_to_promote$e.equip_id,topics=data_to_promote$p.topic) %>%  
+          toJSON()
+        
+        operation <- 'promote_some'
+      } else{
+        stop('Stopping Operation.')
+      }
+    }
+  print('Validating data...')
+  api.get(paste('staging',id,'validate',sep='/'),supress_message = T)
+  
+  if(length(validate$points)!=0&
+     length(validate$equipment)!=0){
+    
+    validation_errors <- do.call(bind_cols,validate) %>% 
+      pivot_longer(cols = -building_id,names_to = 'p.topic',
+                   values_to='Validaton Error') %>% 
+      distinct()
+    
+    if(operation=='promote_some'){
+      validation_errors <- semi_join(validation_errors,
+                                     select(data_to_promote,p.topic),
+                                     by='p.topic') 
+    }
+    
+    if(nrow(validation_errors)!=0){
+      assign('validation_errors',validation_errors,parent.frame())
+      stop('See validation_errors.')
+    }
+    else {
+      print('Passed Validation...')
+    }
+    
+  }else {
+    print('Passed Validation...')
+  }
+  
+  endpoint_url <- paste0(api_url,'/staging/',id,'/apply')
+  
+  post_endpoint <- POST(url = endpoint_url,
+                        content_type_json(),
+                        add_headers(`X-OB-Api` = api_key),
+                        body=promote_json)
+  
+  if (post_endpoint$status_code == 200) {
+    
+    if(operation=='promote_all'){
+      print(sprintf('Success!! Promoted staged data for %s',name))
+    } else if(operation=='promote_some'){
+      print(sprintf('Success!! Promoted %s staged equipment/s for %s',equip_count,name))
+    } else {
+      stop(sprintf('Status Code is %s',post_endpoint$status_code))
+    }
+    
+    
+  }
+}
 
 # Delete equipment or points from live buildings --------------------------
 
