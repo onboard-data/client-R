@@ -62,7 +62,7 @@ api.status <- function() {
 
 ## Get API
 
-api.get <- function(endpoint,supress_message){
+api.get <- function(endpoint){
   # get endpoint
   endpoint_url <- paste(api_url, endpoint, sep = '/')
   
@@ -75,22 +75,7 @@ api.get <- function(endpoint,supress_message){
       content(request_endpoint, as = 'text', encoding = 'UTF-8')  %>% 
       fromJSON(flatten = T) 
     
-    # api_output_df <- as.data.frame(do.call(bind_cols, 
-    #                                     api_output),
-    #                             stringAsFactors=F)
-    
-    output_name <- str_extract(endpoint,'[^\\/]+$')
-    
-    assign(output_name, api_output,
-           envir = parent.frame())
-    
-    if(missing(supress_message)){
-      supress_message <- F
-    }
-    
-    if(supress_message==F){
-      print(sprintf('Output %s generated.',output_name))
-    }
+    return(api_output)
     
   } else{
     
@@ -104,34 +89,35 @@ api.get <- function(endpoint,supress_message){
 
 ##Orgs
 get_orgs <- function(id){
-  api.get('organizations',supress_message = T)
+  orgs <- api.get('organizations')
   
-  organizations <- organizations$data
+  orgs <- orgs$data
   
   if(!missing(id)){
     id = as.data.frame(id)
     
-    organizations <- semi_join(organizations,id,
+    orgs <- semi_join(orgs,id,
                                by='id')
   }
-  assign('organizations',organizations,parent.frame())
+  
+  return(orgs)
 }
 
 ## Get User info
-get_users <- function(api_type){
+get_users <- function(){
   
   #Get roles db
-  api.get('roles',supress_message = T)
+  roles <- api.get('roles')
   
   roles <- roles$data %>% 
     select(id,role=name)
   
   #Get user db
-  api.get('users',supress_message = T)
+  users <- api.get('users')
   
-  #onb users
+  #Format users
   
-  users <<- users$data %>%
+  users <- users$data %>%
     select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>% 
     mutate_at(vars(password_reset, last_login, created ),
               ~ as_datetime(as.numeric(substr(., 1, 10))),
@@ -150,25 +136,21 @@ get_users <- function(api_type){
               by=c('role_id'='id')) %>% 
     select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active) 
   
-  
-  print('Dataframe users generated.')
+  return(users)
 }
 
 ## Get Deployment Stats
-get_deployments <- function(api_type){
+get_deployments <- function(){
   
-  api.get('deployment')
+  deployments <- api.get('deployment')
   
-  deployments<- deployment %>%
+  deployments<- deployments %>%
     mutate_at(vars(last_heartbeat),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
                             tz = 'America/New_York')) %>%
     select(-api_key,-wg_pubkey) 
   
-  assign('deployments',deployments,envir=parent.frame())
-  
-  
-  print('Dataframe deployments generated.')
+  return(deployments)
   
 }
 
@@ -178,8 +160,9 @@ get_deployments <- function(api_type){
 ##Query All Equipment Types
 get_equip_types <- function(){
   
-api.get('equiptype',supress_message = T)
+equiptype <-api.get('equiptype')
 
+#Get subtypes
 subtype<-rrapply(equiptype$sub_types,how='melt') %>% 
   mutate_at(vars(value),
             ~gsub('c\\(|\\(|\\"|\\)','',.))  
@@ -195,26 +178,24 @@ subtype_format <- bind_cols(subtype,char_split) %>%
   select(-c(L1,names)) %>% 
   mutate_at(vars(equipment_type_id),~as.integer(.))
 
-equip_types <-equiptype %>% 
+equip_types <- equiptype %>% 
   filter(active==T) %>% 
   select(-c(sub_types,critical_point_types,flow_order,active)) %>% 
   left_join(subtype_format,by=c('id'='equipment_type_id'),
             suffix = c('','_subtype'))
 
-assign('equip_types',equip_types,envir=parent.frame())
-
-print('Dataframe equip_types generated.')
+return(equip_types)
 }
 
 ## Get Point types, measurements and their units in a clean output
 # Enter T for write_file if you want to save to directory
 get_point_types <- function(){
   
-  api.get('pointtypes',supress_message = T)
+  pointtypes <- api.get('pointtypes')
   
-  api.get('unit',supress_message = T)
+  units <- api.get('unit')
   
-  api.get('measurements', supress_message = T)  
+  measurements <- api.get('measurements')  
   
   # Get measurements and their associated units
   measurement_unit_df <- data.frame()
@@ -260,10 +241,7 @@ get_point_types <- function(){
            data_type,
            tags)
   
-  assign('point_types',point_types,envir = parent.frame())
-  
-  print('Dataframe point_types generated.')
-  
+  return(point_types)
 
 }
 
@@ -272,13 +250,11 @@ get_point_types <- function(){
 get_building_info <- function(id,name){
   
   #Query all buildings and filter by name
-  api.get('buildings',supress_message = T)
-  
-  assign('buldings',buildings,envir=parent.frame())
+  buildings <- api.get('buildings')
   
   if(missing(id) &
      missing(name)) {
-    stop('Please provide the building id or building name. Refer to db_buidings.')
+    stop('Please provide the building id or building name')
     
   } else if (missing(id)) {
     
@@ -310,7 +286,7 @@ get_building_info <- function(id,name){
   
   assign('id',id,envir=parent.frame())
   assign('name',name,envir = parent.frame())
-  
+
   print(sprintf('Building ID: %s, Building Name: %s',id,name))
   
 }
@@ -321,12 +297,10 @@ get_metadata <- function(id,name){
   get_building_info(id,name)
   
   # Grab Equipment Data for the specified Building ID
-  api.get(paste0('buildings/', id, '/equipment'),
-          supress_message = T)
+  equipment <- api.get(paste0('buildings/', id, '/equipment'))
   
   # Grab Points Data for the specified Building ID
-  api.get(paste0('buildings/', id, '/points'),
-          supress_message = T)
+  points <- api.get(paste0('buildings/', id, '/points'))
   
   #Create a metadata for the specified building ID
   metadata <- inner_join(equipment,points,
@@ -370,10 +344,7 @@ get_metadata <- function(id,name){
     mutate_at(vars(first_updated, last_updated),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
                             tz = 'America/New_York')) 
-  
-  assign('metadata',metadata,envir=parent.frame())
-  
-  print(sprintf('Metadata generated for %s',name))
+ return(metadata)
 }
 
 
@@ -446,9 +417,7 @@ get_staged_data <- function(id,name){
                             tz = 'America/New_York')) %>%
     select(sort(tidyselect::peek_vars()))
   
-  assign('staged_data',staged_data,envir=parent.frame())
-  
-  print(sprintf('staged_data generated for %s',name))
+  return(staged_data)
   
 } 
 
