@@ -72,7 +72,7 @@ api.get <- function(endpoint){
   
   if (request_endpoint$status_code == 200) {
     api_output <-
-      content(request_endpoint, as = 'text', encoding = 'UTF-8')  %>% 
+      content(request_endpoint, as = 'text', encoding = 'UTF-8') %>%   
       fromJSON(flatten = T) 
     
     return(api_output)
@@ -93,18 +93,43 @@ get_orgs <- function(id){
   
   orgs <- orgs$data
   
-  if(!missing(id)){
-    id = as.data.frame(id)
-    
-    orgs <- semi_join(orgs,id,
-                               by='id')
-  }
+  if (!missing(id)) {
   
+    id = as.integer(id)
+    
+    id = as.data.frame(id) %>% 
+      filter(id!='')
+    
+    if(nrow(id)>=1){
+      orgs <- semi_join(orgs, id,
+                        by = 'id')
+    }
+  }
   return(orgs)
 }
 
+##Buildings
+get_buildings <-function(id){
+  buildings <- api.get('buildings')
+  
+  if(!missing(id)){
+    
+    id = as.integer(id)
+    id = as.data.frame(id) %>% 
+      filter(id!='')
+    
+    if(nrow(id)>=1){
+    
+    buildings <- semi_join(buildings,id,
+                      by='id')
+    }
+  }
+    return(buildings)
+  }
+
+
 ## Get User info
-get_users <- function(){
+get_users <- function(id){
   
   #Get roles db
   roles <- api.get('roles')
@@ -136,19 +161,41 @@ get_users <- function(){
               by=c('role_id'='id')) %>% 
     select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active) 
   
+  if(!missing(id)){
+    id=as.integer(id)
+    id=as.data.frame(id)
+    
+    if(nrow(id)>=1){
+      users <- semi_join(users,id,
+                         by='id')
+      
+    }
+    
+  }
+  
   return(users)
 }
 
 ## Get Deployment Stats
-get_deployments <- function(){
+get_deployments <- function(org_id){
   
   deployments <- api.get('deployment')
   
-  deployments<- deployments %>%
+  deployments <- deployments %>%
     mutate_at(vars(last_heartbeat),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
                             tz = 'America/New_York')) %>%
     select(-api_key,-wg_pubkey) 
+  
+  if(!missing(org_id)){
+    org_id = as.integer(org_id)
+    org_id = as.data.frame(org_id)
+    
+    if(nrow(org_id)>=1){
+      deployments <-semi_join(deployments,org_id,
+                              by='org_id')
+    }
+  }
   
   return(deployments)
   
@@ -158,7 +205,7 @@ get_deployments <- function(){
 # Query Data Model --------------------------------------------------------
 
 ##Query All Equipment Types
-get_equip_types <- function(){
+get_equip_types <- function(types){
   
 equiptype <-api.get('equiptype')
 
@@ -184,12 +231,24 @@ equip_types <- equiptype %>%
   left_join(subtype_format,by=c('id'='equipment_type_id'),
             suffix = c('','_subtype'))
 
+if(!missing(types)){
+  types = as.data.frame(types) %>% 
+    filter(types!='')
+  
+  if(nrow(types)>=1){
+  
+  equip_types <- semi_join(equip_types,
+                           types,
+                    by=c('tag_name'='types'))
+  }
+}
+
 return(equip_types)
 }
 
 ## Get Point types, measurements and their units in a clean output
-# Enter T for write_file if you want to save to directory
-get_point_types <- function(){
+
+get_point_types <- function(types){
   
   pointtypes <- api.get('pointtypes')
   
@@ -241,12 +300,25 @@ get_point_types <- function(){
            data_type,
            tags)
   
+  if(!missing(types)){
+    
+    types = as.data.frame(types) %>% 
+      filter(types!='')
+    
+    if(nrow(types)>=1){
+    
+    point_types <- semi_join(point_types,types,
+                      by=c('point_type'='types'))
+    }
+  }
+  
   return(point_types)
 
 }
 
 # Get Building data ---------------------------------------------------------
 
+#Takes building id or name. Gives a text output of the building id and name
 get_building_info <- function(id,name){
   
   #Query all buildings and filter by name
@@ -487,7 +559,7 @@ upload_staging <- function(id,name,
 ##Promote valid data on the staging area to the live building 
 
 promote_staged_data <- function(id,name,
-                                    data_to_promote){
+                                data_to_promote){
   
   get_building_info(id,name)
   
@@ -531,34 +603,6 @@ promote_staged_data <- function(id,name,
         stop('Stopping Operation.')
       }
     }
-  print('Validating data...')
-  api.get(paste('staging',id,'validate',sep='/'),supress_message = T)
-  
-  if(length(validate$points)!=0&
-     length(validate$equipment)!=0){
-    
-    validation_errors <- do.call(bind_cols,validate) %>% 
-      pivot_longer(cols = -building_id,names_to = 'p.topic',
-                   values_to='Validaton Error') %>% 
-      distinct()
-    
-    if(operation=='promote_some'){
-      validation_errors <- semi_join(validation_errors,
-                                     select(data_to_promote,p.topic),
-                                     by='p.topic') 
-    }
-    
-    if(nrow(validation_errors)!=0){
-      assign('validation_errors',validation_errors,parent.frame())
-      stop('See validation_errors.')
-    }
-    else {
-      print('Passed Validation...')
-    }
-    
-  }else {
-    print('Passed Validation...')
-  }
   
   endpoint_url <- paste0(api_url,'/staging/',id,'/apply')
   
@@ -569,16 +613,28 @@ promote_staged_data <- function(id,name,
   
   if (post_endpoint$status_code == 200) {
     
-    if(operation=='promote_all'){
-      print(sprintf('Success!! Promoted staged data for %s',name))
-    } else if(operation=='promote_some'){
-      print(sprintf('Success!! Promoted %s staged equipment/s for %s',equip_count,name))
-    } else {
-      stop(sprintf('Status Code is %s',post_endpoint$status_code))
+    validation <- content(post_endpoint)
+    validation_errors <- rrapply(validation,how='melt') %>% 
+      filter(L2!='__SKIP__')  
+    
+    if(operation=='promote_some'){
+      validation_errors <- semi_join(validation_errors,
+                                     select(data_to_promote,p.topic),
+                                     by='p.topic')
     }
     
+    if(nrow(validation_errors)>=1){
+      assign('validation_errors',validation_errors,parent.frame())
+      stop('See validation_errors.')
+    }
+    else {
+      print('Passed Validation.')
+    }
     
+  }else {
+    stop(sprintf('Status Code is %s',post_endpoint$status_code))
   }
+  
 }
 
 # Delete equipment or points from live buildings --------------------------
