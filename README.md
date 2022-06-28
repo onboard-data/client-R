@@ -1,12 +1,15 @@
-# Onboard API R Library
+# Onboard API R Client
 
 ### General Usage Example 
 
 This example requires an Onboard API key with scopes `general`, `auth` and `buildings:read`
 
-#### Setting up API and verifying connectivity
+#### Installing API Library and verifying connectivity
 ```R
-source("API Library.R")
+install.packages('devtools') # Install devtools package first
+devtools::install_github(repo='pranay2811/R-Test',
+                          auth='Github-Personal-Access-Token') #Need PAT since repo is currently private
+library(OnboardClient)
 
 api.setup() 
 # This sets up the api url and api keys in the R environment. 
