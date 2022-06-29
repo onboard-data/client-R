@@ -6,7 +6,7 @@ This example requires an Onboard API key with scopes `general`, `auth` and `buil
 
 #### Setting up API and verifying connectivity
 ```R
-source("API Library.R")
+source("Basic.R")
 
 api.setup() 
 # This sets up the api url and api keys in the R environment. 
@@ -25,30 +25,54 @@ api.status() #Verify you connection with the API. Your connection is established
 api.get('whoami') #Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
 ```
 
-#### Query Data Model & Metadata
+#### Query Data Model
 
 ```R
-get_equip_types() #Query all equipment type in Onboard's Data Model
+all_equip_types <- get_equip_types() #Query all equipment type in Onboard's Data Model
 
-get_point_types() #Query all point types in Onboard's Data Model
-
-api.get('buildings') #Query site data for all buildings in your organization
-
-get_metadata(id=428) # Query metadata for building id 428
-
-get_metadata(name='Laboratory') #Query metadata for building name: Laboratory
+all_point_types <- get_point_types() #Query all point types in Onboard's Data Model
 ```
 
+### Query All Buildings in your Org
+```R
+all_buildings <- get_buildings() #Query site data for all buildings in your organization
+```
+
+### Query metadata
+```R
+
+query <- PointSelector()
+
+query$buildings <- c(427,428) 
+query$point_types <- c('Supply Air Temperature','Discharge Air Temperature')
+
+selection <- select_points(query) #Select points form database based on your query
+
+#Query points based on the selection
+points <- get_points_by_ids(selection$points)
+
+#Query equipment based on the selection
+equipment <- get_equipment_by_ids(selection$equipment)
+
+
+#For clean metadata output
+metadata <- get_metadata(selection=selection) #Query metadata by selection list we got above
+
+metadata <- get_metadata(buildings=c(427,'Laboratory')) # Query entire metadata for building id 428 and building name: Laboratory
+
+```
 
 ### Query Staging Data, deployments and user info
 
 This example requires an Onboard API key with scopes `admin`, `collection:admin`, and `staging` 
 
 ```R
-get_staged_data(id=428) # Query staged data for building id 428
+staged_data <- get_staged_data(building = 427) # Query staged data for building id 427
 
-get_staged_data(name='Laboratory') # Query staged data for building name:Laboratory
+staged_data <- get_staged_data(building ='Laboratory') # Query staged data for building name: Laboratory
 
-get_users() #Qeury all users in your organization
+deployments <- get_deployments() #Query all deployments in your organization
+
+users <- get_users() #Qeury all users in your organization
 
 ```
