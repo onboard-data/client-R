@@ -28,16 +28,20 @@ api.status() #Verify you connection with the API. Your connection is established
 api.get('whoami') #Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
 ```
 
-#### Query Data Model & Metadata
+#### Query Data Model
 
 ```R
-get_equip_types() #Query all equipment type in Onboard's Data Model
+all_equip_types <- get_equip_types() #Query all equipment type in Onboard's Data Model
 
-get_point_types() #Query all point types in Onboard's Data Model
+all_point_types <- get_point_types() #Query all point types in Onboard's Data Model
+```
 
-api.get('buildings') #Query site data for all buildings in your organization
+#### Query Building Metadata
 
-get_metadata(id=428) # Query metadata for building id 428
+```
+all_buildings <- get_buildings()  #Query site data for all buildings in your organization
+
+metadata <- get_metadata(buildings) # Query metadata for building id 428
 
 get_metadata(name='Laboratory') #Query metadata for building name: Laboratory
 ```

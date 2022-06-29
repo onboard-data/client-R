@@ -1,6 +1,6 @@
 Package: OnboardClient
 Type: Package
-Title: What the Package Does (Title Case)
+Title: This package provides Python bindings to Onboard Data's building data API.
 Version: 0.1.0
 Author: Pranay Shah
 Maintainer: The package maintainer <yourself@somewhere.net>
@@ -8,4 +8,5 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 Encoding: UTF-8
+Imports: tidyverse, plyr, httr, jsonlite, keyring, lubridate, anytime, rrapply, data.table
 LazyData: true
