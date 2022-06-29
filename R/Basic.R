@@ -23,7 +23,7 @@ api.setup <- function(api_type) {
       message = 'Enter your API key here',
       title="Onboard API Keys")
 
-    api_key <- key_get('RStudio Keyring Secrets',
+    api_key <- keyring::key_get('RStudio Keyring Secrets',
                        username='api_key_prod')
 
   } else if (api_type == 'dev') {
@@ -34,7 +34,7 @@ api.setup <- function(api_type) {
       message='Enter your DEV API key here',
       title = "Onboard API Keys")
 
-    api_key <- key_get('RStudio Keyring Secrets',
+    api_key <- keyring::key_get('RStudio Keyring Secrets',
                        username='api_key_dev')
 
   }
