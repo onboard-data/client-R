@@ -1,3 +1,0 @@
-exportPattern("^[[:alpha:]]+")
-import(tidyverse,plyr, httr, jsonlite, keyring, lubridate, anytime, rrapply)
-importFrom(data.table,rbindlist)

@@ -14,6 +14,7 @@ options(stringsAsFactors = F)
 # Set API keys and URL ----------------------------------------------------------
 
 api.setup <- function(api_type) {
+  
   if(missing(api_type)) {
     api_type <-'prod'
     api_url <- 'https://api.onboarddata.io'

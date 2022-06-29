@@ -1,15 +1,12 @@
-# Onboard API R Client
+# Onboard API R Library
 
 ### General Usage Example 
 
 This example requires an Onboard API key with scopes `general`, `auth` and `buildings:read`
 
-#### Installing API Library and verifying connectivity
+#### Setting up API and verifying connectivity
 ```R
-install.packages('devtools') # Install devtools package first
-devtools::install_github(repo='pranay2811/R-Test',
-                          auth='Github-Personal-Access-Token') #Need PAT since repo is currently private
-library(OnboardClient)
+source("API Library.R")
 
 api.setup() 
 # This sets up the api url and api keys in the R environment. 
@@ -28,20 +25,16 @@ api.status() #Verify you connection with the API. Your connection is established
 api.get('whoami') #Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
 ```
 
-#### Query Data Model
+#### Query Data Model & Metadata
 
 ```R
-all_equip_types <- get_equip_types() #Query all equipment type in Onboard's Data Model
+get_equip_types() #Query all equipment type in Onboard's Data Model
 
-all_point_types <- get_point_types() #Query all point types in Onboard's Data Model
-```
+get_point_types() #Query all point types in Onboard's Data Model
 
-#### Query Building Metadata
+api.get('buildings') #Query site data for all buildings in your organization
 
-```
-all_buildings <- get_buildings()  #Query site data for all buildings in your organization
-
-metadata <- get_metadata(buildings) # Query metadata for building id 428
+get_metadata(id=428) # Query metadata for building id 428
 
 get_metadata(name='Laboratory') #Query metadata for building name: Laboratory
 ```
