@@ -443,8 +443,12 @@ get_building_info <- function(buildings){
 }
 
 ##Get clean metadata by building names or ids
-get_metadata <- function(buildings){
+get_metadata <- function(buildings,selection){
   
+  if(missing(selection) & missing(buildings)){
+    stop('Provide either building name/id or selection list.')
+  } else if (missing(selection)){
+    
   get_building_info(buildings)
   
   query <- PointSelector()
@@ -452,6 +456,8 @@ get_metadata <- function(buildings){
   query$buildings <- buildings
   
   selection <- select_points(query)
+  }
+    
   
   print('Querying Points...')
   points <- get_points_by_ids(selection$points)
@@ -463,6 +469,9 @@ get_metadata <- function(buildings){
   metadata <- inner_join(equipment,points,
                          by = c('id' = 'equip_id'),
                          suffix = c('', '.y')) %>%
+    #Get tagged units if NA
+    mutate_at(vars(tagged_units),
+              ~ifelse(is.na(.),units,as.character(.))) %>% 
     select(
       building_id,
       equipment_id = id,
@@ -486,17 +495,17 @@ get_metadata <- function(buildings){
       topic
     ) %>%
     # Grab Equip Refs by joining with Equip DB again
-    mutate(parent_equip = as.integer(parent_equip)) %>%
+    mutate(parent_equip = as.integer(parent_equip)) %>% 
     left_join(
       select(equipment, id, equip_id),
       by = c('parent_equip' = 'id'),
       suffix = c('', '.y')
-    ) %>%
+    ) %>% 
     select(everything(),
            equip_ref = equip_id.y,
            -parent_equip) %>%
     # remove NAs
-    mutate_all( ~ replace_na(., '')) %>%
+   # mutate_all( ~ replace_na(.,'')) 
     #Convert unix time-stamps to EST
     mutate_at(vars(first_updated, last_updated),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
@@ -509,11 +518,13 @@ get_metadata <- function(buildings){
 # Staging Area API --------------------------------------------------------
 
 ##Get metadata from staging area
-get_staged_data <- function(building_id){
+get_staged_data <- function(building){
   
-  get_building_info(building_id)
+  get_building_info(building)
   
-  endpoint <- paste0('staging/',building_id,'?points=True')
+  print('Querying Staging Data...')
+  
+  endpoint <- paste0('staging/',id,'?points=True')
   
   stage <- api.get(endpoint)
   
