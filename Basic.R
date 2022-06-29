@@ -1,13 +1,9 @@
 # Import Libraries --------------------------------------------------------
-library(tidyverse)
-library(plyr)
+library(dplyr,warn.conflicts = F)
 library(httr)
-library(jsonlite)
-library(keyring)
-library(lubridate)
-library(anytime)
+library(jsonlite,quietly = T,warn.conflicts = F)
+library(lubridate,include.only = 'as_datetime')
 library(rrapply)
-library(data.table)
 options(stringsAsFactors = F)
 
 
@@ -19,25 +15,18 @@ api.setup <- function(api_type) {
     api_type <-'prod'
     api_url <- 'https://api.onboarddata.io'
 
-    rstudioapi::askForSecret(
+    api_key <-rstudioapi::askForSecret(
       name='api_key_prod',
       message = 'Enter your API key here',
       title="Onboard API Keys")
 
-    api_key <- keyring::key_get('RStudio Keyring Secrets',
-                       username='api_key_prod')
-
   } else if (api_type == 'dev') {
     api_url <- 'https://devapi.onboarddata.io'
 
-    rstudioapi::askForSecret(
+    Aapi_key <- rstudioapi::askForSecret(
       name = 'api_key_dev',
       message='Enter your DEV API key here',
       title = "Onboard API Keys")
-
-    api_key <- keyring::key_get('RStudio Keyring Secrets',
-                       username='api_key_dev')
-
   }
 
 assign('api_url', api_url, envir = parent.frame())
@@ -392,7 +381,7 @@ get_points_by_ids <- function(id){
     
     points_chunk <- api.get(endpoint)
     
-    points <- rbind.fill(points,points_chunk)
+    points <- plyr::rbind.fill(points,points_chunk)
   }
   
   return(points)
@@ -427,6 +416,10 @@ get_building_info <- function(buildings){
   selection <- select_points(query)
   
   buildings_id <- unlist(selection$buildings)
+  
+  if(is.null(buildings_id)){
+    stop('No building found.')
+  }
   
   building_db <- api.get('buildings')
   
@@ -505,7 +498,7 @@ get_metadata <- function(buildings,selection){
            equip_ref = equip_id.y,
            -parent_equip) %>%
     # remove NAs
-   # mutate_all( ~ replace_na(.,'')) 
+    mutate_all( ~ replace_na(.,'')) 
     #Convert unix time-stamps to EST
     mutate_at(vars(first_updated, last_updated),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
@@ -543,11 +536,11 @@ get_staged_data <- function(building){
   equip_data <- equip_data %>% 
     select(equip_data_names$names)
   
-  #Points Dara
+  #Points Data
   
   points_list <- stage$points_by_equip_id
   
-  points_data <- rbindlist(points_list,fill=T)
+  points_data <- data.table::rbindlist(points_list,fill=T)
   
   points_data_names <- names(points_data)
   points_data_names <- gsub('data\\.','',points_data_names)
@@ -666,6 +659,7 @@ promote_staged_data <- function(building,
     } else if (!('e.equip_id' %in% names(data_to_promote))) {
       stop('e.equip_id column not found in data_to_promote')
     } else {
+      
       data_to_promote <- data_to_promote %>% 
         filter(e.equip_id!='__SKIP__')
       
