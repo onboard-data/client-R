@@ -1,4 +1,4 @@
-# Import Libraries --------------------------------------------------------
+# Dependencies --------------------------------------------------------
 
 #' @import dplyr
 #' @import httr
@@ -8,6 +8,7 @@
 #' @importFrom rstudioapi askForSecret
 #' @importFrom jsonlite toJSON
 #' @importFrom jsonlite fromJSON
+#' @importFrom rrapply rrapply
 
 # Set API keys and URL ----------------------------------------------------------
 
