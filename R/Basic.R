@@ -2,10 +2,8 @@
 
 #' @import dplyr
 #' @import httr
+#' @import tidyr
 #' @importFrom lubridate as_datetime
-#' @importFrom tidyr replace_na
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyr pivot_wider
 #' @importFrom data.table rbindlist
 #' @importFrom rstudioapi askForSecret
 #' @importFrom jsonlite toJSON
