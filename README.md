@@ -1,12 +1,15 @@
-# Onboard API R Library
+# Onboard API R Client
 
 ### General Usage Example 
 
 This example requires an Onboard API key with scopes `general`, `auth` and `buildings:read`
 
-#### Setting up API and verifying connectivity
+#### Installing API Library and verifying connectivity
 ```R
-source("Basic.R")
+install.packages('devtools') # Install devtools package first
+devtools::install_github(repo='onboard-data/client-R',
+                          auth='Github-Personal-Access-Token') #Need PAT since repo is currently private
+library(OnboardClient)
 
 api.setup() 
 # This sets up the api url and api keys in the R environment. 
@@ -33,7 +36,7 @@ all_equip_types <- get_equip_types() #Query all equipment type in Onboard's Data
 all_point_types <- get_point_types() #Query all point types in Onboard's Data Model
 ```
 
-### Query All Buildings in your Org
+### Query site info for all building in your org
 ```R
 all_buildings <- get_buildings() #Query site data for all buildings in your organization
 ```
@@ -41,7 +44,7 @@ all_buildings <- get_buildings() #Query site data for all buildings in your orga
 ### Query metadata
 ```R
 
-query <- PointSelector()
+query <- PointSelector() #using point selector function
 
 query$buildings <- c(427,428) 
 query$point_types <- c('Supply Air Temperature','Discharge Air Temperature')
@@ -57,6 +60,8 @@ equipment <- get_equipment_by_ids(selection$equipment)
 
 #For clean metadata output
 metadata <- get_metadata(selection=selection) #Query metadata by selection list we got above
+
+##OR
 
 metadata <- get_metadata(buildings=c(427,'Laboratory')) # Query entire metadata for building id 428 and building name: Laboratory
 
@@ -76,3 +81,4 @@ deployments <- get_deployments() #Query all deployments in your organization
 users <- get_users() #Qeury all users in your organization
 
 ```
+
