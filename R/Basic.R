@@ -3,6 +3,7 @@
 #' @import dplyr
 #' @import httr
 #' @import tidyr
+#' @importFrom plyr rbind.fill
 #' @importFrom lubridate as_datetime
 #' @importFrom data.table rbindlist
 #' @importFrom rstudioapi askForSecret
