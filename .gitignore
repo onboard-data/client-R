@@ -2,5 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rbuildignore
 client-R.Rproj
-README.html
+ReadME.html
