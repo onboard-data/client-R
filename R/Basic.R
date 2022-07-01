@@ -9,6 +9,7 @@
 #' @importFrom jsonlite toJSON
 #' @importFrom jsonlite fromJSON
 #' @importFrom rrapply rrapply
+#' @importFrom stringr str_split
 
 # Set API keys and URL ----------------------------------------------------------
 
