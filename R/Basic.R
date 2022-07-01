@@ -11,6 +11,7 @@
 
 # Set API keys and URL ----------------------------------------------------------
 
+##Sets up API keys and URL in system environment
 #' @export
 api.setup <- function(api_type) {
 
@@ -32,18 +33,30 @@ api.setup <- function(api_type) {
       title = "Onboard API Keys")
   }
 
-assign('api_url', api_url, envir = parent.frame())
+Sys.setenv('api_url'=api_url)
+Sys.setenv('api_key'=api_key)
 
-assign('api_key', api_key, envir = parent.frame())
+}
 
-#key_list()
-# api_key_r <- key_get('RStudio Keyring Secrets',username = 'api_key')
-
-
+##Access API keys and URL from System Environment
+api.access <- function(){
+  
+  api_url <- Sys.getenv('api_url')
+  
+  api_key <- Sys.getenv('api_key')
+  
+  if(api_url==''|api_key==''){
+    stop('API credentials not set correctly.')
+  } else {
+    assign('api_url',api_url,parent.frame())
+    assign('api_key',api_key,parent.frame())
+  }
 }
 
 #' @export
 api.status <- function() {
+  
+  api.access()
 
   request <- GET(url = api_url,
                  add_headers(`X-OB-Api` = api_key))
@@ -59,6 +72,9 @@ api.status <- function() {
 ## Get API
 #'@export
 api.get <- function(endpoint){
+  
+  api.access()
+  
   # get endpoint
   endpoint_url <- paste(api_url, endpoint, sep = '/')
 
@@ -82,6 +98,8 @@ api.get <- function(endpoint){
 
 ## POST API
 api.post <- function(endpoint,json_body){
+  
+  api.access()
 
    # post endpoint
   endpoint_url <- paste(api_url, endpoint, sep = '/')
@@ -351,24 +369,12 @@ select_points <- function(query){
       gsub('}',paste0(',"updated_since":',updated_since,'}'),query_json)
   }
 
-  endpoint_url <- paste(api_url,'points/select',sep='/')
-
-
-  request_endpoint <- POST(url=endpoint_url,
-                           content_type_json(),
-                           add_headers(`X-OB-Api` = api_key),
-                           body=query_json)
-
-
-  if(request_endpoint$status_code==200){
-
-    point_selector_output <- content(request_endpoint)
-
-    return(point_selector_output)
-  } else {
-    stop(sprintf('API Status Code: %s',request_endpoint$status_code))
-  }
-
+  endpoint <- 'points/select'
+  
+  point_selector_output <- api.post(endpoint,
+                                    json_body=query_json)
+  
+  return(point_selector_output)
 }
 
 #query points by id
@@ -635,7 +641,8 @@ upload_staging <- function(building,
   #get endpoint
   endpoint <- paste0('staging/',id)
 
-  post_points <- api.post(endpoint,json_body = data_to_upload_json)
+  post_points <- api.post(endpoint,
+                          json_body = data_to_upload_json)
 
   if(length(post_points$row_errors)==0){
     print('Success!')
@@ -724,15 +731,14 @@ promote_staged_data <- function(building,
 }
 
 
-
-
-
 # Delete Endpoint ---------------------------------------------------------
 
 ##Delete points/equipment from live data. Use with caution
 api.delete <- function(building,entity,data_to_delete){
 
   get_building_info(building)
+  
+  api.access()
 
   endpoints <- paste('buildings',id,entity,sep='/')
 
