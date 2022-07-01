@@ -658,7 +658,9 @@ promote_staged_data <- function(building,
 
     if(proceed==T){
 
-      promote_json <- list(equip_ids='',topics='') %>% toJSON()
+      promote_json <- list(equip_ids='',
+                           topics='') %>% 
+        toJSON()
 
       promote_json <- gsub('\\["','[',promote_json)
       promote_json <- gsub('"\\]',']',promote_json)
@@ -715,7 +717,7 @@ promote_staged_data <- function(building,
   if('V1' %in% names(validation_errors)){
     
     validation_errors <- rename(validation_errors,
-           replace = c('V1'='errors')) %>% 
+                                'errors'='V1') %>% 
       filter(errors!='NULL')
 
     assign('validation_errors',
