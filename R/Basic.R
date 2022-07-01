@@ -4,6 +4,8 @@
 #' @import httr
 #' @importFrom lubridate as_datetime
 #' @importFrom tidyr replace_na
+#' @importFrom tidyr pivot_longer
+#' @importFrom tidyr pivot_wider
 #' @importFrom data.table rbindlist
 #' @importFrom rstudioapi askForSecret
 #' @importFrom jsonlite toJSON
@@ -279,7 +281,7 @@ get_equip_types <- function(){
 }
 
 ## Get Point types, measurements and their units in a clean output
-
+#' @export
 get_point_types <- function(){
 
   pointtypes <- api.get('pointtypes')
