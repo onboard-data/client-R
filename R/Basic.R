@@ -320,8 +320,7 @@ get_point_types <- function(){
            measurement_name,
            unit,
            data_type,
-           tags) %>% 
-    mutate_all(~replace_na(as.character(.),.))
+           tags)  
   
   return(point_types)
   
