@@ -740,7 +740,7 @@ api.delete <- function(building,entity,data_to_delete){
   
   api.access()
 
-  endpoints <- paste('buildings',id,entity,sep='/')
+  endpoint <- paste('buildings',id,entity,sep='/')
 
   for (i in 1:nrow(data_to_delete)) {
 
