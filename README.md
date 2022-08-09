@@ -41,12 +41,12 @@ all_point_types <- get_point_types() #Query all point types in Onboard's Data Mo
 all_buildings <- get_buildings() #Query site data for all buildings in your organization
 ```
 
-### Query metadata
+### Query metadata and timeseries data
 ```R
 
 query <- PointSelector() #using point selector function
 
-query$buildings <- c(427,428) 
+query$buildings <- c(427) 
 query$point_types <- c('Supply Air Temperature','Discharge Air Temperature')
 
 selection <- select_points(query) #Select points form database based on your query
@@ -64,6 +64,16 @@ metadata <- get_metadata(selection=selection) #Query metadata by selection list 
 ##OR
 
 metadata <- get_metadata(buildings=c(427,'Laboratory')) # Query entire metadata for building id 428 and building name: Laboratory
+
+
+#For timeseries output
+library(lubridate)
+
+end_time <- as.POSIXlt(Sys.time(), tz = 'UTC')
+
+start_time <- end_time - hours(4)
+
+timeseries <- get_timeseries(start_time= start_time, end_time = end_time, point_ids = selection$points) #Queries timeseries data for the selection list we got above
 
 ```
 
