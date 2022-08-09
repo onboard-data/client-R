@@ -100,7 +100,12 @@ api.get <- function(endpoint){
 }
 
 ## POST API
-api.post <- function(endpoint,json_body){
+#'@export
+api.post <- function(endpoint,json_body,output){
+  
+  if(missing(output)){
+    output='dataframe'
+  }
   
   api.access()
 
@@ -113,10 +118,17 @@ api.post <- function(endpoint,json_body){
                           body=json_body)
 
   if (request_endpoint$status_code == 200) {
+    
+    if(output=='dataframe'){
+    
     api_output <-
       content(request_endpoint, as = 'text', encoding = 'UTF-8') %>%
       fromJSON(flatten = T)
-
+    } else if(output=='list') {
+      
+  api_output <- content(request_endpoint)
+}
+  
     return(api_output)
 
   } else{
@@ -341,7 +353,8 @@ PointSelector <- function(){
 select_points <- function(query){
 
   if(query$updated_since!='') {
-    updated_since <- as.numeric(as.POSIXct(query$updated_since))
+    updated_since <- as.numeric(
+      as.POSIXct(query$updated_since))
   } else {
     updated_since<- ''
   }
@@ -413,7 +426,7 @@ get_equipment_by_ids <- function(id){
 }
 
 
-# Building Data -----------------------------------------------------------
+# Building Metadata -----------------------------------------------------------
 
 #Takes building id or name. Gives a text output of the building id and name
 get_building_info <- function(buildings){
@@ -515,6 +528,75 @@ get_metadata <- function(buildings,selection){
 
   print('Metadata generated.')
   return(metadata)
+}
+
+# Building Timeseries Data ------------------------------------------------
+
+#' @export
+get_timeseries_raw <- function(start_time,end_time,
+                               point_ids){
+  
+  start_time <- as.numeric(start_time)
+  end_time <- as.numeric(end_time)
+  
+  timeseries_query <- list(start=start_time,
+                           end=end_time,
+                           point_ids=point_ids) %>% 
+    toJSON() 
+  
+  timeseries_query <- gsub('start":\\[','start":',timeseries_query)
+  timeseries_query <- gsub('\\],"end":\\[',',"end":',timeseries_query)
+  timeseries_query <- gsub('\\],"point',',"point',timeseries_query)  
+  
+  timeseries_output <- api.post(endpoint='timeseries',
+                                json_body=timeseries_query,
+                                output = 'list')
+  
+  timeseries_df <- data.frame()
+  
+  for (i in 1:length(timeseries_output)){
+    
+    single_output <- timeseries_output[[i]]
+    
+    point_id <- single_output[['point_id']]
+    
+    ts_single <- rrapply::rrapply(single_output,how='melt') %>%  
+      filter(!grepl('raw|unit|topic|display|columns',L1)) %>% 
+      mutate_at(vars(L1),
+                ~ point_id) %>% 
+      filter(!is.na(L2)) %>% 
+      mutate_at(vars(L3),
+                ~ ifelse(. == 1, 'timestamp', 
+                         ifelse(. == 2, 'raw',
+                                ifelse(. == 3, 'unit', .)))) %>% 
+      pivot_wider(id_cols = c(1:2),
+                  names_from=L3,
+                  values_from = value) %>% 
+      select(-L2) %>% 
+      rename('point_id'=L1)
+    
+    timeseries_df <- plyr::rbind.fill(timeseries_df,ts_single)
+    
+  }
+  
+  return(timeseries_df)
+}
+
+#' @export
+get_timeseries <- function(start_time,end_time,point_ids){
+  
+  timeseries_raw <- get_timeseries_raw(start_time = start_time,
+                                       end_time = end_time,
+                                       point_ids = point_ids)
+  
+  timeseries_clean <- timeseries_raw %>%
+    mutate_at(vars(timestamp),
+              ~gsub('[.].*','',.)) %>% 
+    select(point_id,timestamp,unit) %>% 
+    pivot_wider(id_cols = timestamp,
+                names_from=point_id,
+                values_from=unit)
+  
 }
 
 # Staging Area API --------------------------------------------------------
