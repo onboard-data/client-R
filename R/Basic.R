@@ -487,6 +487,10 @@ get_metadata <- function(buildings,selection){
     #Get tagged units if NA
     mutate_at(vars(tagged_units),
               ~ifelse(is.na(.),units,as.character(.))) %>%
+    mutate_at(vars(equip_type_tag),
+              ~ifelse(is.na(equip_subtype_tag),
+                      .,
+                      equip_subtype_tag)) %>% 
     select(
       building_id,
       equipment_id = id,
