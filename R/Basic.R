@@ -431,24 +431,18 @@ get_equipment_by_ids <- function(id){
 #Takes building id or name. Gives a text output of the building id and name
 get_building_info <- function(buildings){
 
-  query <- PointSelector()
+  all_buildings <- get_buildings()
 
-  query$buildings <- buildings
-
-  selection <- select_points(query)
-
-  buildings_id <- unlist(selection$buildings)
-
-  if(is.null(buildings_id)){
-    stop('No building found.')
+  building <- all_buildings[all_buildings$name==buildings,]
+  if(nrow(building)==0){
+  building <- all_buildings[all_buildings$id==buildings,]
+  if(nrow(building)==0){
+    stop('No building found.') 
+  }
   }
 
-  building_db <- api.get('buildings')
-
-  building_db_filter <- building_db[building_db$id %in% buildings_id,]
-
-  id <- building_db_filter$id
-  name <- building_db_filter$name
+  id <- building$id
+  name <- building$name
 
   assign('id',id,envir=parent.frame())
   assign('name',name,envir = parent.frame())
@@ -474,6 +468,10 @@ get_metadata <- function(buildings,selection){
   selection <- select_points(query)
   }
 
+  if(length(selection$points)==0){
+    stop('No metadata found.')
+  }
+  
   print('Querying Points...')
   points <- get_points_by_ids(selection$points)
 
