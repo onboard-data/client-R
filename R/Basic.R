@@ -3,6 +3,7 @@
 #' @import dplyr
 #' @import httr
 #' @import tidyr
+#' @import rrapply
 #' @importFrom plyr rbind.fill
 #' @importFrom lubridate as_datetime
 #' @importFrom data.table rbindlist
@@ -592,12 +593,15 @@ get_timeseries <- function(start_time,end_time,point_ids){
                                        point_ids = point_ids)
   
   timeseries_clean <- timeseries_raw %>%
-    mutate_at(vars(timestamp),
-              ~gsub('[.].*','',.)) %>% 
     select(point_id,timestamp,unit) %>% 
     pivot_wider(id_cols = timestamp,
                 names_from=point_id,
-                values_from=unit)
+                values_from=unit) %>% 
+    mutate_at(vars(timestamp),
+              ~gsub('[.].*','',.)) %>% 
+    type.convert(as.is=T) %>% 
+    mutate_at(vars(timestamp),
+              ~as_datetime(.))  
   
 }
 
