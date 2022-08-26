@@ -539,8 +539,8 @@ get_metadata <- function(buildings,selection){
 get_timeseries_raw <- function(start_time,end_time,
                                point_ids){
   
-  start_time <- as.numeric(start_time)
-  end_time <- as.numeric(end_time)
+  start_time <- as.numeric(as.POSIXlt(start_time))
+  end_time <- as.numeric(as.POSIXlt(end_time))
   
   timeseries_query <- list(start=start_time,
                            end=end_time,
