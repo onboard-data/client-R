@@ -123,7 +123,8 @@ api.post <- function(endpoint,json_body,output){
     if(output=='dataframe'){
     
     api_output <-
-      content(request_endpoint, as = 'text', encoding = 'UTF-8') %>%
+      content(request_endpoint, as = 'text',
+              encoding = 'UTF-8') %>%
       fromJSON(flatten = T)
     } else if(output=='list') {
       
@@ -201,22 +202,22 @@ get_users <- function(id){
   #Format users
 
   users <- users$data %>%
-    select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>%
-    mutate_at(vars(password_reset, last_login, created ),
+    select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>% 
+    mutate(across(c(password_reset, last_login, created),
               ~ as_datetime(as.numeric(substr(., 1, 10))),
-              tz = 'America/New_York') %>%
-    mutate_at(vars(roles),
-              ~gsub('c\\(|\\)','',.)) %>%
-    mutate_at(vars(roles),
-              ~gsub(':',', ',.)) %>%
+              tz = 'America/New_York')) %>% 
+    mutate(across(roles,
+              ~gsub('c\\(|\\)','',.))) %>%  
+    mutate(across(roles,
+              ~gsub(':',', ',.))) %>% 
     separate(col = 'roles',
              into=c('role1','role2','role3','role4'),
              sep=', ',fill = 'right') %>%
     pivot_longer(cols = c(4:7),values_to ='role_id') %>%
     filter(!is.na(role_id)) %>%
-    mutate_at(vars(role_id),~as.integer(.))  %>%
+    mutate(across(role_id,~as.integer(.)))  %>%
     left_join(roles,
-              by=c('role_id'='id')) %>%
+              by=c('role_id'='id')) %>% 
     select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active)
 
   if(!missing(id)){
@@ -241,9 +242,9 @@ get_deployments <- function(org_id){
   deployments <- api.get('deployment')
 
   deployments <- deployments %>%
-    mutate_at(vars(last_heartbeat),
-              ~ as_datetime(as.numeric(substr(., 1, 10)),
-                            tz = 'America/New_York')) %>%
+    mutate(across(last_heartbeat,
+                  ~ as_datetime(as.numeric(substr(., 1, 10)),
+                            tz = 'America/New_York'))) %>%
     select(-api_key,-wg_pubkey)
 
   if(!missing(org_id)){
@@ -270,14 +271,13 @@ get_equip_types <- function(){
   equiptype <-api.get('equiptype')
   
   subtypes <- sapply(equiptype$sub_types,as.data.frame)
-  subtypes <- rbindlist(subtypes)
+  subtypes <- data.table::rbindlist(subtypes)
   
   equip_types <- equiptype %>%
     filter(active==T) %>%
     select(-c(sub_types,critical_point_types,flow_order,active)) %>%
     left_join(subtypes,by=c('id'='equipment_type_id'),
-              suffix = c('','_subtype')) %>% 
-    mutate_all(~replace_na(as.character(.),''))
+              suffix = c('','_subtype'))
   
   return(equip_types)
 }
@@ -299,7 +299,7 @@ get_point_types <- function(){
     measurement_single <- measurements[row_num,]
     
     measurement_units <- measurement_single$units
-    measurement_units <- rbindlist(measurement_units)
+    measurement_units <- data.table::rbindlist(measurement_units)
     measurement_units[,'measurement_id']<- measurement_single$id
     
     units <- plyr::rbind.fill(units,measurement_units)
@@ -327,7 +327,7 @@ get_point_types <- function(){
     pointtypes,id,tag_name,measurement_id,tags),
                            measurements_units,
                            by = c("measurement_id" = 'id')) %>%
-    mutate_at(vars(tags),  ~ gsub('c\\(|\\)', '', .)) %>%
+    mutate(across(tags,  ~ gsub('c\\(|\\)', '', .))) %>%
     select(id,
            point_type = tag_name,
            measurement_name,
@@ -435,11 +435,15 @@ get_building_info <- function(buildings){
   all_buildings <- get_buildings()
 
   building <- all_buildings[all_buildings$name==buildings,]
-  if(nrow(building)==0){
-  building <- all_buildings[all_buildings$id==buildings,]
-  if(nrow(building)==0){
-    stop('No building found.') 
-  }
+  
+  if(nrow(building)==0) {
+    
+    building <- all_buildings[all_buildings$id == buildings, ]
+    
+    if (nrow(building) == 0) {
+      
+      stop('No building found.')
+    }
   }
 
   id <- building$id
@@ -484,12 +488,13 @@ get_metadata <- function(buildings,selection){
                          by = c('id' = 'equip_id'),
                          suffix = c('', '.y')) %>%
     #Get tagged units if NA
-    mutate_at(vars(tagged_units),
-              ~ifelse(is.na(.),units,as.character(.))) %>%
-    mutate_at(vars(equip_type_tag),
+    mutate(across(tagged_units,
+              ~ifelse(is.na(.),
+                      units,as.character(.)))) %>%
+    #Replace equip_type tag with subtype tag if present
+    mutate(across(equip_type_tag,
               ~ifelse(is.na(equip_subtype_tag),
-                      .,
-                      equip_subtype_tag)) %>% 
+                      .,equip_subtype_tag))) %>% 
     select(
       building_id,
       equipment_id = id,
@@ -522,12 +527,10 @@ get_metadata <- function(buildings,selection){
     select(everything(),
            equip_ref = equip_id.y,
            -parent_equip) %>%
-    # remove NAs
-    mutate_all( ~ replace_na(as.character(.),'')) %>%
     #Convert unix time-stamps to EST
-    mutate_at(vars(first_updated, last_updated),
+    mutate(across(c(first_updated, last_updated),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
-                            tz = 'America/New_York'))
+                            tz = 'America/New_York')))
 
   print('Metadata generated.')
   return(metadata)
@@ -540,6 +543,7 @@ get_timeseries_raw <- function(start_time,end_time,
                                point_ids){
   
   start_time <- as.numeric(as.POSIXlt(start_time))
+  
   end_time <- as.numeric(as.POSIXlt(end_time))
   
   timeseries_query <- list(start=start_time,
@@ -547,6 +551,7 @@ get_timeseries_raw <- function(start_time,end_time,
                            point_ids=point_ids) %>% 
     toJSON() 
   
+  # Format JSON query
   timeseries_query <- gsub('start":\\[','start":',timeseries_query)
   timeseries_query <- gsub('\\],"end":\\[',',"end":',timeseries_query)
   timeseries_query <- gsub('\\],"point',',"point',timeseries_query)  
@@ -565,13 +570,12 @@ get_timeseries_raw <- function(start_time,end_time,
     
     ts_single <- rrapply::rrapply(single_output,how='melt') %>%  
       filter(!grepl('raw|unit|topic|display|columns',L1)) %>% 
-      mutate_at(vars(L1),
-                ~ point_id) %>% 
+      mutate(L1=point_id) %>% 
       filter(!is.na(L2)) %>% 
-      mutate_at(vars(L3),
-                ~ ifelse(. == 1, 'timestamp', 
-                         ifelse(. == 2, 'raw',
-                                ifelse(. == 3, 'unit', .)))) %>% 
+      mutate(across(L3, ~ ifelse(. == 1,'timestamp',
+                                 ifelse(. == 2,'raw',
+                                        ifelse(. == 3, 'unit', 
+                                               .))))) %>% 
       pivot_wider(id_cols = c(1:2),
                   names_from=L3,
                   values_from = value) %>% 
@@ -597,11 +601,10 @@ get_timeseries <- function(start_time,end_time,point_ids){
     pivot_wider(id_cols = timestamp,
                 names_from=point_id,
                 values_from=unit) %>% 
-    mutate_at(vars(timestamp),
-              ~gsub('[.].*','',.)) %>% 
+    mutate(across(timestamp,
+              ~gsub('[.].*','',.))) %>% 
     type.convert(as.is=T) %>% 
-    mutate_at(vars(timestamp),
-              ~as_datetime(.))  
+    mutate(timestamp= as_datetime(timestamp))  
   
 }
 
@@ -663,9 +666,10 @@ get_staged_data <- function(building){
   staged_data <- left_join(equip_data,
                            points_data,
                            by=c('e.equip_id'='p.equip_id')) %>%
-    mutate_at(vars(e.last_promoted,p.last_promoted,e.modified,p.modified),
+    mutate(across(c(e.last_promoted,p.last_promoted,
+                    e.modified,p.modified),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
-                            tz = 'America/New_York')) %>%
+                            tz = 'America/New_York'))) %>%
     select(sort(tidyselect::peek_vars()))
 
   return(staged_data)
@@ -700,9 +704,9 @@ upload_staging <- function(building,
     data_to_upload <- data_to_upload %>%
       transmute(e.equip_id = '__SKIP__', p.topic)
 
-    operation <- 'Skipping'
+    operation <- 'skipping'
   } else {
-    operation <- 'Uploading'
+    operation <- 'uploading'
   }
 
   data_to_upload_json <- data_to_upload %>%
@@ -710,7 +714,7 @@ upload_staging <- function(building,
 
   proceed <- askYesNo(sprintf('Do you want to proceed %s %s topics for %s?',operation,nrow(data_to_upload),name))
 
-  if(proceed!=T){
+  if(is.na(proceed)|proceed!=T){
     stop('Stopping Operation.')
   }
 
@@ -743,7 +747,9 @@ promote_staged_data <- function(building,
 
     proceed <- askYesNo(sprintf('Do you want to proceed with promoting all valid topics for %s?',name))
 
-    if(proceed==T){
+    if(is.na(proceed)|proceed!=T){
+      stop('Stopping Operation.')
+    }
 
       promote_json <- list(equip_ids='',
                            topics='') %>% 
@@ -754,10 +760,6 @@ promote_staged_data <- function(building,
 
       operation <- 'promote_all'
 
-    } else {
-      stop('Stopping Operation.')
-
-    }
     } else {
 
       data_to_promote <- data_to_promote %>%
@@ -770,15 +772,14 @@ promote_staged_data <- function(building,
           sprintf(
             'Do you want to proceed with promoting %s equipment and their valid topics to %s?',equip_count,name))
 
-      if(proceed==T){
+      if(is.na(proceed)|proceed!=T){
+        stop('Stopping Operation.')
+      }
 
         promote_json <- list(equip_ids=data_to_promote$e.equip_id,topics=data_to_promote$p.topic) %>%
           toJSON()
 
         operation <- 'promote_some'
-      } else{
-        stop('Stopping Operation.')
-      }
     }
 
   endpoint <- paste0('staging/',id,'/apply')
@@ -790,15 +791,15 @@ promote_staged_data <- function(building,
   
   point_errors <- as.data.frame(do.call(rbind,
                           promote_data$points)) %>% 
-    rownames_to_column(var = 'p.topic')
+    tibble::rownames_to_column(var = 'p.topic')
   
-  equipment_errors <- as.data.frame(do.call(rbind,                                        promote_data$equipment
-  )) %>% 
-    rownames_to_column(var='e.equip_id')
+  equipment_errors <- as.data.frame(do.call(
+    rbind,promote_data$equipment)) %>% 
+    tibble::rownames_to_column(var='e.equip_id')
 
-  validation_errors<-rbind.fill(point_errors,
+  validation_errors <- plyr::rbind.fill(point_errors,
                                 equipment_errors) %>% 
-    mutate_all(~replace_na(as.character(.),'')) %>% 
+    mutate_all(~replace_na(as.character(.),'')) %>%  
    filter(e.equip_id!='__SKIP__')
   
   if('V1' %in% names(validation_errors)){
@@ -811,7 +812,7 @@ promote_staged_data <- function(building,
            validation_errors,
            parent.frame())
 
-    stop('See validation_errors.')
+    print('See validation_errors.')
   } else {
     print('Promoted.')
   }
