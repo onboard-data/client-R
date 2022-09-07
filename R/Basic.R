@@ -1,326 +1,62 @@
-# Dependencies --------------------------------------------------------
-
-#' @import dplyr
-#' @import httr
-#' @import tidyr
-#' @import rrapply
-#' @importFrom plyr rbind.fill
-#' @importFrom lubridate as_datetime
-#' @importFrom data.table rbindlist
-#' @importFrom rstudioapi askForSecret
-#' @importFrom jsonlite toJSON
-#' @importFrom jsonlite fromJSON
-#' @importFrom stringr str_split
-#' @importFrom tibble rownames_to_column
-
-# Set API keys and URL ----------------------------------------------------------
-
-##Sets up API keys and URL in system environment
-#' @export
-api.setup <- function(api_type) {
-
-  if(missing(api_type)) {
-    api_type <-'prod'
-    api_url <- 'https://api.onboarddata.io'
-
-    api_key <-rstudioapi::askForSecret(
-      name='api_key_prod',
-      message = 'Enter your API key here',
-      title="Onboard API Keys")
-
-  } else if (api_type == 'dev') {
-    api_url <- 'https://devapi.onboarddata.io'
-
-    api_key <- rstudioapi::askForSecret(
-      name = 'api_key_dev',
-      message='Enter your DEV API key here',
-      title = "Onboard API Keys")
-  }
-
-Sys.setenv('api_url'=api_url)
-Sys.setenv('api_key'=api_key)
-
-}
-
-##Access API keys and URL from System Environment
-api.access <- function(){
-  
-  api_url <- Sys.getenv('api_url')
-  
-  api_key <- Sys.getenv('api_key')
-  
-  if(api_url==''|api_key==''){
-    stop('API credentials not set correctly.')
-  } else {
-    assign('api_url',api_url,parent.frame())
-    assign('api_key',api_key,parent.frame())
-  }
-}
-
-#' @export
-api.status <- function() {
-  
-  api.access()
-
-  request <- GET(url = api_url,
-                 add_headers(`X-OB-Api` = api_key))
-
-  print(paste0("API Status: ", request$status_code))
-
-
-}
-
-
-# Basic API Query with endpoint -------------------------------------------
-
-## Get API
-#'@export
-api.get <- function(endpoint){
-  
-  api.access()
-  
-  # get endpoint
-  endpoint_url <- paste(api_url, endpoint, sep = '/')
-
-  request_endpoint <- GET(url = endpoint_url,
-                          content_type_json(),
-                          add_headers(`X-OB-Api` = api_key))
-
-  if (request_endpoint$status_code == 200) {
-    api_output <-
-      content(request_endpoint, as = 'text', encoding = 'UTF-8') %>%
-      fromJSON(flatten = T)
-
-    return(api_output)
-
-  } else{
-
-    stop(paste0('API Status Code: ', request_endpoint$status_code))
-
-  }
-}
-
-## POST API
-#'@export
-api.post <- function(endpoint,json_body,output){
-  
-  if(missing(output)){
-    output='dataframe'
-  }
-  
-  api.access()
-
-   # post endpoint
-  endpoint_url <- paste(api_url, endpoint, sep = '/')
-
-  request_endpoint <- POST(url = endpoint_url,
-                          content_type_json(),
-                          add_headers(`X-OB-Api` = api_key),
-                          body=json_body)
-
-  if (request_endpoint$status_code == 200) {
-    
-    if(output=='dataframe'){
-    
-    api_output <-
-      content(request_endpoint, as = 'text',
-              encoding = 'UTF-8') %>%
-      fromJSON(flatten = T)
-    } else if(output=='list') {
-      
-  api_output <- content(request_endpoint)
-}
-  
-    return(api_output)
-
-  } else{
-
-    stop(paste0('API Status Code: ', request_endpoint$status_code))
-
-  }
-
-}
-
-# Retrieve Databases -------------------------------------------------------
-
-##Orgs
-#' @export
-get_orgs <- function(id){
-  orgs <- api.get('organizations')
-
-  orgs <- orgs$data
-
-  if (!missing(id)) {
-
-    id = as.integer(id)
-
-    id = as.data.frame(id) %>%
-      filter(id!='')
-
-    if(nrow(id)>=1){
-      orgs <- semi_join(orgs, id,
-                        by = 'id')
-    }
-  }
-  return(orgs)
-}
-
-##Buildings
-#' @export
-get_buildings <-function(id){
-  buildings <- api.get('buildings')
-
-  if(!missing(id)){
-
-    id = as.integer(id)
-    id = as.data.frame(id) %>%
-      filter(id!='')
-
-    if(nrow(id)>=1){
-
-    buildings <- semi_join(buildings,id,
-                      by='id')
-    }
-  }
-    return(buildings)
-  }
-
-
-## Get User info
-#' @export
-get_users <- function(id){
-
-  #Get roles db
-  roles <- api.get('roles')
-
-  roles <- roles$data %>%
-    select(id,role=name)
-
-  #Get user db
-  users <- api.get('users')
-
-  #Format users
-
-  users <- users$data %>%
-    select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>% 
-    mutate(across(c(password_reset, last_login, created),
-              ~ as_datetime(as.numeric(substr(., 1, 10))),
-              tz = 'America/New_York')) %>% 
-    mutate(across(roles,
-              ~gsub('c\\(|\\)','',.))) %>%  
-    mutate(across(roles,
-              ~gsub(':',', ',.))) %>% 
-    separate(col = 'roles',
-             into=c('role1','role2','role3','role4'),
-             sep=', ',fill = 'right') %>%
-    pivot_longer(cols = c(4:7),values_to ='role_id') %>%
-    filter(!is.na(role_id)) %>%
-    mutate(across(role_id,~as.integer(.)))  %>%
-    left_join(roles,
-              by=c('role_id'='id')) %>% 
-    select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active)
-
-  if(!missing(id)){
-    id=as.integer(id)
-    id=as.data.frame(id)
-
-    if(nrow(id)>=1){
-      users <- semi_join(users,id,
-                         by='id')
-
-    }
-
-  }
-
-  return(users)
-}
-
-## Get Deployment Stats
-#' @export
-get_deployments <- function(org_id){
-
-  deployments <- api.get('deployment')
-
-  deployments <- deployments %>%
-    mutate(across(last_heartbeat,
-                  ~ as_datetime(as.numeric(substr(., 1, 10)),
-                            tz = 'America/New_York'))) %>%
-    select(-api_key,-wg_pubkey)
-
-  if(!missing(org_id)){
-    org_id = as.integer(org_id)
-    org_id = as.data.frame(org_id)
-
-    if(nrow(org_id)>=1){
-      deployments <-semi_join(deployments,org_id,
-                              by='org_id')
-    }
-  }
-
-  return(deployments)
-
-}
-
-
 # Data Model --------------------------------------------------------------
 
 ##Query All Equipment Types
 #' @export
 get_equip_types <- function(){
-  
+
   equiptype <-api.get('equiptype')
-  
+
   subtypes <- sapply(equiptype$sub_types,as.data.frame)
   subtypes <- data.table::rbindlist(subtypes)
-  
+
   equip_types <- equiptype %>%
     filter(active==T) %>%
     select(-c(sub_types,critical_point_types,flow_order,active)) %>%
     left_join(subtypes,by=c('id'='equipment_type_id'),
               suffix = c('','_subtype'))
-  
+
   return(equip_types)
 }
 
 ## Get Point types, measurements and their units in a clean output
 #' @export
 get_point_types <- function(){
-  
+
   pointtypes <- api.get('pointtypes')
-  
+
   measurements <- api.get('measurements')
-  
+
   # Get measurements and their associated units
   units <- data.frame()
-  
+
   for (i in 1:nrow(measurements)){
     row_num =i
-    
+
     measurement_single <- measurements[row_num,]
-    
+
     measurement_units <- measurement_single$units
     measurement_units <- data.table::rbindlist(measurement_units)
     measurement_units[,'measurement_id']<- measurement_single$id
-    
+
     units <- plyr::rbind.fill(units,measurement_units)
-  }  
-      
-    units <- units %>% 
+  }
+
+    units <- units %>%
         select(measurement_id,
                unit_name=name_long,
-               unit=name_abbr,data_type) %>% 
+               unit=name_abbr,data_type) %>%
         mutate(measurement_id=as.integer(measurement_id))
-      
+
       measurements_units <- left_join(measurements,
                                       units,
-                                      by=c('id' = 'measurement_id')) %>%  
+                                      by=c('id' = 'measurement_id')) %>%
         select(id,
                measurement_name=name,
                units_convertible,
                qudt_type,
                unit_name,
                unit,
-               data_type) 
+               data_type)
 
   #Unite data frames
   point_types <- left_join(select(
@@ -333,10 +69,10 @@ get_point_types <- function(){
            measurement_name,
            unit,
            data_type,
-           tags)  
-  
+           tags)
+
   return(point_types)
-  
+
 }
 
 # Point Selector ----------------------------------------------------------
@@ -373,10 +109,10 @@ select_points <- function(query){
   }
 
   endpoint <- 'points/select'
-  
+
   point_selector_output <- api.post(endpoint,
                                     json_body=query_json)
-  
+
   return(point_selector_output)
 }
 
@@ -385,8 +121,8 @@ select_points <- function(query){
 get_points_by_ids <- function(id){
 
   id_unlist <- unlist(id)
-  
-  #Separate point ids into chunks of 500 
+
+  #Separate point ids into chunks of 500
   chunks <- split(id_unlist,
                   ceiling(seq_along(id_unlist)/500))
 
@@ -435,13 +171,13 @@ get_building_info <- function(buildings){
   all_buildings <- get_buildings()
 
   building <- all_buildings[all_buildings$name==buildings,]
-  
+
   if(nrow(building)==0) {
-    
+
     building <- all_buildings[all_buildings$id == buildings, ]
-    
+
     if (nrow(building) == 0) {
-      
+
       stop('No building found.')
     }
   }
@@ -476,7 +212,7 @@ get_metadata <- function(buildings,selection){
   if(length(selection$points)==0){
     stop('No metadata found.')
   }
-  
+
   print('Querying Points...')
   points <- get_points_by_ids(selection$points)
 
@@ -494,7 +230,7 @@ get_metadata <- function(buildings,selection){
     #Replace equip_type tag with subtype tag if present
     mutate(across(equip_type_tag,
               ~ifelse(is.na(equip_subtype_tag),
-                      .,equip_subtype_tag))) %>% 
+                      .,equip_subtype_tag))) %>%
     select(
       building_id,
       equipment_id = id,
@@ -539,73 +275,73 @@ get_metadata <- function(buildings,selection){
 # Building Timeseries Data ------------------------------------------------
 
 #' @export
-get_timeseries_raw <- function(start_time,end_time,
+gettimeseries_raw <- function(start_time,end_time,
                                point_ids){
-  
+
   start_time <- as.numeric(as.POSIXlt(start_time))
-  
+
   end_time <- as.numeric(as.POSIXlt(end_time))
-  
+
   timeseries_query <- list(start=start_time,
                            end=end_time,
-                           point_ids=point_ids) %>% 
-    toJSON() 
-  
+                           point_ids=point_ids) %>%
+    toJSON()
+
   # Format JSON query
   timeseries_query <- gsub('start":\\[','start":',timeseries_query)
   timeseries_query <- gsub('\\],"end":\\[',',"end":',timeseries_query)
-  timeseries_query <- gsub('\\],"point',',"point',timeseries_query)  
-  
+  timeseries_query <- gsub('\\],"point',',"point',timeseries_query)
+
   timeseries_output <- api.post(endpoint='timeseries',
                                 json_body=timeseries_query,
                                 output = 'list')
-  
+
   timeseries_df <- data.frame()
-  
+
   for (i in 1:length(timeseries_output)){
-    
+
     single_output <- timeseries_output[[i]]
-    
+
     point_id <- single_output[['point_id']]
-    
-    ts_single <- rrapply::rrapply(single_output,how='melt') %>%  
-      filter(!grepl('raw|unit|topic|display|columns',L1)) %>% 
-      mutate(L1=point_id) %>% 
-      filter(!is.na(L2)) %>% 
+
+    ts_single <- rrapply::rrapply(single_output,how='melt') %>%
+      filter(!grepl('raw|unit|topic|display|columns',L1)) %>%
+      mutate(L1=point_id) %>%
+      filter(!is.na(L2)) %>%
       mutate(across(L3, ~ ifelse(. == 1,'timestamp',
                                  ifelse(. == 2,'raw',
-                                        ifelse(. == 3, 'unit', 
-                                               .))))) %>% 
+                                        ifelse(. == 3, 'unit',
+                                               .))))) %>%
       pivot_wider(id_cols = c(1:2),
                   names_from=L3,
-                  values_from = value) %>% 
-      select(-L2) %>% 
+                  values_from = value) %>%
+      select(-L2) %>%
       rename('point_id'=L1)
-    
+
     timeseries_df <- plyr::rbind.fill(timeseries_df,ts_single)
-    
+
   }
-  
+
   return(timeseries_df)
 }
 
 #' @export
 get_timeseries <- function(start_time,end_time,point_ids){
-  
+
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
                                        point_ids = point_ids)
-  
+
   timeseries_clean <- timeseries_raw %>%
-    select(point_id,timestamp,unit) %>% 
+    select(point_id,timestamp,unit) %>%
     pivot_wider(id_cols = timestamp,
                 names_from=point_id,
-                values_from=unit) %>% 
+                values_from=unit) %>%
     mutate(across(timestamp,
-              ~gsub('[.].*','',.))) %>% 
-    type.convert(as.is=T) %>% 
-    mutate(timestamp= as_datetime(timestamp))  
-  
+              ~gsub('[.].*','',.))) %>%
+    type.convert(as.is=T) %>%
+    mutate(timestamp= as_datetime(timestamp))
+
 }
 
 # Staging Area API --------------------------------------------------------
@@ -651,7 +387,8 @@ get_staged_data <- function(building){
   rem_col <- paste('auto_tagger','.cnf','polarity','reliability',
                    'activeText','event','covIncrement','presvalue',
                    'statusflags','outofservice','unit_id','type_id',
-                   'datasource','limit','deadband','@prop','timedelay',
+                   'datasource','limit','deadband','@prop',
+                   'timedelay',
                    'notif','acked','resolution','state_text',
                    'relinquish','priority','p\\.e\\.','confidences',
                    'check','created',sep='|')
@@ -679,8 +416,8 @@ get_staged_data <- function(building){
 ##Upload data to the staging area or assign __SKIP__ equip_id to topics on the staging area
 ##skip_topics is optional (T or F)(Use with Caution)
 
-#' @export
-upload_staging <- function(building,
+#'@export
+uplad_staging <- function(building,
                            data_to_upload,
                            skip_topics){
 
@@ -752,7 +489,7 @@ promote_staged_data <- function(building,
     }
 
       promote_json <- list(equip_ids='',
-                           topics='') %>% 
+                           topics='') %>%
         toJSON()
 
       promote_json <- gsub('\\["','[',promote_json)
@@ -786,26 +523,26 @@ promote_staged_data <- function(building,
 
   promote_data <- api.post(endpoint,
                            json_body = promote_json)
-  
+
   #Get Validation Errors
-  
+
   point_errors <- as.data.frame(do.call(rbind,
-                          promote_data$points)) %>% 
+                          promote_data$points)) %>%
     tibble::rownames_to_column(var = 'p.topic')
-  
+
   equipment_errors <- as.data.frame(do.call(
-    rbind,promote_data$equipment)) %>% 
+    rbind,promote_data$equipment)) %>%
     tibble::rownames_to_column(var='e.equip_id')
 
   validation_errors <- plyr::rbind.fill(point_errors,
-                                equipment_errors) %>% 
-    mutate_all(~replace_na(as.character(.),'')) %>%  
+                                equipment_errors) %>%
+    mutate_all(~replace_na(as.character(.),'')) %>%
    filter(e.equip_id!='__SKIP__')
-  
+
   if('V1' %in% names(validation_errors)){
-    
+
     validation_errors <- rename(validation_errors,
-                                'errors'='V1') %>% 
+                                'errors'='V1') %>%
       filter(errors!='NULL')
 
     assign('validation_errors',
@@ -826,7 +563,7 @@ promote_staged_data <- function(building,
 api.delete <- function(building,entity,data_to_delete){
 
   get_building_info(building)
-  
+
   api.access()
 
   endpoint <- paste('buildings',id,entity,sep='/')
