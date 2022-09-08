@@ -15,7 +15,7 @@ Returns a list of ids based on the input query from PointSelector. Uses http POS
 \examples{
 query <- PointSelector()
 
-query$buildings <- 101
+query$buildings <- 427
 query$equipment_types <- 'ahu'
 query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
 

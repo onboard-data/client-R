@@ -38,7 +38,7 @@ PointSelector <- function(){
 #' @examples 
 #' query <- PointSelector()
 #' 
-#' query$buildings <- 101
+#' query$buildings <- 427
 #' query$equipment_types <- 'ahu'
 #' query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
 #' 
