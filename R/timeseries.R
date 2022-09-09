@@ -29,6 +29,8 @@ get_timeseries_raw <- function(start_time,end_time,
                                 json_body=timeseries_query,
                                 output = 'list')
   
+  if(length(timeseries_output)!=0){
+    
   timeseries_df <- data.frame()
   
   for (i in 1:length(timeseries_output)){
@@ -60,6 +62,10 @@ get_timeseries_raw <- function(start_time,end_time,
                             raw=`4`) %>% 
       select(-`4`)
   }
+  } else {
+    timeseries_df <- data.frame()
+    print('No timeseries data found.')
+  }
   
   return(timeseries_df)
 }
@@ -80,7 +86,7 @@ get_timeseries <- function(start_time,end_time,point_ids){
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
                                        point_ids = point_ids)
-  
+  if(nrow(timeseries_raw)!=0){
   timeseries_clean <- timeseries_raw %>%
     transmute(timestamp,
               point_id,
@@ -93,5 +99,8 @@ get_timeseries <- function(start_time,end_time,point_ids){
                   ~gsub('[.].*','',.))) %>%
     type.convert(as.is=T) %>% 
     mutate(timestamp= as_datetime(timestamp))
+} else {
+  timeseries_clean <- timeseries_raw
+}
   
 }
