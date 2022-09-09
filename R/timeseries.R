@@ -38,7 +38,7 @@ get_timeseries_raw <- function(start_time,end_time,
     point_id <- single_output[['point_id']]
     
     ts_single <- rrapply::rrapply(single_output,how='melt') %>% 
-      filter(!grepl('raw|unit|topic|columns',L1)) %>% 
+      filter(!grepl('raw|unit|topic|columns|display',L1)) %>% 
       mutate(L1=point_id) %>%
       filter(!is.na(L2)) %>% 
       mutate(across(L3, ~ ifelse(. == 1,'timestamp',
