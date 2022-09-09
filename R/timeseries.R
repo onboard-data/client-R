@@ -37,14 +37,14 @@ get_timeseries_raw <- function(start_time,end_time,
     
     point_id <- single_output[['point_id']]
     
-    ts_single <- rrapply::rrapply(single_output,how='melt') %>%
-      filter(!grepl('raw|unit|topic|display|columns',L1)) %>%
+    ts_single <- rrapply::rrapply(single_output,how='melt') %>% 
+      filter(!grepl('raw|unit|topic|columns',L1)) %>% 
       mutate(L1=point_id) %>%
-      filter(!is.na(L2)) %>%
+      filter(!is.na(L2)) %>% 
       mutate(across(L3, ~ ifelse(. == 1,'timestamp',
                                  ifelse(. == 2,'raw',
                                         ifelse(. == 3, 'unit',
-                                               .))))) %>%
+                                               .))))) %>%   
       pivot_wider(id_cols = c(1:2),
                   names_from=L3,
                   values_from = value) %>%
@@ -53,6 +53,12 @@ get_timeseries_raw <- function(start_time,end_time,
     
     timeseries_df <- plyr::rbind.fill(timeseries_df,ts_single)
     
+  }
+  
+  if(4 %in% names(timeseries_df)){
+    timeseries_df <- mutate(timeseries_df,
+                            raw=`4`) %>% 
+      select(-`4`)
   }
   
   return(timeseries_df)
@@ -76,13 +82,16 @@ get_timeseries <- function(start_time,end_time,point_ids){
                                        point_ids = point_ids)
   
   timeseries_clean <- timeseries_raw %>%
-    select(point_id,timestamp,unit) %>%
+    transmute(timestamp,
+              point_id,
+              unit=as.character(unit))  %>% 
     pivot_wider(id_cols = timestamp,
                 names_from=point_id,
-                values_from=unit) %>%
+                values_from=unit,
+                values_fill = NA) %>% 
     mutate(across(timestamp,
                   ~gsub('[.].*','',.))) %>%
-    type.convert(as.is=T) %>%
+    type.convert(as.is=T) %>% 
     mutate(timestamp= as_datetime(timestamp))
   
 }
