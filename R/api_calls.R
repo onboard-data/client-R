@@ -92,3 +92,46 @@ api.post <- function(endpoint, json_body, output) {
 }
 
 
+# DELETE ------------------------------------------------------------------
+
+#' API DELETE CALL
+#' 
+#' Uses http DELETE call to post objects to the API. Do not use this unless required. It is recommended to use the staging area functions to skip equipment or points from the main building. 
+#' 
+#' @param building: Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered
+#' 
+#' @param entity: 'points' or 'equipment'
+#' 
+#' @param id: Provide ids belonging to equipment or points. 
+#' 
+api.delete <- function(building,entity,id){
+  
+  get_building_info(building)
+  
+  api.access()
+  
+  endpoint <- paste('buildings',id,entity,sep='/')
+  
+  for (i in 1:length(id)) {
+    
+    single_id <- id[i]
+    
+    endpoint_url <- paste(api_url, endpoint, single_id, sep = '/')
+    
+    execute_object <- DELETE(
+      url = endpoint_url,
+      content_type_json(),
+      add_headers(`X-OB-Api` = api_key)
+    )
+    
+    if (execute_object$status_code == 200) {
+      print(sprintf('Deleted %s of %s',i,
+                    nrow(data_to_delete)))
+    }
+    else {
+      print(paste0('Status Code is ', execute_object$status_code))
+      break
+    }
+  }
+}
+
