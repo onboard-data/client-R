@@ -2,7 +2,7 @@
 
 #' Raw Time-Series Data
 #' 
-#' Retrives timeseries data in raw format
+#' Retrieves timeseries data in raw format
 #' 
 #' @param start_time: Start Time in UTC
 #' @param end_time: End Time in UTC
@@ -10,7 +10,7 @@
 #' @export
 get_timeseries_raw <- function(start_time,end_time,
                               point_ids){
-  
+
   start_time <- as.numeric(as.POSIXlt(start_time))
   
   end_time <- as.numeric(as.POSIXlt(end_time))
@@ -47,7 +47,7 @@ get_timeseries_raw <- function(start_time,end_time,
                                  ifelse(. == 2,'raw',
                                         ifelse(. == 3, 'unit',
                                                .))))) %>%   
-      pivot_wider(id_cols = c(1:2),
+      tidyr::pivot_wider(id_cols = c(1:2),
                   names_from=L3,
                   values_from = value) %>%
       select(-L2) %>%
@@ -87,20 +87,20 @@ get_timeseries <- function(start_time,end_time,point_ids){
                                        end_time = end_time,
                                        point_ids = point_ids)
   if(nrow(timeseries_raw)!=0){
-  timeseries_clean <- timeseries_raw %>%
-    transmute(timestamp,
-              point_id,
-              unit=as.character(unit))  %>% 
-    pivot_wider(id_cols = timestamp,
-                names_from=point_id,
-                values_from=unit,
-                values_fill = NA) %>% 
-    mutate(across(timestamp,
-                  ~gsub('[.].*','',.))) %>%
-    type.convert(as.is=T) %>% 
-    mutate(timestamp= as_datetime(timestamp))
-} else {
-  timeseries_clean <- timeseries_raw
-}
+    timeseries_clean <- timeseries_raw %>%
+      transmute(timestamp,
+                point_id,
+                unit=as.character(unit))  %>% 
+      tidyr::pivot_wider(id_cols = timestamp,
+                  names_from=point_id,
+                  values_from=unit,
+                  values_fill = NA) %>% 
+      mutate(across(timestamp,
+                    ~gsub('[.].*','',.))) %>%
+      type.convert(as.is=T) %>% 
+      mutate(timestamp= as_datetime(timestamp))
+  } else {
+    timeseries_clean <- timeseries_raw
+  }
   
 }
