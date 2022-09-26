@@ -2,11 +2,20 @@ Type: Package
 Package: OnboardClient
 Title: OnboardClient
 Version: 1.0.0
-Author: Pranay Shah
-Maintainer: Christopher Dudas-Thomas <christopher@onboarddata.io>
-Description: This package provides R bindings to Onboard Data's building data
-    API.
-License: What license is it under?
+Authors@R: c(
+      person(given = "Pranay",
+             family = "Shah",
+             role = c("aut", "cre"),
+             email = "pranay@onboarddata.io"),
+      person(given = "Christopher",
+             family = "Dudas-Thomas",
+             role = "aut",
+             email = "christopher@onboarddata.io"),
+      person(given = "Onboard Data",
+             role = c("cph", "fnd"))
+     )
+Description: Provides R bindings to Onboard Data's building data API.
+License: Apache License (==2.0)
 Imports: 
     data.table,
     dplyr,
