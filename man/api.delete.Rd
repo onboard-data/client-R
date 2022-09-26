@@ -7,11 +7,11 @@
 api.delete(building, entity, id)
 }
 \arguments{
-\item{building:}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered}
+\item{building}{Building id or name. Note: If you enter multiple building ids or names, only the first entry is considered}
 
-\item{entity:}{'points' or 'equipment'}
+\item{entity}{'points' or 'equipment'}
 
-\item{id:}{Provide ids belonging to equipment or points.}
+\item{id}{Provide ids belonging to equipment or points.}
 }
 \description{
 Uses http DELETE call to post objects to the API. Do not use this unless required. It is recommended to use the staging area functions to skip equipment or points from the main building.

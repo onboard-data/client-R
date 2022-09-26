@@ -1,9 +1,11 @@
 Type: Package
 Package: OnboardClient
-Title: This package provides R bindings to Onboard Data's building data
-    API.
+Title: OnboardClient
 Version: 1.0.0
 Author: Pranay Shah
+Maintainer: Christopher Dudas-Thomas <christopher@onboarddata.io>
+Description: This package provides R bindings to Onboard Data's building data
+    API.
 License: What license is it under?
 Imports: 
     data.table,
@@ -16,7 +18,8 @@ Imports:
     rstudioapi,
     tibble,
     tidyr,
-    tidyselect
+    tidyselect,
+    stringr
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.1

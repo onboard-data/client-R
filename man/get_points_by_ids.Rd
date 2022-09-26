@@ -13,9 +13,10 @@ get_points_by_ids(id)
 Queries data points by their ids
 }
 \examples{
+\dontrun{
 points <- get_points_by_ids(c(10000,10001))
 
-If you are using the point selector function:
+# If you are using the point selector function:
 query <- PointSelector()
 
 query$buildings <- 101
@@ -25,5 +26,6 @@ query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
 selection <- select_points(query)
 
 points <- get_points_by_ids(selection$points)
+}
 
 }

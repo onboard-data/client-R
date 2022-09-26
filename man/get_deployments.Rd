@@ -6,6 +6,9 @@
 \usage{
 get_deployments(org_id)
 }
+\arguments{
+\item{org_id}{organization id}
+}
 \description{
 Get all deployments in your organization
 }

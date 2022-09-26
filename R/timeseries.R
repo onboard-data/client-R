@@ -4,9 +4,9 @@
 #' 
 #' Retrieves timeseries data in raw format
 #' 
-#' @param start_time: Start Time in UTC
-#' @param end_time: End Time in UTC
-#' @param point_ids: Point IDs for which timeseries data needs to be queried
+#' @param start_time Start Time in UTC
+#' @param end_time End Time in UTC
+#' @param point_ids Point IDs for which timeseries data needs to be queried
 #' @export
 get_timeseries_raw <- function(start_time,end_time,
                               point_ids){
@@ -47,7 +47,7 @@ get_timeseries_raw <- function(start_time,end_time,
                                  ifelse(. == 2,'raw',
                                         ifelse(. == 3, 'unit',
                                                .))))) %>%   
-      tidyr::pivot_wider(id_cols = c(1:2),
+      pivot_wider(id_cols = c(1:2),
                   names_from=L3,
                   values_from = value) %>%
       select(-L2) %>%
@@ -79,7 +79,7 @@ get_timeseries_raw <- function(start_time,end_time,
 #' Clean Time-Series Output
 #' 
 #' @inheritParams get_timeseries_raw
-#' 
+#' @importFrom tidyr pivot_wider
 #' @export
 get_timeseries <- function(start_time,end_time,point_ids){
   
@@ -91,7 +91,7 @@ get_timeseries <- function(start_time,end_time,point_ids){
       transmute(timestamp,
                 point_id,
                 unit=as.character(unit))  %>% 
-      tidyr::pivot_wider(id_cols = timestamp,
+      pivot_wider(id_cols = timestamp,
                   names_from=point_id,
                   values_from=unit,
                   values_fill = NA) %>% 

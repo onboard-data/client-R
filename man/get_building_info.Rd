@@ -7,7 +7,7 @@
 get_building_info(buildings)
 }
 \arguments{
-\item{buildings:}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at one}
+\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at one}
 }
 \value{
 id: (Integer) Building ID
@@ -17,6 +17,6 @@ name: (Character) Building Name
 Retrieves building id and name
 }
 \examples{
-get_building_info(buildings=c(427,"Laboratory"))
+building_metadata <- get_building_info(buildings=c(427,"Laboratory"))
 
 }

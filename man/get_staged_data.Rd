@@ -7,7 +7,7 @@
 get_staged_data(building)
 }
 \arguments{
-\item{building:}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered}
+\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered}
 }
 \description{
 Gets metadata from the staging area
