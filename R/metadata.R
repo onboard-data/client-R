@@ -102,11 +102,14 @@ get_metadata <- function(buildings,selection){
     stop('No metadata found.')
   }
   
-  print('Querying Points...')
-  points <- get_points_by_ids(selection$points)
+  point_ids <- selection$points
+  equipment_ids <- selection$equipment
   
-  print('Querying Equipment...')
-  equipment <- get_equipment_by_ids(selection$equipment)
+  print(sprintf('Querying %s Points...',length(point_ids)))
+  points <- get_points_by_ids(point_ids)
+  
+  print(sprintf('Querying %s Equipment...',length(equipment_ids)))
+  equipment <- get_equipment_by_ids(equipment_ids)
   
   #Create a metadata for the specified building ID
   metadata <- inner_join(equipment,points,
@@ -154,8 +157,7 @@ get_metadata <- function(buildings,selection){
            -parent_equip) %>%
     #Convert unix time-stamps to EST
     mutate(across(c(first_updated, last_updated),
-                  ~ as_datetime(as.numeric(substr(., 1, 10)),
-                                tz = 'America/New_York')))
+                  ~ as_datetime(as.numeric(substr(., 1, 10)))))
   
   print('Metadata generated.')
   return(metadata)
