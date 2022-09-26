@@ -11,14 +11,11 @@ get_metadata(buildings, selection)
 
 \item{selection}{Selection list from point selector}
 }
-\value{
-metadata as `list` or `char`
-}
 \description{
 Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe
 }
 \examples{
-\dontrun{ 
+\dontrun{
 metadata <- get_metadata(buildings=c(427,"Laboratory"))
 
 OR

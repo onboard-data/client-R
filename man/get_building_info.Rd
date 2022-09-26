@@ -10,13 +10,14 @@ get_building_info(buildings)
 \item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at one}
 }
 \value{
-id: (Integer) Building ID
-name: (Character) Building Name
+id: (Integer) Building ID; name: (Character) Building Name
 }
 \description{
 Retrieves building id and name
 }
 \examples{
-building_metadata <- get_building_info(buildings=c(427,"Laboratory"))
+\dontrun{
+get_building_info(buildings=c(427,"Laboratory"))
+}
 
 }

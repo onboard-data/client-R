@@ -1,5 +1,6 @@
 # Building Metadata 
 
+
 # Building Info -----------------------------------------------------------
 
 #' Building Info
@@ -8,14 +9,13 @@
 #' 
 #' @param buildings A character vector or integer. Provide either building id or name. You can provide multiple buildings at one
 #' 
-#' @returns
-#'id: (Integer) Building ID
-#'name: (Character) Building Name
+#' @returns id: (Integer) Building ID; name: (Character) Building Name
 #'
 #' @examples 
-#' building_metadata <- get_building_info(buildings=c(427,"Laboratory"))
+#' \dontrun{
+#' get_building_info(buildings=c(427,"Laboratory"))
+#' }
 #'
-#' @export
 get_building_info <- function(buildings){
   
   all_buildings <- get_buildings()
@@ -26,22 +26,22 @@ get_building_info <- function(buildings){
     
     single <- buildings[i]
     
-  building <- all_buildings[all_buildings$name==single,]
-  
-  if(nrow(building)==0) {
+    building <- all_buildings[all_buildings$name==single,]
     
-    building <- all_buildings[all_buildings$id == single, ]
-    
-    if (nrow(building) == 0) {
+    if(nrow(building)==0) {
       
-      stop(sprintf('No building found for %s.',single))
+      building <- all_buildings[all_buildings$id == single, ]
+      
+      if (nrow(building) == 0) {
+        
+        stop(sprintf('No building found for %s.',single))
+      }
     }
-  }
-  
-  building <- select(building,id,name)
-  
-  building_info <- rbind(building_info,building)
-  
+    
+    building <- select(building,id,name)
+    
+    building_info <- rbind(building_info,building)
+    
   }
   
   id <- building_info$id
@@ -66,10 +66,8 @@ get_building_info <- function(buildings){
 #' @inheritParams get_building_info
 #' @param selection Selection list from point selector
 #' 
-#' @return metadata as `list` or `char`
-#' 
 #' @examples 
-#' \dontrun{ 
+#' \dontrun{
 #' metadata <- get_metadata(buildings=c(427,"Laboratory"))
 #' 
 #' OR
@@ -105,11 +103,14 @@ get_metadata <- function(buildings,selection){
     stop('No metadata found.')
   }
   
-  print('Querying Points...')
-  points <- get_points_by_ids(selection$points)
+  point_ids <- selection$points
+  equipment_ids <- selection$equipment
   
-  print('Querying Equipment...')
-  equipment <- get_equipment_by_ids(selection$equipment)
+  print(sprintf('Querying %s Points...',length(point_ids)))
+  points <- get_points_by_ids(point_ids)
+  
+  print(sprintf('Querying %s Equipment...',length(equipment_ids)))
+  equipment <- get_equipment_by_ids(equipment_ids)
   
   #Create a metadata for the specified building ID
   metadata <- inner_join(equipment,points,
@@ -157,8 +158,7 @@ get_metadata <- function(buildings,selection){
            -parent_equip) %>%
     #Convert unix time-stamps to EST
     mutate(across(c(first_updated, last_updated),
-                  ~ as_datetime(as.numeric(substr(., 1, 10)),
-                                tz = 'America/New_York')))
+                  ~ as_datetime(as.numeric(substr(., 1, 10)))))
   
   print('Metadata generated.')
   return(metadata)
