@@ -7,14 +7,14 @@
 #' 
 #' Retrieves building id and name
 #' 
-#' @param buildings: A character vector or integer. Provide either building id or name. You can provide multiple buildings at one
+#' @param buildings A character vector or integer. Provide either building id or name. You can provide multiple buildings at one
 #' 
-#' @returns
-#'id: (Integer) Building ID
-#'name: (Character) Building Name
+#' @returns id: (Integer) Building ID; name: (Character) Building Name
 #'
 #' @examples 
+#' \dontrun{
 #' get_building_info(buildings=c(427,"Laboratory"))
+#' }
 #'
 get_building_info <- function(buildings){
   
@@ -26,22 +26,22 @@ get_building_info <- function(buildings){
     
     single <- buildings[i]
     
-  building <- all_buildings[all_buildings$name==single,]
-  
-  if(nrow(building)==0) {
+    building <- all_buildings[all_buildings$name==single,]
     
-    building <- all_buildings[all_buildings$id == single, ]
-    
-    if (nrow(building) == 0) {
+    if(nrow(building)==0) {
       
-      stop(sprintf('No building found for %s.',single))
+      building <- all_buildings[all_buildings$id == single, ]
+      
+      if (nrow(building) == 0) {
+        
+        stop(sprintf('No building found for %s.',single))
+      }
     }
-  }
-  
-  building <- select(building,id,name)
-  
-  building_info <- rbind(building_info,building)
-  
+    
+    building <- select(building,id,name)
+    
+    building_info <- rbind(building_info,building)
+    
   }
   
   id <- building_info$id
@@ -61,13 +61,13 @@ get_building_info <- function(buildings){
 
 #' Metadata
 #' 
-#'Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe
+#' Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe
 #' 
 #' @inheritParams get_building_info
-#' @param selection: Selection list from point selector
+#' @param selection Selection list from point selector
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' metadata <- get_metadata(buildings=c(427,"Laboratory"))
 #' 
 #' OR
@@ -81,6 +81,7 @@ get_building_info <- function(buildings){
 #' selection <- select_points(query)
 #' 
 #' metadata <- get_metadata(selection)
+#' }
 #' 
 #' @export
 get_metadata <- function(buildings,selection){

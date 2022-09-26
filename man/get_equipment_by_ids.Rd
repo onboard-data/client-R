@@ -13,9 +13,10 @@ get_equipment_by_ids(id)
 Queries equipment by their ids
 }
 \examples{
+\dontrun{
 equipment <- get_equipment_by_ids(c(1000,1001))
 
-If you are using the point selector function:
+# If you are using the point selector function:
 query <- PointSelector()
 
 query$buildings <- 101
@@ -24,5 +25,6 @@ query$equipment_types <- 'ahu'
 selection <- select_points(query)
 
 equipment <- get_points_by_ids(selection$equipment)
+}
 
 }

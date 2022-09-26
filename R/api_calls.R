@@ -10,8 +10,7 @@
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint
 #'
-#' @returns 
-#'`api.get()` returns an R object of `list` or `data.frame` class
+#' @return An R object of `list` or `data.frame` class
 #'
 #' @examples
 #' whoami <- api.get('whoami')
@@ -54,7 +53,9 @@ api.get <- function(endpoint) {
 #' 
 #' @param output if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object
 #' 
-#'@export
+#' @return An R object of `list` or `data.frame` class
+#' 
+#' @export
 api.post <- function(endpoint, json_body, output) {
   if (missing(output)) {
     output = 'dataframe'
@@ -98,13 +99,13 @@ api.post <- function(endpoint, json_body, output) {
 #' 
 #' Uses http DELETE call to post objects to the API. Do not use this unless required. It is recommended to use the staging area functions to skip equipment or points from the main building. 
 #' 
-#' @param building: Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered
+#' @param building Building id or name. Note: If you enter multiple building ids or names, only the first entry is considered
 #' 
-#' @param entity: 'points' or 'equipment'
+#' @param entity 'points' or 'equipment'
 #' 
-#' @param id: Provide ids belonging to equipment or points. 
+#' @param id Provide ids belonging to equipment or points.
 #' 
-api.delete <- function(building,entity,id){
+api.delete <- function(building, entity, id){
   
   get_building_info(building)
   

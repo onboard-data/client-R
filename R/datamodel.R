@@ -24,8 +24,6 @@ get_equip_types <- function(){
   return(equip_types)
 }
 
-
-
 # Point Types -------------------------------------------------------------
 
 #' Point Types

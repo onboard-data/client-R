@@ -118,6 +118,7 @@ get_users <- function(id){
 #' Deployments
 #' 
 #' Get all deployments in your organization
+#' @param org_id organization id
 #' 
 #' @export
 get_deployments <- function(org_id){

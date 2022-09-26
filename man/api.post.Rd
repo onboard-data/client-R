@@ -13,6 +13,9 @@ api.post(endpoint, json_body, output)
 
 \item{output}{if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object}
 }
+\value{
+An R object of `list` or `data.frame` class
+}
 \description{
 Uses http POST call to post objects to the API
 }

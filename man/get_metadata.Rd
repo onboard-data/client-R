@@ -7,13 +7,15 @@
 get_metadata(buildings, selection)
 }
 \arguments{
-\item{selection:}{Selection list from point selector}
+\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at one}
+
+\item{selection}{Selection list from point selector}
 }
 \description{
 Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe
 }
 \examples{
-
+\dontrun{
 metadata <- get_metadata(buildings=c(427,"Laboratory"))
 
 OR
@@ -27,5 +29,6 @@ query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
 selection <- select_points(query)
 
 metadata <- get_metadata(selection)
+}
 
 }

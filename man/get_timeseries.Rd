@@ -6,6 +6,13 @@
 \usage{
 get_timeseries(start_time, end_time, point_ids)
 }
+\arguments{
+\item{start_time}{Start Time in UTC}
+
+\item{end_time}{End Time in UTC}
+
+\item{point_ids}{Point IDs for which timeseries data needs to be queried}
+}
 \description{
 Clean Time-Series Output
 }
