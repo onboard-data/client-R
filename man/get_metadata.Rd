@@ -7,12 +7,12 @@
 get_metadata(buildings, selection)
 }
 \arguments{
-\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at one}
+\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at once.}
 
-\item{selection}{Selection list from point selector}
+\item{selection}{Selection list from point selector.}
 }
 \description{
-Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe
+Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe.
 }
 \examples{
 \dontrun{

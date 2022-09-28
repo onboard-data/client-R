@@ -1,10 +1,10 @@
-# Some useful functions to get clean outputs from the databses
+# Some useful functions to get clean outputs from the databases
 
 # Organizations -------------------------------------------------------
 
-#' Retrieve Organizations that you have access to
+#' Retrieve Organizations that you have access to.
 #' 
-#' @param id (Optional) An integer if you want information on a particular entity. Will return all entities if argument is empty
+#' @param id (Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.
 #'  
 #' @export
 get_orgs <- function(id){
@@ -32,7 +32,7 @@ get_orgs <- function(id){
 
 #' Buildings
 #' 
-#' Retrieve buildings that you have access to
+#' Retrieve buildings that you have access to.
 #' 
 #' @inheritParams get_orgs
 #' 
@@ -117,7 +117,8 @@ get_users <- function(id){
 
 #' Deployments
 #' 
-#' Get all deployments in your organization
+#' Get all deployments in your organization.
+#' 
 #' @param org_id organization id
 #' 
 #' @export

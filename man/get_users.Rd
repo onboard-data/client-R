@@ -7,7 +7,7 @@
 get_users(id)
 }
 \arguments{
-\item{id}{(Optional) An integer if you want information on a particular entity. Will return all entities if argument is empty}
+\item{id}{(Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.}
 }
 \description{
 Retrieve all user info in your organization.

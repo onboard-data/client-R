@@ -10,5 +10,5 @@ get_deployments(org_id)
 \item{org_id}{organization id}
 }
 \description{
-Get all deployments in your organization
+Get all deployments in your organization.
 }

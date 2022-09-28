@@ -7,8 +7,8 @@
 get_buildings(id)
 }
 \arguments{
-\item{id}{(Optional) An integer if you want information on a particular entity. Will return all entities if argument is empty}
+\item{id}{(Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.}
 }
 \description{
-Retrieve buildings that you have access to
+Retrieve buildings that you have access to.
 }

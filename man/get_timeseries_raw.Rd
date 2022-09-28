@@ -14,5 +14,5 @@ get_timeseries_raw(start_time, end_time, point_ids)
 \item{point_ids}{Point IDs for which timeseries data needs to be queried}
 }
 \description{
-Retrieves timeseries data in raw format
+Retrieves timeseries data in raw format.
 }

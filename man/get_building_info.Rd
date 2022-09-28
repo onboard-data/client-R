@@ -7,13 +7,10 @@
 get_building_info(buildings)
 }
 \arguments{
-\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at one}
-}
-\value{
-id: (Integer) Building ID; name: (Character) Building Name
+\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at once.}
 }
 \description{
-Retrieves building id and name
+Retrieves building id(s) and name(s). Assigns each to list variables called "id" and "name", and prints each list.
 }
 \examples{
 \dontrun{

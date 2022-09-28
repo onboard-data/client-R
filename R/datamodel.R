@@ -10,7 +10,7 @@
 #' @export
 get_equip_types <- function(){
   
-  equiptype <-api.get('equiptype')
+  equiptype <- api.get('equiptype')
   
   subtypes <- sapply(equiptype$sub_types,as.data.frame)
   subtypes <- data.table::rbindlist(subtypes)

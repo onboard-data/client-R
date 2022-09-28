@@ -5,8 +5,8 @@ Version: 1.0.0
 Authors@R: c(
       person(given = "Pranay",
              family = "Shah",
-             role = c("aut", "cre"),
-             email = "pranay@onboarddata.io"),
+             role = c("cre", "aut"),
+             email = "pranay.shah@onboarddata.io"),
       person(given = "Christopher",
              family = "Dudas-Thomas",
              role = "aut",

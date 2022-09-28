@@ -5,11 +5,9 @@
 
 #' Building Info
 #' 
-#' Retrieves building id and name
+#' Retrieves building id(s) and name(s). Assigns each to list variables called "id" and "name", and prints each list.
 #' 
-#' @param buildings A character vector or integer. Provide either building id or name. You can provide multiple buildings at one
-#' 
-#' @returns id: (Integer) Building ID; name: (Character) Building Name
+#' @param buildings A character vector or integer. Provide either building id or name. You can provide multiple buildings at once.
 #'
 #' @examples 
 #' \dontrun{
@@ -54,17 +52,15 @@ get_building_info <- function(buildings){
   
 }
 
-
-
 # Metadata ----------------------------------------------------------------
 
 
 #' Metadata
 #' 
-#' Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe
+#' Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe.
 #' 
 #' @inheritParams get_building_info
-#' @param selection Selection list from point selector
+#' @param selection Selection list from point selector.
 #' 
 #' @examples 
 #' \dontrun{
