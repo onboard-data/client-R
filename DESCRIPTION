@@ -12,7 +12,8 @@ Authors@R: c(
              role = "aut",
              email = "christopher@onboarddata.io"),
       person(given = "Onboard Data",
-             role = c("cph", "fnd"))
+             role = c("cph", "fnd"),
+             email = "support@onboarddata.io")
      )
 Description: Provides R bindings to Onboard Data's building data API.
 License: Apache License (==2.0)
