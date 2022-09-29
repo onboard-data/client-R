@@ -4,9 +4,11 @@
 #' 
 #' Retrieves timeseries data in raw format.
 #' 
-#' @param start_time Start Time in UTC
-#' @param end_time End Time in UTC
-#' @param point_ids Point IDs for which timeseries data needs to be queried
+#' @param start_time Start Time in UTC.
+#' @param end_time End Time in UTC.
+#' @param point_ids Point IDs for which timeseries data needs to be queried.
+#' 
+#' @return A long data.frame of timeseries data, with columns point_id, timestamp, and point values as columns.
 #' @export
 get_timeseries_raw <- function(start_time, end_time, point_ids){
 
@@ -74,9 +76,12 @@ get_timeseries_raw <- function(start_time, end_time, point_ids){
 
 #' Time-Series Data
 #' 
-#' Clean Time-Series Output
+#' Provides clean timeseries
 #' 
 #' @inheritParams get_timeseries_raw
+#' 
+#' @return A wide data.frame of timeseries data, with timestamp and all requested points as columns.
+#' 
 #' @importFrom tidyr pivot_wider
 #' @export
 get_timeseries <- function(start_time, end_time, point_ids){
@@ -92,8 +97,7 @@ get_timeseries <- function(start_time, end_time, point_ids){
       pivot_wider(id_cols = timestamp,
                   names_from = point_id,
                   values_from = unit,
-                  values_fill = NA,
-                  names_prefix = "p") %>% 
+                  values_fill = NA) %>% 
       mutate(across(timestamp,
                     ~gsub('[.].*','',.))) %>%
       type.convert(as.is=T) %>% 

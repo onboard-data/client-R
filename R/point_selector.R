@@ -4,9 +4,9 @@
 
 #' PointSelector
 #' 
-#' A list of parameters to query metadata
+#' A list of parameters to query metadata.
 #' 
-#' @returns query: An empty list object
+#' @returns query: An empty named list object.
 #' 
 #' @examples 
 #' 
@@ -31,9 +31,9 @@ PointSelector <- function(){
 
 #' Select Points
 #' 
-#' Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data 
+#' Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data.
 #' 
-#' @param query query supplied from PointSelector
+#' @param query query supplied from PointSelector.
 #' 
 #' @examples 
 #' query <- PointSelector()
@@ -79,9 +79,11 @@ select_points <- function(query){
 
 #' Points by ID
 #' 
-#' Queries data points by their ids
+#' Queries data points by their ids.
 #' 
-#' @param id (Integer) One or many point ids. 
+#' @param id Integer or list of integers. One or many point ids.
+#' 
+#' @return A data.frame of the requested points, or an empty list if there are no points with those ids.
 #' 
 #' @examples
 #' \dontrun{
@@ -129,14 +131,15 @@ get_points_by_ids <- function(id){
 }
 
 
-
 # Equipment by ID ---------------------------------------------------------
 
 #' Equipment by ID
 #' 
-#' Queries equipment by their ids
+#' Queries equipment by their ids.
 #' 
 #' @param id (Integer) One or many equipment ids. 
+#'
+#' @return A data.frame of the requested equipment, or an empty list if no equipment matches those ids.
 #' 
 #' @examples
 #' \dontrun{
@@ -150,7 +153,7 @@ get_points_by_ids <- function(id){
 #' 
 #' selection <- select_points(query)
 #' 
-#' equipment <- get_points_by_ids(selection$equipment)
+#' equipment <- get_equipment_by_ids(selection$equipment)
 #' }
 #' 
 #' @export

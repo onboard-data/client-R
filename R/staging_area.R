@@ -2,9 +2,9 @@
 
 #' Get Staged Data
 #' 
-#' Gets metadata from the staging area
+#' Gets metadata from the staging area.
 #' 
-#' @param building Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered
+#' @param building Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.
 #' 
 #' @export
 get_staged_data <- function(building){
@@ -77,13 +77,13 @@ get_staged_data <- function(building){
 
 #' Upload to Staging Area
 #' 
-#' Uploads data to the staging area
+#' Uploads data to the staging area.
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_upload A dataframe to upload to the staging area. Must contain e.equip_id and p.topic columns
+#' @param data_to_upload A dataframe to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
-#' @param skip_topics Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id
+#' @param skip_topics Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.
 #'  
 #'@export
 upload_staging <- function(building,
@@ -143,11 +143,11 @@ upload_staging <- function(building,
 
 #' Promote data on Staging Area
 #' 
-#' Promote valid data on the staging area to the live building
+#' Promote valid data on the staging area to the live building.
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns 
+#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns.
 #' 
 #' @export
 promote_staged_data <- function(building,

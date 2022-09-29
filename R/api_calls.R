@@ -6,9 +6,9 @@
 #'
 #' @description
 #'
-#' Uses http GET call to return an obect from the API
+#' Uses http GET call to return an object from the API
 #'
-#' @param endpoint A character string containing a valid Onboard API endpoint
+#' @param endpoint A character string containing a valid Onboard API endpoint.
 #'
 #' @return An R object of `list` or `data.frame` class
 #'
@@ -49,9 +49,9 @@ api.get <- function(endpoint) {
 #' Uses http POST call to post objects to the API
 #' @inheritParams  api.get
 #' 
-#' @param json_body A JSON payload to give to the POST call
+#' @param json_body A JSON payload to give to the POST call.
 #' 
-#' @param output if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object
+#' @param output if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object.
 #' 
 #' @return An R object of `list` or `data.frame` class
 #' 
