@@ -5,6 +5,7 @@
 #'  
 #' @param api_type Optional. If `dev`, will setup api url and keys for acessing Onboard's DEV API.
 #' @export
+#' 
 api.setup <- function(api_type) {
   
   if(missing(api_type)) {

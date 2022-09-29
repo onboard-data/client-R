@@ -17,5 +17,5 @@ get_timeseries(start_time, end_time, point_ids)
 A wide data.frame of timeseries data, with timestamp and all requested points as columns.
 }
 \description{
-Clean timeseries output
+Provides clean timeseries
 }

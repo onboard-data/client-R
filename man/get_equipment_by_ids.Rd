@@ -13,7 +13,7 @@ get_equipment_by_ids(id)
 A data.frame of the requested equipment, or an empty list if no equipment matches those ids.
 }
 \description{
-Queries equipment by their ids
+Queries equipment by their ids.
 }
 \examples{
 \dontrun{

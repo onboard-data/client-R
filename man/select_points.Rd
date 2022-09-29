@@ -13,6 +13,7 @@ select_points(query)
 Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data.
 }
 \examples{
+\dontrun{
 query <- PointSelector()
 
 query$buildings <- 427
@@ -20,5 +21,6 @@ query$equipment_types <- 'ahu'
 query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
 
 selection <- select_points(query)
+}
 
 }

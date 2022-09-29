@@ -9,12 +9,13 @@
 #' @returns query: An empty named list object.
 #' 
 #' @examples 
-#' 
+#' \dontrun{
 #' query <- PointSelector()
 #' 
 #' query$buildings <- 101
 #' query$equipment_types <- 'ahu'
 #' query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
+#' }
 #' 
 #' @export
 PointSelector <- function(){
@@ -36,6 +37,7 @@ PointSelector <- function(){
 #' @param query query supplied from PointSelector.
 #' 
 #' @examples 
+#' \dontrun{
 #' query <- PointSelector()
 #' 
 #' query$buildings <- 427
@@ -43,6 +45,7 @@ PointSelector <- function(){
 #' query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
 #' 
 #' selection <- select_points(query)
+#' }
 #' 
 #' @export
 select_points <- function(query){

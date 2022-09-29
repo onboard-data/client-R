@@ -6,16 +6,16 @@
 #'
 #' @description
 #'
-#' Uses http GET call to return an object from the API
+#' Uses http GET call to return an object from the API.
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
 #'
 #' @return An R object of `list` or `data.frame` class
-#'
+#' 
 #' @examples
-#' whoami <- api.get('whoami')
-#'
-#'@export
+#' \dontrun{ whoami <- api.get('whoami') }
+#' 
+#' @export
 api.get <- function(endpoint) {
   api.access()
   

@@ -13,9 +13,9 @@ api.get(endpoint)
 An R object of `list` or `data.frame` class
 }
 \description{
-Uses http GET call to return an object from the API
+Uses http GET call to return an object from the API.
 }
 \examples{
-whoami <- api.get('whoami')
+\dontrun{ whoami <- api.get('whoami') }
 
 }
