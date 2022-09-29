@@ -57,6 +57,7 @@ api.get <- function(endpoint) {
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output) {
+  
   if (missing(output)) {
     output = 'dataframe'
   }
@@ -74,14 +75,19 @@ api.post <- function(endpoint, json_body, output) {
   )
   
   if (request_endpoint$status_code == 200) {
+    
     if (output == 'dataframe') {
       api_output <-
         content(request_endpoint, as = 'text',
-                encoding = 'UTF-8') %>%
-        fromJSON(flatten = T)
+                encoding = 'UTF-8') %>% 
+        fromJSON(flatten = T) %>% 
+        as.data.frame()
+      
     } else if (output == 'list') {
       api_output <- content(request_endpoint)
-    }
+    
+      }
+    
     
     return(api_output)
     
