@@ -25,8 +25,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids){
   timeseries_query <- gsub('\\],"point',',"point', timeseries_query)
   
   timeseries_output <- api.post(endpoint = 'timeseries',
-                                json_body = timeseries_query,
-                                output = 'list')
+                                json_body = timeseries_query)
   
   if(length(timeseries_output)!=0){
     
