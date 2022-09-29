@@ -7,8 +7,8 @@
 api.setup(api_type)
 }
 \arguments{
-\item{api_type}{Optional. If `dev`, will setup api url and keys for acessing Onboard's DEV API}
+\item{api_type}{Optional. If `dev`, will setup api url and keys for acessing Onboard's DEV API.}
 }
 \description{
-`api.setup()` is used to set the onboard api url and api keys in the system environment
+Sets the onboard api url and api keys in the system environment.
 }

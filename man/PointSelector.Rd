@@ -7,7 +7,7 @@
 PointSelector()
 }
 \value{
-query: An empty list object
+query: An empty named list object.
 }
 \description{
 A list of parameters to query metadata

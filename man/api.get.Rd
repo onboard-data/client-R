@@ -7,13 +7,13 @@
 api.get(endpoint)
 }
 \arguments{
-\item{endpoint}{A character string containing a valid Onboard API endpoint}
+\item{endpoint}{A character string containing a valid Onboard API endpoint.}
 }
 \value{
 An R object of `list` or `data.frame` class
 }
 \description{
-Uses http GET call to return an obect from the API
+Uses http GET call to return an object from the API
 }
 \examples{
 whoami <- api.get('whoami')

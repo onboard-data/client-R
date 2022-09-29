@@ -51,14 +51,15 @@ api.get <- function(endpoint) {
 #' 
 #' @param json_body A JSON payload to give to the POST call.
 #' 
-#' @param output if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object.
+#' @param output if "list" (default), it returns the api output as a list object. If "dataframe", it returns the api output as a dataframe object
 #' 
 #' @return An R object of `list` or `data.frame` class
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output) {
+  
   if (missing(output)) {
-    output = 'dataframe'
+    output = 'list'
   }
   
   api.access()
@@ -74,14 +75,19 @@ api.post <- function(endpoint, json_body, output) {
   )
   
   if (request_endpoint$status_code == 200) {
-    if (output == 'dataframe') {
+    
+    if (output == 'list') {
+      api_output <- content(request_endpoint)
+      
+    } else if (output == 'dataframe') {
       api_output <-
         content(request_endpoint, as = 'text',
-                encoding = 'UTF-8') %>%
-        fromJSON(flatten = T)
-    } else if (output == 'list') {
-      api_output <- content(request_endpoint)
-    }
+                encoding = 'UTF-8') %>%  
+        fromJSON(flatten = T)  %>% 
+        as.data.frame() 
+    
+      }
+    
     
     return(api_output)
     

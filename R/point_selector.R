@@ -71,7 +71,13 @@ select_points <- function(query){
   point_selector_output <- api.post(endpoint,
                                     json_body=query_json)
   
-  return(point_selector_output)
+  selection <- point_selector_output
+  
+  for(i in 1:length(point_selector_output)){
+    selection[[i]] <- as.vector(unlist(point_selector_output[[i]])) 
+  }
+  
+  return(selection)
 }
 
 
@@ -162,11 +168,12 @@ get_equipment_by_ids <- function(id){
   id_unlist <- unlist(id)
   
   #Convert list of ids to JSON payload
-  id_json <- list(equipment_ids=id_unlist) %>%
+  id_json <- list(equipment_ids = id_unlist) %>%
     toJSON()
   
-  equipment <- api.post(endpoint='equipment/query',
-                        json_body = id_json)
+  equipment <- api.post(endpoint = 'equipment/query',
+                        json_body = id_json,
+                        output = 'dataframe')
   
   return(equipment)
 }

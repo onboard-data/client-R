@@ -7,5 +7,5 @@
 api.status()
 }
 \description{
-Gives a status code for api connection
+Gives a status code for api connection.
 }

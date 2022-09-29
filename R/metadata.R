@@ -7,7 +7,7 @@
 #' 
 #' Retrieves building id(s) and name(s). Assigns each to list variables called "id" and "name", and prints each list.
 #' 
-#' @param buildings A character vector or integer. Provide either building id or name. You can provide multiple buildings at once.
+#' @param buildings A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.
 #'
 #' @examples 
 #' \dontrun{

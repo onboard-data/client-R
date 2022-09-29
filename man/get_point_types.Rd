@@ -7,8 +7,8 @@
 get_point_types()
 }
 \value{
-point_types: A dataframe object
+point_types: A dataframe object.
 }
 \description{
-Queries all point types, measurements and their units from Onboard's Data Model and returns a clean output
+Queries all point types, measurements and their units from Onboard's Data Model and returns a clean output.
 }

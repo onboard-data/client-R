@@ -7,10 +7,10 @@
 select_points(query)
 }
 \arguments{
-\item{query}{query supplied from PointSelector}
+\item{query}{query supplied from PointSelector.}
 }
 \description{
-Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data
+Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data.
 }
 \examples{
 query <- PointSelector()

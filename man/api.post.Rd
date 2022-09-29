@@ -7,11 +7,11 @@
 api.post(endpoint, json_body, output)
 }
 \arguments{
-\item{endpoint}{A character string containing a valid Onboard API endpoint}
+\item{endpoint}{A character string containing a valid Onboard API endpoint.}
 
-\item{json_body}{A JSON payload to give to the POST call}
+\item{json_body}{A JSON payload to give to the POST call.}
 
-\item{output}{if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object}
+\item{output}{if "dataframe" (default), it returns the api output as a dataframe object. If "list", it returns the api output as a list object.}
 }
 \value{
 An R object of `list` or `data.frame` class
