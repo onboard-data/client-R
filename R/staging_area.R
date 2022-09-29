@@ -16,6 +16,10 @@ get_staged_data <- function(building){
   endpoint <- paste0('staging/',id,'?points=True')
 
   stage <- api.get(endpoint)
+  
+  if(length(stage$points_by_equip_id)==0){
+    stop(sprintf('Staged data not found for building %s.',name))
+  }
 
   #Equip Data
 
@@ -118,7 +122,7 @@ upload_staging <- function(building,
   data_to_upload_json <- data_to_upload %>%
     toJSON()
 
-  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topics for %s?',operation,nrow(data_to_upload),name))
+  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?',operation,nrow(data_to_upload),name))
 
   if(is.na(proceed)|proceed!=T){
     stop('Stopping Operation.')
@@ -147,7 +151,8 @@ upload_staging <- function(building,
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns 
+#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns
+#' 
 #' 
 #' @export
 promote_staged_data <- function(building,
@@ -210,8 +215,9 @@ promote_staged_data <- function(building,
     tibble::rownames_to_column(var='e.equip_id')
 
   validation_errors <- plyr::rbind.fill(point_errors,
-                                equipment_errors) %>%
-    mutate_all(~replace_na(as.character(.),'')) %>%
+                                equipment_errors)  %>% 
+  mutate(across(everything(),
+                ~tidyr::replace_na(as.character(.),''))) %>%
    filter(e.equip_id!='__SKIP__')
 
   if('V1' %in% names(validation_errors)){
