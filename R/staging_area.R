@@ -135,7 +135,7 @@ upload_staging <- function(building,
   if(length(post_points$row_errors)==0){
     print('Success!')
   } else{
-    return(post_points)
+    return(post_points$row_errors)
   }
 
 }
