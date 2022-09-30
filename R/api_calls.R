@@ -56,11 +56,7 @@ api.get <- function(endpoint) {
 #' @return An R object of `list` or `data.frame` class
 #' 
 #' @export
-api.post <- function(endpoint, json_body, output) {
-  
-  if (missing(output)) {
-    output = 'list'
-  }
+api.post <- function(endpoint, json_body, output = 'list') {
   
   api.access()
   
