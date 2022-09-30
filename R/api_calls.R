@@ -127,19 +127,21 @@ api.post <- function(endpoint, json_body, output = 'list') {
 #' 
 #' @param entity 'points' or 'equipment'
 #' 
-#' @param id Provide ids belonging to equipment or points.
+#' @param id Provide databse ids belonging to equipment or points.
 #' 
-api.delete <- function(building, entity, id){
-  
+api.delete <- function(building, entity, db_id){
+
+  api_url = api_key = data_to_delete = NULL
+    
   get_building_info(building)
   
   api.access()
   
   endpoint <- paste('buildings',id,entity,sep='/')
   
-  for (i in 1:length(id)) {
+  for (i in 1:length(db_id)) {
     
-    single_id <- id[i]
+    single_id <- db_id[i]
     
     endpoint_url <- paste(api_url, endpoint, single_id, sep = '/')
     
@@ -151,7 +153,7 @@ api.delete <- function(building, entity, id){
     
     if (execute_object$status_code == 200) {
       print(sprintf('Deleted %s of %s',i,
-                    nrow(data_to_delete)))
+                    length(db_id)))
     }
     else {
       print(paste0('Status Code is ', execute_object$status_code))
