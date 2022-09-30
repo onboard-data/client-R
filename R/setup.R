@@ -53,7 +53,7 @@ api.setup <- function(api_type = 'prod') {
 #' Access API keys and URL from System Environment
 #' @description 
 #' 
-#' Manually access api_url and api_keys stored in the system environment.
+#' `api.access()` manually retrieves api_url and api_keys stored in the system environment.
 api.access <- function(){
   
   api_url <- Sys.getenv('api_url')
