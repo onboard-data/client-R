@@ -15,22 +15,22 @@ get_staged_data <- function(building){
 
   endpoint <- paste0('staging/',id,'?points=True')
 
-  stage <- api.get(endpoint, output = 'dataframe')
+  stage <- api.get(endpoint)
   
   if(length(stage$points_by_equip_id)==0){
     stop(sprintf('Staged data not found for building %s.',name))
   }
 
   #Equip Data
-
-  equip_data<- stage$equipment
+  
+  equip_data <- stage$equipment
   equip_data_names <- names(equip_data)
   equip_data_names <- gsub('data\\.','',equip_data_names)
   equip_data_names <- paste0('e.',equip_data_names)
   names(equip_data) <- equip_data_names
 
   equip_data_names <- data.frame(names=names(equip_data)) %>%
-    filter(!grepl('confidences|\\.cnf|auto_tagger|\\.err|type_id|tags|created',
+    filter(!grepl('confidences|\\.cnf|auto_tagger|\\.err|type_id|tags|created|guid',
                   names))
 
   equip_data <- equip_data %>%

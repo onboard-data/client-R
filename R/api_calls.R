@@ -10,16 +10,14 @@
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
 #' 
-#' @param output if "list" (default), it returns the api output as a list object. If "dataframe", it returns the api output as a dataframe object
-#'
-#' @return An R object of `list` or `data.frame` class
+#' @return An R object of class `list` or `data.frame`
 #' 
 #' @examples
 #' \dontrun{ whoami <- api.get('whoami') }
 #' \dontrun{ tags <- api.get('tags', output = 'dataframe')}
 #' 
 #' @export
-api.get <- function(endpoint, output='list') {
+api.get <- function(endpoint) {
   
   api.access()
   
@@ -31,24 +29,10 @@ api.get <- function(endpoint, output='list') {
                           add_headers(`X-OB-Api` = api_key))
   
   if (request_endpoint$status_code == 200) {
-    if (output == 'list') {
-      api_output <- content(request_endpoint)
-      
-    } else if (output == 'dataframe') {
+    
       api_output <-
-        content(request_endpoint, as = 'text', encoding = 'UTF-8') %>%
+        content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
         fromJSON(flatten = T)
-      
-      if (inherits(api_output, 'list')) {
-        stop("Cannot convert output to dataframe. Please use output = 'list'")
-        
-      }
-      api_output <- as.data.frame(api_output)
-      
-    } else {
-      stop("'output' must be 'list' or 'dataframe'")
-      
-    }
     return(api_output)
     
   } else{

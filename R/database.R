@@ -8,7 +8,7 @@
 #'  
 #' @export
 get_orgs <- function(id){
-  orgs <- api.get('organizations', output='dataframe')
+  orgs <- api.get('organizations')
   
   orgs <- orgs$data
   
@@ -39,7 +39,7 @@ get_orgs <- function(id){
 #' @export
 get_buildings <-function(id){
   
-  buildings <- api.get('buildings', output = 'dataframe')
+  buildings <- api.get('buildings')
   
   if(!missing(id)){
     
@@ -69,13 +69,13 @@ get_buildings <-function(id){
 get_users <- function(id){
   
   #Get roles db
-  roles <- api.get('roles', output = 'dataframe')
+  roles <- api.get('roles')
   
   roles <- roles$data %>%
     select(id,role=name)
   
   #Get user db
-  users <- api.get('users', output = 'dataframe')
+  users <- api.get('users')
   
   #Format users
   
@@ -125,7 +125,7 @@ get_users <- function(id){
 #' @export
 get_deployments <- function(org_id){
   
-  deployments <- api.get('deployment', output = 'dataframe')
+  deployments <- api.get('deployment')
   
   deployments <- deployments %>%
     mutate(across(last_heartbeat,
