@@ -15,7 +15,7 @@ get_staged_data <- function(building){
 
   endpoint <- paste0('staging/',id,'?points=True')
 
-  stage <- api.get(endpoint)
+  stage <- api.get(endpoint, output = 'dataframe')
   
   if(length(stage$points_by_equip_id)==0){
     stop(sprintf('Staged data not found for building %s.',name))

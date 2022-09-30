@@ -130,7 +130,7 @@ get_points_by_ids <- function(id){
     
     endpoint <- paste0('points?point_ids=',point_ids)
     
-    points_chunk <- api.get(endpoint)
+    points_chunk <- api.get(endpoint, output = 'dataframe')
     
     points <- plyr::rbind.fill(points,points_chunk)
   }

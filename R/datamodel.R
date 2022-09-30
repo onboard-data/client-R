@@ -10,7 +10,7 @@
 #' @export
 get_equip_types <- function(){
   
-  equiptype <- api.get('equiptype')
+  equiptype <- api.get('equiptype',output = 'datframe')
   
   subtypes <- sapply(equiptype$sub_types,as.data.frame)
   subtypes <- data.table::rbindlist(subtypes)
@@ -34,9 +34,9 @@ get_equip_types <- function(){
 #' @export
 get_point_types <- function(){
   
-  pointtypes <- api.get('pointtypes')
+  pointtypes <- api.get('pointtypes',output='dataframe')
   
-  measurements <- api.get('measurements')
+  measurements <- api.get('measurements',output='dataframe')
   
   # Get measurements and their associated units
   units <- data.frame()
