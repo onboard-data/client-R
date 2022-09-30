@@ -4,25 +4,18 @@
 \alias{api.get}
 \title{API GET call}
 \usage{
-api.get(endpoint, output = "json")
+api.get(endpoint)
 }
 \arguments{
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}
-
-\item{output}{If `json` (default), it returns a json object
-
-If `list`, it returns a list object 
-
-If `dataframe`, it returns a dataframe object}
 }
 \value{
-An R object of  `list` or `data.frame` class
+An R object of class `list` or `data.frame`
 }
 \description{
 Uses http GET call to return an object from the API.
 }
 \examples{
 \dontrun{ whoami <- api.get('whoami') }
-\dontrun{ tags <- api.get('tags', output = 'dataframe')}
 
 }

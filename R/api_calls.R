@@ -14,7 +14,6 @@
 #' 
 #' @examples
 #' \dontrun{ whoami <- api.get('whoami') }
-#' \dontrun{ tags <- api.get('tags', output = 'dataframe')}
 #' 
 #' @export
 api.get <- function(endpoint) {
