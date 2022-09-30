@@ -6,7 +6,7 @@
 #' 
 #' Query all equipment types from Onboard's Data Model.
 #' 
-#' @returns equip_type: A dataframe object.
+#' @returns A dataframe object.
 #' @export
 get_equip_types <- function(){
   

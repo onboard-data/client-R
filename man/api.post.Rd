@@ -11,11 +11,11 @@ api.post(endpoint, json_body, output = "list")
 
 \item{json_body}{A JSON payload to give to the POST call.}
 
-\item{output}{if "list" (default), it returns the api output as a list object. If "dataframe", it returns the api output as a dataframe object}
+\item{output}{If "list" (default), it returns the api output as a list object. If "dataframe", it returns the api output as a dataframe object}
 }
 \value{
 An R object of `list` or `data.frame` class
 }
 \description{
-Uses http POST call to post objects to the API
+Uses http POST call to post objects to the API.
 }
