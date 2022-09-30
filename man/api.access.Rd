@@ -7,5 +7,5 @@
 api.access()
 }
 \description{
-Manually access api_url and api_keys stored in the system environment.
+`api.access()` manually retrieves api_url and api_keys stored in the system environment.
 }
