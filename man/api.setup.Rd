@@ -4,11 +4,17 @@
 \alias{api.setup}
 \title{Set up Onboard API keys and URL in system environment}
 \usage{
-api.setup(api_type)
+api.setup(api_type = "prod")
 }
 \arguments{
-\item{api_type}{Optional. If `dev`, will setup api url and keys for acessing Onboard's DEV API.}
+\item{api_type:}{Provide the API client name
+
+  If `prod` (default), sets API URL and keys for accessing Onboard's PROD API.
+  
+  If `dev`: sets API URL and keys for accessing Onboard's DEV API.
+  
+  If `rtem`: sets API URL and keys for accessing Onboard's RTEM API}
 }
 \description{
-Sets the onboard api url and api keys in the system environment.
+Set the Onboard API URL and API keys in the system environment.
 }
