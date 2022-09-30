@@ -87,18 +87,14 @@ get_staged_data <- function(building){
 #' 
 #' @param data_to_upload A dataframe to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
-#' @param skip_topics Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.
+#' @param skip_topics Logical. False (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.
 #'  
 #'@export
 upload_staging <- function(building,
                            data_to_upload,
-                           skip_topics){
+                           skip_topics = F){
 
   get_building_info(building)
-
-  if (missing(skip_topics)){
-    skip_topics <- F
-  }
 
   if(missing(data_to_upload)) {
 
