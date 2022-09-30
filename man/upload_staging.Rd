@@ -4,14 +4,14 @@
 \alias{upload_staging}
 \title{Upload to Staging Area}
 \usage{
-upload_staging(building, data_to_upload, skip_topics)
+upload_staging(building, data_to_upload, skip_topics = F)
 }
 \arguments{
 \item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
 
 \item{data_to_upload}{A dataframe to upload to the staging area. Must contain e.equip_id and p.topic columns.}
 
-\item{skip_topics}{Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.}
+\item{skip_topics}{Logical. False (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.}
 }
 \description{
 Uploads data to the staging area.
