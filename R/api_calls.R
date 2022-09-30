@@ -1,4 +1,16 @@
 
+#' API Error Handler
+#' @description 
+#' Handles http errors, returning a useful formatted message.
+#' 
+#' @param status_code An integer, should be from 400-599, in this case the http error code returned by a faulty server request.
+#' 
+#' @return A string with nicely-formatted error description.
+api_error <- function(status_code){
+  return(paste0('API Error: (', status_code, ') ', httr::http_status(status_code)$reason))
+}
+
+
 # GET ---------------------------------------------------------------------
 
 
@@ -28,18 +40,14 @@ api.get <- function(endpoint) {
                           add_headers(`X-OB-Api` = api_key))
   
   if (request_endpoint$status_code == 200) {
-    
       api_output <-
         content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
         fromJSON(flatten = T)
     return(api_output)
-    
   } else{
-    stop(paste0('API Status Code: ', request_endpoint$status_code))
-    
+    stop(api_error(request_endpoint$status_code))
   }
 }
-
 
 # POST --------------------------------------------------------------------
 
@@ -93,8 +101,7 @@ api.post <- function(endpoint, json_body, output = 'list') {
     }
     return(api_output)
   } else {
-    stop(paste0('API Status Code: ', request_endpoint$status_code))
-    
+    stop(api_error(request_endpoint$status_code))
   }
   
 }
