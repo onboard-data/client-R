@@ -3,7 +3,7 @@
 #' 
 #' Set the Onboard API URL and API keys in the system environment.
 #'  
-#' @param api_type: Provide the API client name
+#' @param api_type Provide the API client name
 #' 
 #'   If `prod` (default), sets API URL and keys for accessing Onboard's PROD API.
 #'   

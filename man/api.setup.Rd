@@ -7,7 +7,7 @@
 api.setup(api_type = "prod")
 }
 \arguments{
-\item{api_type:}{Provide the API client name
+\item{api_type}{Provide the API client name
 
   If `prod` (default), sets API URL and keys for accessing Onboard's PROD API.
   
