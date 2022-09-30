@@ -7,10 +7,13 @@
 get_points_by_ids(id)
 }
 \arguments{
-\item{id}{(Integer) One or many point ids.}
+\item{id}{Integer or list of integers. One or many point ids.}
+}
+\value{
+A data.frame of the requested points, or an empty list if there are no points with those ids.
 }
 \description{
-Queries data points by their ids
+Queries data points by their ids.
 }
 \examples{
 \dontrun{

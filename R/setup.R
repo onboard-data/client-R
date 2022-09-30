@@ -1,17 +1,18 @@
 #' Set up Onboard API keys and URL in system environment
 #' @description
 #' 
-#' `api.setup()` is used to set the onboard api url and api keys in the system environment 
+#' Sets the onboard api url and api keys in the system environment.
 #'  
-#' @param api_type Optional. If `dev`, will setup api url and keys for acessing Onboard's DEV API 
+#' @param api_type Optional. If `dev`, will setup api url and keys for acessing Onboard's DEV API.
 #' @export
+#' 
 api.setup <- function(api_type) {
   
   if(missing(api_type)) {
-    api_type <-'prod'
+    api_type <- 'prod'
     api_url <- 'https://api.onboarddata.io'
     
-    api_key <-rstudioapi::askForSecret(
+    api_key <- rstudioapi::askForSecret(
       name='api_key_prod',
       message = 'Enter your API key here',
       title="Onboard API Keys")
@@ -36,7 +37,7 @@ api.setup <- function(api_type) {
 #' Access API keys and URL from System Environment
 #' @description 
 #' 
-#' `api.access()` is used to manually access api_url and api_keys stored in the system environment
+#' `api.access()` is used to manually access api_url and api_keys stored in the system environment.
 api.access <- function(){
   
   api_url <- Sys.getenv('api_url')
@@ -54,7 +55,7 @@ api.access <- function(){
 #' Check the status of your connection with the Onboard API
 #' 
 #' @description 
-#' Gives a status code for api connection
+#' Gives a status code for api connection.
 #'  
 #' @export
 api.status <- function() {

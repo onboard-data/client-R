@@ -7,12 +7,15 @@
 get_timeseries(start_time, end_time, point_ids)
 }
 \arguments{
-\item{start_time}{Start Time in UTC}
+\item{start_time}{Start Time in UTC.}
 
-\item{end_time}{End Time in UTC}
+\item{end_time}{End Time in UTC.}
 
-\item{point_ids}{Point IDs for which timeseries data needs to be queried}
+\item{point_ids}{Point IDs for which timeseries data needs to be queried.}
+}
+\value{
+A wide data.frame of timeseries data, with timestamp and all requested points as columns.
 }
 \description{
-Clean Time-Series Output
+Provides clean timeseries
 }

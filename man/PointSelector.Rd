@@ -7,17 +7,18 @@
 PointSelector()
 }
 \value{
-query: An empty list object
+query: An empty named list object.
 }
 \description{
-A list of parameters to query metadata
+A list of parameters to query metadata.
 }
 \examples{
-
+\dontrun{
 query <- PointSelector()
 
 query$buildings <- 101
 query$equipment_types <- 'ahu'
 query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
+}
 
 }

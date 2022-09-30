@@ -7,7 +7,7 @@
 get_building_info(buildings)
 }
 \arguments{
-\item{buildings}{A character vector or integer. Provide either building id or name. You can provide multiple buildings at once.}
+\item{buildings}{A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.}
 }
 \description{
 Retrieves building id(s) and name(s). Assigns each to list variables called "id" and "name", and prints each list.

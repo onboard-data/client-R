@@ -7,11 +7,14 @@
 get_timeseries_raw(start_time, end_time, point_ids)
 }
 \arguments{
-\item{start_time}{Start Time in UTC}
+\item{start_time}{Start Time in UTC.}
 
-\item{end_time}{End Time in UTC}
+\item{end_time}{End Time in UTC.}
 
-\item{point_ids}{Point IDs for which timeseries data needs to be queried}
+\item{point_ids}{Point IDs for which timeseries data needs to be queried.}
+}
+\value{
+A long data.frame of timeseries data, with columns point_id, timestamp, and point values as columns.
 }
 \description{
 Retrieves timeseries data in raw format.

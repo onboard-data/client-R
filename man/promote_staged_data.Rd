@@ -7,10 +7,10 @@
 promote_staged_data(building, data_to_promote)
 }
 \arguments{
-\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered}
+\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
 
 \item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns}
 }
 \description{
-Promote valid data on the staging area to the live building
+Promote valid data on the staging area to the live building.
 }
