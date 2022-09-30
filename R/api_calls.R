@@ -9,14 +9,15 @@
 #' Uses http GET call to return an object from the API.
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
-#'
-#' @return An R object of `list` or `data.frame` class
+#' 
+#' @return An R object of class `list` or `data.frame`
 #' 
 #' @examples
 #' \dontrun{ whoami <- api.get('whoami') }
 #' 
 #' @export
 api.get <- function(endpoint) {
+  
   api.access()
   
   # get endpoint
@@ -27,10 +28,10 @@ api.get <- function(endpoint) {
                           add_headers(`X-OB-Api` = api_key))
   
   if (request_endpoint$status_code == 200) {
-    api_output <-
-      content(request_endpoint, as = 'text', encoding = 'UTF-8') %>%
-      fromJSON(flatten = T)
     
+      api_output <-
+        content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
+        fromJSON(flatten = T)
     return(api_output)
     
   } else{
@@ -57,6 +58,7 @@ api.get <- function(endpoint) {
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output = 'list') {
+  
   api.access()
   
   # post endpoint
@@ -70,25 +72,27 @@ api.post <- function(endpoint, json_body, output = 'list') {
   )
   
   if (request_endpoint$status_code == 200) {
-    
     if (output == 'list') {
       api_output <- content(request_endpoint)
       
     } else if (output == 'dataframe') {
       api_output <-
         content(request_endpoint, as = 'text',
-                encoding = 'UTF-8') %>%  
-        fromJSON(flatten = T)  %>% 
-        as.data.frame() 
-    
+                encoding = 'UTF-8') %>%
+        fromJSON(flatten = T)
+      
+      if (inherits(api_output, 'list')) {
+        stop("Cannot convert output to dataframe. Please use output = 'list'")
+        
+      }
+      api_output <- as.data.frame(api_output)
+      
     } else {
       stop("'output' must be 'list' or 'dataframe'")
+      
     }
-    
-    
     return(api_output)
-    
-  } else{
+  } else {
     stop(paste0('API Status Code: ', request_endpoint$status_code))
     
   }
@@ -106,19 +110,19 @@ api.post <- function(endpoint, json_body, output = 'list') {
 #' 
 #' @param entity 'points' or 'equipment'
 #' 
-#' @param id Provide ids belonging to equipment or points.
+#' @param db_id Provide database ids belonging to either equipment or points.
 #' 
-api.delete <- function(building, entity, id){
-  
+api.delete <- function(building, entity, db_id){
+    
   get_building_info(building)
   
   api.access()
   
   endpoint <- paste('buildings',id,entity,sep='/')
   
-  for (i in 1:length(id)) {
+  for (i in 1:length(db_id)) {
     
-    single_id <- id[i]
+    single_id <- db_id[i]
     
     endpoint_url <- paste(api_url, endpoint, single_id, sep = '/')
     
@@ -130,7 +134,7 @@ api.delete <- function(building, entity, id){
     
     if (execute_object$status_code == 200) {
       print(sprintf('Deleted %s of %s',i,
-                    nrow(data_to_delete)))
+                    length(db_id)))
     }
     else {
       print(paste0('Status Code is ', execute_object$status_code))

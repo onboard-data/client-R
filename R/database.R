@@ -38,6 +38,7 @@ get_orgs <- function(id){
 #' 
 #' @export
 get_buildings <-function(id){
+  
   buildings <- api.get('buildings')
   
   if(!missing(id)){
