@@ -127,11 +127,9 @@ api.post <- function(endpoint, json_body, output = 'list') {
 #' 
 #' @param entity 'points' or 'equipment'
 #' 
-#' @param id Provide databse ids belonging to equipment or points.
+#' @param db_id Provide database ids belonging to either equipment or points.
 #' 
 api.delete <- function(building, entity, db_id){
-
-  api_url = api_key = data_to_delete = NULL
     
   get_building_info(building)
   
