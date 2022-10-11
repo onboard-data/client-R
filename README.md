@@ -2,28 +2,30 @@
 
 ### General Usage Example 
 
-This example requires an Onboard API key with scopes `general`, `auth` and `buildings:read`
+#### Setting Up API Access
+
+If you are an existing Onboard user you can head over to [your account’s api keys page](https://portal.onboarddata.io/account?tab=api) and generate a new key and grant scopes for `general`, `auth` and `buildings:read`.
+
+If you would like to get access to Onboard and start prototyping against an example building please request access [here](https://www.onboarddata.io/contact-us).
 
 #### Installing API Library and verifying connectivity
+
+You can install the client via github.
+
 ```R
 install.packages('devtools') # Install devtools package first
 devtools::install_github(repo='onboard-data/client-R',
                           auth='Github-Personal-Access-Token') # Need PAT since repo is currently private
-library(OnboardClient)
-
-api.setup() # set up api url and api keys
-
-api.setup(api_type='dev') # Sets up dev api url and api keys. Only needed by dev 
-
 ```
-When you run `api.setup()`, enter your api keys in the dialogue box when prompted.
+To test if your API key is working correctly, use `api.setup()`, and enter your api keys in the dialogue box when prompted.
 Check the `Remember with keyring` option if you wish to save your api keys securely with the [keyring](https://support.rstudio.com/hc/en-us/articles/360000969634) package  
 
-
 ```R
-api.status() #Verify your connection with the API. Your connection is established if it returns 200
+library(OnboardClient)
 
-api.get('whoami') #Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
+api.setup() # set up api url and api keys. Your connection is established if it returns 200
+
+api.get('whoami') # Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
 ```
 
 #### Query Data Model
