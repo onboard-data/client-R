@@ -124,14 +124,14 @@ get_users <- function(id){
 #' 
 #' @export
 get_deployments <- function(org_id){
-  
+  api_key <- api_url <- last_heartbeat <- wg_pubkey <- 
   deployments <- api.get('deployment')
   
   deployments <- deployments %>%
     mutate(across(last_heartbeat,
                   ~ as_datetime(as.numeric(substr(., 1, 10)),
                                 tz = 'America/New_York'))) %>%
-    select(-api_key,-wg_pubkey)
+    select(-.data$api_key,-.data$wg_pubkey)
   
   if(!missing(org_id)){
     org_id = as.integer(org_id)
