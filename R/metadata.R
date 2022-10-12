@@ -113,47 +113,47 @@ get_metadata <- function(buildings,selection){
                          by = c('id' = 'equip_id'),
                          suffix = c('', '.y')) %>%
     #Get tagged units if NA
-    mutate(across(tagged_units,
+    mutate(across(.data$tagged_units,
                   ~ifelse(is.na(.),
                           units,as.character(.)))) %>%
     #Replace equip_type tag with subtype tag if present
-    mutate(across(equip_type_tag,
+    mutate(across(.data$equip_type_tag,
                   ~ifelse(is.na(equip_subtype_tag),
                           .,equip_subtype_tag))) %>%
     select(
-      building_id,
-      equipment_id = id,
-      point_id = id.y,
-      device,
-      objectId,
-      name,
-      description,
-      first_updated,
-      last_updated,
-      value,
-      tagged_units,
-      point_type=type,
-      equip_type=equip_type_tag,
-      suffix,
-      equip_id,
-      parent_equip,
-      floor_num_physical,
-      floor_num_served,
-      area_served_desc,
-      topic
+      .data$building_id,
+      equipment_id = .data$id,
+      point_id = .data$id.y,
+      .data$device,
+      .data$objectId,
+      .data$name,
+      .data$description,
+      .data$first_updated,
+      .data$last_updated,
+      .data$value,
+      .data$tagged_units,
+      point_type = .data$type,
+      equip_type = .data$equip_type_tag,
+      .data$suffix,
+      .data$equip_id,
+      .data$parent_equip,
+      .data$floor_num_physical,
+      .data$floor_num_served,
+      .data$area_served_desc,
+      .data$topic
     ) %>%
     # Grab Equip Refs by joining with Equip DB again
-    mutate(parent_equip = as.integer(parent_equip)) %>%
+    mutate(parent_equip = as.integer(.data$parent_equip)) %>%
     left_join(
-      select(equipment, id, equip_id),
+      select(equipment, id, .data$equip_id),
       by = c('parent_equip' = 'id'),
       suffix = c('', '.y')
     ) %>%
     select(everything(),
-           equip_ref = equip_id.y,
-           -parent_equip) %>%
+           equip_ref = .data$equip_id.y,
+           -.data$parent_equip) %>%
     #Convert unix time-stamps to EST
-    mutate(across(c(first_updated, last_updated),
+    mutate(across(c(.data$first_updated, .data$last_updated),
                   ~ as_datetime(as.numeric(substr(., 1, 10)))))
   
   print('Metadata generated.')

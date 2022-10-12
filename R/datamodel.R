@@ -12,13 +12,13 @@ get_equip_types <- function(){
   
   equiptype <- api.get('equiptype')
   
-  subtypes <- sapply(equiptype$sub_types,as.data.frame)
+  subtypes <- sapply(equiptype$sub_types, as.data.frame)
   subtypes <- data.table::rbindlist(subtypes)
   
   equip_types <- equiptype %>%
-    filter(active==T) %>%
-    select(-c(sub_types,critical_point_types,flow_order,active)) %>%
-    left_join(subtypes,by=c('id'='equipment_type_id'),
+    filter(.data$active == T) %>%
+    select(-c(.data$sub_types, .data$critical_point_types, .data$flow_order, .data$active)) %>%
+    left_join(subtypes,by = c('id' = 'equipment_type_id'),
               suffix = c('','_subtype'))
   
   return(equip_types)
@@ -54,34 +54,34 @@ get_point_types <- function(){
   }
   
   units <- units %>%
-    select(measurement_id,
-           unit_name=name_long,
-           unit=name_abbr,data_type) %>%
-    mutate(measurement_id=as.integer(measurement_id))
+    select(.data$measurement_id,
+           unit_name=.data$name_long,
+           unit=.data$name_abbr,.data$data_type) %>%
+    mutate(measurement_id=as.integer(.data$measurement_id))
   
   measurements_units <- left_join(measurements,
                                   units,
                                   by=c('id' = 'measurement_id')) %>%
     select(id,
-           measurement_name=name,
-           units_convertible,
-           qudt_type,
-           unit_name,
-           unit,
-           data_type)
+           measurement_name=.data$name,
+           .data$units_convertible,
+           .data$qudt_type,
+           .data$unit_name,
+           .data$unit,
+           .data$data_type)
   
   #Unite data frames
   point_types <- left_join(select(
-    pointtypes,id,tag_name,measurement_id,tags),
+    .data$pointtypes, .data$id, .data$tag_name, .data$measurement_id, .data$tags),
     measurements_units,
     by = c("measurement_id" = 'id')) %>%
-    mutate(across(tags,  ~ gsub('c\\(|\\)', '', .))) %>%
-    select(id,
-           point_type = tag_name,
-           measurement_name,
-           unit,
-           data_type,
-           tags)
+    mutate(across(.data$tags,  ~ gsub('c\\(|\\)', '', .))) %>%
+    select(.data$id,
+           point_type = .data$tag_name,
+           .data$measurement_name,
+           .data$unit,
+           .data$data_type,
+           .data$tags)
   
   return(point_types)
   
