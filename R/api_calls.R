@@ -29,7 +29,7 @@ api_error <- function(status_code){
 #' 
 #' @export
 api.get <- function(endpoint) {
-  
+  api_url <- api_key <- NULL
   api.access()
   
   # get endpoint
@@ -66,6 +66,7 @@ api.get <- function(endpoint) {
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output = 'list') {
+  api_url <- api_key <- NULL
   
   api.access()
   

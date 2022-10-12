@@ -16,7 +16,7 @@ Authors@R: c(
              email = "support@onboarddata.io")
      )
 Description: Provides R bindings to Onboard Data's building data API.
-License: Apache License (==2.0)
+License: Apache License (== 2.0)
 Imports: 
     data.table (>= 1.14.2),
     dplyr (>= 1.0.10),

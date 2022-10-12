@@ -61,7 +61,7 @@ api.access <- function(){
 #'  
 #' @export
 api.status <- function() {
-  
+  api_url <- api_key <- NULL
   api.access()
   
   request <- GET(url = api_url,
