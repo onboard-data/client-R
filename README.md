@@ -62,8 +62,7 @@ metadata <- get_metadata(selection=selection) #Query metadata by selection list 
 
 ##OR
 
-metadata <- get_metadata(buildings=c(427,'Laboratory')) # Query entire metadata for building id 428 and building name: Laboratory
-
+metadata <- get_metadata(buildings=c(427,'Laboratory')) # Query entire metadata for building id 427 and building name: Laboratory
 
 #For timeseries output
 library(lubridate)
