@@ -15,7 +15,7 @@ api.setup <- function(api_type = 'prod') {
   api_url <- dplyr::case_when(
     api_type == 'prod' ~ 'https://api.onboarddata.io',
     api_type == 'dev' ~ 'https://devapi.onboarddata.io',
-    api_type == 'api_rtem' ~ 'https://api.ny-rtem.com'
+    api_type == 'rtem' ~ 'https://api.ny-rtem.com'
   )
   
   api_name <- paste0('api_key', api_type)
