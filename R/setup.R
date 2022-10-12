@@ -8,6 +8,7 @@
 #' @export
 #' 
 api.setup <- function(api_type = 'prod') {
+  
   if(!(api_type %in% c('prod','dev','rtem'))){
     stop("Please use 'prod', 'dev', or 'rtem' for api_type")
   }
@@ -18,11 +19,11 @@ api.setup <- function(api_type = 'prod') {
     api_type == 'rtem' ~ 'https://api.ny-rtem.com'
   )
   
-  api_name <- paste0('api_key', api_type)
+  api_name <- paste0('api_key_', api_type)
   
   if (Sys.getenv("RSTUDIO") == "1"){
     api_key <- rstudioapi::askForSecret(
-      name = 'api_name',
+      name = api_name,
       message = 'Enter your API key here',
       title = "Onboard API Key")
   } else {
