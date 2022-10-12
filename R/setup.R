@@ -4,48 +4,34 @@
 #' Set the Onboard API URL and API keys in the system environment.
 #'  
 #' @param api_type Provide the API client name
-#' 
-#'   If "prod" (default): sets API URL and keys for accessing Onboard's PROD API.
+#'   "prod" (default): sets API URL and keys for accessing Onboard's API.
 #'   
-#'   If "dev": sets API URL and keys for accessing Onboard's DEV API.
-#'   
-#'   If "rtem": sets API URL and keys for accessing Onboard's RTEM API
-#' 
 #' @export
 #' 
 api.setup <- function(api_type = 'prod') {
+  if(!(api_type %in% c('prod','dev','rtem'))){
+    stop("Please use 'prod', 'dev', or 'rtem' for api_type")
+  }
   
-  if(api_type == 'prod') {
-    api_url <- 'https://api.onboarddata.io'
-    
+  api_url <- dplyr::case_when(
+    api_type == 'prod' ~ 'https://api.onboarddata.io',
+    api_type == 'dev' ~ 'https://devapi.onboarddata.io',
+    api_type == 'api_rtem' ~ 'https://api.ny-rtem.com'
+  )
+  
+  api_name <- paste0('api_key', api_type)
+  
+  if (Sys.getenv("RSTUDIO") == "1"){
     api_key <- rstudioapi::askForSecret(
-      name='api_key_prod',
-      message = 'Enter your API keys here',
-      title="Onboard API Keys")
-    
-  } else if (api_type == 'dev') {
-    api_url <- 'https://devapi.onboarddata.io'
-    
-    api_key <- rstudioapi::askForSecret(
-      name = 'api_key_dev',
-      message='Enter your DEV API keys here',
-      title = "Onboard API Keys")
-  } else if(api_type == 'rtem') {
-    api_url <- 'https://api.ny-rtem.com'
-    
-    api_key <- rstudioapi::askForSecret(
-      name = 'api_key_rtem',
-      message = 'Enter your RTEM API keys here',
-      title = 'Onboard API Keys'
-    )
+      name = 'api_name',
+      message = 'Enter your API key here',
+      title = "Onboard API Key")
   } else {
-    stop("Please use 'prod' or 'dev' for api_type")
+    api_key <- readline(prompt = "Enter your Onboard API key:")
   }
   
   Sys.setenv('api_url'=api_url)
   Sys.setenv('api_key'=api_key)
-  
-  
 }
 
 
