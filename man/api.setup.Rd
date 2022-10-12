@@ -8,12 +8,7 @@ api.setup(api_type = "prod")
 }
 \arguments{
 \item{api_type}{Provide the API client name
-
-  If "prod" (default): sets API URL and keys for accessing Onboard's PROD API.
-  
-  If "dev": sets API URL and keys for accessing Onboard's DEV API.
-  
-  If "rtem": sets API URL and keys for accessing Onboard's RTEM API}
+"prod" (default): sets API URL and keys for accessing Onboard's API.}
 }
 \description{
 Set the Onboard API URL and API keys in the system environment.
