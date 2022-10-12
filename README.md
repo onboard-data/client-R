@@ -23,9 +23,13 @@ Check the `Remember with keyring` option if you wish to save your api keys secur
 ```R
 library(OnboardClient)
 
-api.setup() # set up api url and api keys. Your connection is established if it returns 200
+api.setup() # set up api url and api keys.
 
-api.get('whoami') # Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
+api.status() # Your connection is established if it returns 200.
+
+whoami <- api.get('whoami') # Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
+
+all_buildings <- get_buildings() #Query site data for all buildings in your organization
 ```
 
 #### Query Data Model
@@ -34,8 +38,6 @@ api.get('whoami') # Verify your access to Onboard's API scopes. Generates a list
 all_equip_types <- get_equip_types() #Query all equipment types in Onboard's Data Model
 
 all_point_types <- get_point_types() #Query all point types in Onboard's Data Model
-
-all_buildings <- get_buildings() #Query site data for all buildings in your organization
 ```
 
 ### Query metadata and timeseries data
