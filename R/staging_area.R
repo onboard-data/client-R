@@ -18,15 +18,15 @@ get_staged_data <- function(building){
   stage <- api.get(endpoint)
   
   if(length(stage$points_by_equip_id)==0){
-    stop(sprintf('Staged data not found for building %s.',name))
+    stop(sprintf('Staged data not found for building %s.', name))
   }
 
   #Equip Data
   
   equip_data <- stage$equipment
   equip_data_names <- names(equip_data)
-  equip_data_names <- gsub('data\\.','',equip_data_names)
-  equip_data_names <- paste0('e.',equip_data_names)
+  equip_data_names <- gsub('data\\.','', equip_data_names)
+  equip_data_names <- paste0('e.', equip_data_names)
   names(equip_data) <- equip_data_names
 
   equip_data_names <- data.frame(names=names(equip_data)) %>%
@@ -65,9 +65,9 @@ get_staged_data <- function(building){
 
   staged_data <- left_join(equip_data,
                            points_data,
-                           by=c('e.equip_id'='p.equip_id')) %>%
-    mutate(across(c(e.last_promoted,p.last_promoted,
-                    e.modified,p.modified),
+                           by = c('e.equip_id' = 'p.equip_id')) %>%
+    mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
+                    .data$e.modified, .data$p.modified),
               ~ as_datetime(as.numeric(substr(., 1, 10)),
                             tz = 'America/New_York'))) %>%
     select(sort(tidyselect::peek_vars()))
