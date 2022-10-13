@@ -32,6 +32,7 @@ api.setup <- function(api_type = 'prod') {
   
   Sys.setenv('api_url'=api_url)
   Sys.setenv('api_key'=api_key)
+  # api_data <- list('api_url' = api_url, 'api_key' <- api_key)
 }
 
 
@@ -39,18 +40,22 @@ api.setup <- function(api_type = 'prod') {
 #' Access API keys and URL from System Environment
 #' @description 
 #' 
-#' `api.access()` manually retrieves api_url and api_keys stored in the system environment.
+#' Returns the api_url and api_keys.
+#' 
+#' @return A named list of api data, including 'api_url' and 'api_key'.
 api.access <- function(){
-  
   api_url <- Sys.getenv('api_url')
-  
   api_key <- Sys.getenv('api_key')
   
-  if(api_url==''|api_key==''){
+  if(api_url == '' | api_key == ''){
     stop('API credentials not set correctly.')
   } else {
-    assign('api_url',api_url,parent.frame())
-    assign('api_key',api_key,parent.frame())
+    return(list(
+      'api_url' = api_url,
+      'api_key' = api_key
+    ))
+    # assign('api_url',api_url,parent.frame())
+    # assign('api_key',api_key,parent.frame())
   }
 }
 
@@ -61,11 +66,10 @@ api.access <- function(){
 #'  
 #' @export
 api.status <- function() {
-  api_url <- api_key <- NULL
-  api.access()
+  api_data <- api.access()
   
-  request <- GET(url = api_url,
-                 add_headers(`X-OB-Api` = api_key))
+  request <- GET(url = api_data$api_url,
+                 add_headers(`X-OB-Api` = api_data$api_key))
   
   print(paste0("API Status: ", request$status_code))
   

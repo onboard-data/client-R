@@ -9,7 +9,7 @@
 #' @export
 get_staged_data <- function(building){
 
-  get_building_info(building)
+  building_name <- get_building_info(building)[["name"]]
 
   print('Querying Staging Data...')
 
@@ -18,7 +18,7 @@ get_staged_data <- function(building){
   stage <- api.get(endpoint)
   
   if(length(stage$points_by_equip_id) == 0){
-    stop(sprintf('Staged data not found for building %s.', name))
+    stop(sprintf('Staged data not found for building %s.', building_name))
   }
 
   #Equip Data
@@ -94,7 +94,7 @@ upload_staging <- function(building,
                            data_to_upload,
                            skip_topics = F){
 
-  get_building_info(building)
+  building_name <- get_building_info(building)[["name"]]
 
   if(missing(data_to_upload)) {
 
@@ -118,7 +118,7 @@ upload_staging <- function(building,
   data_to_upload_json <- data_to_upload %>%
     toJSON()
 
-  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', operation,nrow(data_to_upload), name))
+  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', operation,nrow(data_to_upload), building_name))
 
   if(is.na(proceed)|proceed!=T){
     stop('Stopping Operation.')
@@ -153,7 +153,7 @@ upload_staging <- function(building,
 #' @export
 promote_staged_data <- function(building, data_to_promote){
 
-  get_building_info(building)
+  name <- get_building_info(building)[["name"]]
 
   if(missing(data_to_promote)){
 

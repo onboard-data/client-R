@@ -9,11 +9,12 @@
 #' 
 #' @param buildings A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.
 #'
+#' @return A data.frame of building info with two columns, 'id' and name'.
+#'
 #' @examples 
 #' \dontrun{
 #' get_building_info(buildings=c(427,"Laboratory"))
 #' }
-#'
 get_building_info <- function(buildings){
   
   all_buildings <- get_buildings()
@@ -24,7 +25,7 @@ get_building_info <- function(buildings){
     
     single <- buildings[i]
     
-    building <- all_buildings[all_buildings$name==single,]
+    building <- all_buildings[all_buildings$name == single,]
     
     if(nrow(building)==0) {
       
@@ -36,20 +37,13 @@ get_building_info <- function(buildings){
       }
     }
     
-    building <- select(building,id,name)
+    building <- select(building, .data$id, .data$name)
     
     building_info <- rbind(building_info,building)
     
   }
   
-  id <- building_info$id
-  name <- building_info$name
-  
-  assign('id',id,envir=parent.frame())
-  assign('name',name,envir = parent.frame())
-  
-  print(sprintf('Building ID: %s, Building Name: %s',id,name))
-  
+  return(building_info)
 }
 
 # Metadata ----------------------------------------------------------------
@@ -80,13 +74,13 @@ get_building_info <- function(buildings){
 #' }
 #' 
 #' @export
-get_metadata <- function(buildings,selection){
+get_metadata <- function(buildings, selection){
   
   if(missing(selection) & missing(buildings)){
     stop('Provide either building name/id or selection list.')
   } else if (missing(selection)){
     
-    get_building_info(buildings)
+    # get_building_info(buildings)
     
     query <- PointSelector()
     

@@ -6,6 +6,9 @@
 \usage{
 api.access()
 }
+\value{
+A named list of api data, including 'api_url' and 'api_key'.
+}
 \description{
-`api.access()` manually retrieves api_url and api_keys stored in the system environment.
+Returns the api_url and api_keys.
 }

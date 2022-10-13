@@ -29,15 +29,14 @@ api_error <- function(status_code){
 #' 
 #' @export
 api.get <- function(endpoint) {
-  api_url <- api_key <- NULL
-  api.access()
+  api_data <- api.access()
   
   # get endpoint
-  endpoint_url <- paste(api_url, endpoint, sep = '/')
+  endpoint_url <- paste(api_data$api_url, endpoint, sep = '/')
   
   request_endpoint <- GET(url = endpoint_url,
                           content_type_json(),
-                          add_headers(`X-OB-Api` = api_key))
+                          add_headers(`X-OB-Api` = api_data$api_key))
   
   if (request_endpoint$status_code == 200) {
       api_output <-
@@ -66,17 +65,15 @@ api.get <- function(endpoint) {
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output = 'list') {
-  api_url <- api_key <- NULL
-  
-  api.access()
+  api_data <- api.access()
   
   # post endpoint
-  endpoint_url <- paste(api_url, endpoint, sep = '/')
+  endpoint_url <- paste(api_data$api_url, endpoint, sep = '/')
   
   request_endpoint <- POST(
     url = endpoint_url,
     content_type_json(),
-    add_headers(`X-OB-Api` = api_key),
+    add_headers(`X-OB-Api` = api_data$api_key),
     body = json_body
   )
   

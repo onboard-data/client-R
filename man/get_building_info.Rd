@@ -9,6 +9,9 @@ get_building_info(buildings)
 \arguments{
 \item{buildings}{A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.}
 }
+\value{
+A data.frame of building info with two columns, 'id' and name'.
+}
 \description{
 Retrieves building id(s) and name(s). Assigns each to list variables in the parent environment called "id" and "name", and prints each list.
 }
@@ -16,5 +19,4 @@ Retrieves building id(s) and name(s). Assigns each to list variables in the pare
 \dontrun{
 get_building_info(buildings=c(427,"Laboratory"))
 }
-
 }
