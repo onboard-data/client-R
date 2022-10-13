@@ -40,27 +40,25 @@ get_timeseries_raw <- function(start_time, end_time, point_ids){
     point_id <- single_output[['point_id']]
     
     ts_single <- rrapply::rrapply(single_output, how = 'melt') %>% 
-      filter(!grepl('raw|unit|topic|columns|display', L1)) %>% 
+      filter(!grepl('raw|unit|topic|columns|display', .data$L1)) %>% 
       mutate(L1 = point_id) %>%
-      filter(!is.na(L2)) %>% 
-      mutate(across(L3, ~ ifelse(. == 1,'timestamp',
+      filter(!is.na(.data$L2)) %>% 
+      mutate(across(.data$L3, ~ ifelse(. == 1,'timestamp',
                                  ifelse(. == 2,'raw',
                                         ifelse(. == 3, 'unit',
                                                .))))) %>%   
       pivot_wider(id_cols = c(1:2),
-                  names_from = L3,
-                  values_from = value) %>%
-      select(-L2) %>%
-      rename('point_id' = L1)
+                  names_from = .data$L3,
+                  values_from = .data$value) %>%
+      select(-.data$L2) %>%
+      rename('point_id' = .data$L1)
     
     timeseries_df <- plyr::rbind.fill(timeseries_df, ts_single)
     
   }
   
   if(4 %in% names(timeseries_df)){
-    timeseries_df <- mutate(timeseries_df,
-                            raw=`4`) %>% 
-      select(-`4`)
+    timeseries_df <- timeseries_df %>% rename(raw = .data$`4`)
   }
   } else {
     timeseries_df <- data.frame()
@@ -90,17 +88,17 @@ get_timeseries <- function(start_time, end_time, point_ids){
                                        point_ids = point_ids)
   if(nrow(timeseries_raw)!=0){
     timeseries_clean <- timeseries_raw %>%
-      transmute(timestamp,
-                point_id,
-                unit=as.character(unit))  %>% 
-      pivot_wider(id_cols = timestamp,
-                  names_from = point_id,
-                  values_from = unit,
+      transmute(.data$timestamp,
+                .data$point_id,
+                unit = as.character(.data$unit))  %>% 
+      pivot_wider(id_cols = .data$timestamp,
+                  names_from = .data$point_id,
+                  values_from = .data$unit,
                   values_fill = NA) %>% 
-      mutate(across(timestamp,
+      mutate(across(.data$timestamp,
                     ~gsub('[.].*','',.))) %>%
-      type.convert(as.is=T) %>% 
-      mutate(timestamp = as_datetime(timestamp))
+      type.convert(as.is = T) %>% 
+      mutate(timestamp = as_datetime(.data$timestamp))
   } else {
     timeseries_clean <- timeseries_raw
   }
