@@ -72,7 +72,7 @@ get_users <- function(id){
   roles <- api.get('roles')
   
   roles <- roles$data %>%
-    select(id,role=name)
+    select(.data$id, role = .data$name)
   
   #Get user db
   users <- api.get('users')
@@ -80,31 +80,36 @@ get_users <- function(id){
   #Format users
   
   users <- users$data %>%
-    select(id,org_id,org_name,roles,email,username,first_name,last_name,last_login,created,password_reset,active) %>% 
-    mutate(across(c(password_reset, last_login, created),
+    select(.data$id, .data$org_id, .data$org_name, .data$roles, 
+           .data$email, .data$username, .data$first_name, .data$last_name, 
+           .data$last_login, .data$created, .data$password_reset, 
+           .data$active) %>% 
+    mutate(across(c(.data$password_reset, .data$last_login, .data$created),
                   ~ as_datetime(as.numeric(substr(., 1, 10))),
                   tz = 'America/New_York')) %>% 
-    mutate(across(roles,
+    mutate(across(.data$roles,
                   ~gsub('c\\(|\\)','',.))) %>%  
-    mutate(across(roles,
+    mutate(across(.data$roles,
                   ~gsub(':',', ',.))) %>% 
-    separate(col = 'roles',
-             into=c('role1','role2','role3','role4'),
-             sep=', ',fill = 'right') %>%
-    pivot_longer(cols = c(4:7),values_to ='role_id') %>%
-    filter(!is.na(role_id)) %>%
-    mutate(across(role_id,~as.integer(.)))  %>%
-    left_join(roles,
-              by=c('role_id'='id')) %>% 
-    select(id,org_id,org_name,role,email,username,first_name,last_name,last_login,created,password_reset,active)
+    tidyr::separate(col = 'roles',
+             into = c('role1','role2','role3','role4'),
+             sep = ', ',fill = 'right') %>%
+    tidyr::pivot_longer(cols = c(4:7), values_to ='role_id') %>%
+    filter(!is.na(.data$role_id)) %>%
+    mutate(across(.data$role_id, ~as.integer(.)))  %>%
+    left_join(.data$roles,
+              by = c('role_id' = 'id')) %>% 
+    select(.data$id, .data$org_id, .data$org_name, .data$role, .data$email, 
+           .data$username, .data$first_name, .data$last_name, .data$last_login, 
+           .data$created, .data$password_reset, .data$active)
   
   if(!missing(id)){
-    id=as.integer(id)
-    id=as.data.frame(id)
+    id = as.integer(id)
+    id = as.data.frame(id)
     
     if(nrow(id)>=1){
-      users <- semi_join(users,id,
-                         by='id')
+      users <- semi_join(users, id,
+                         by = 'id')
       
     }
     

@@ -17,7 +17,7 @@ get_staged_data <- function(building){
 
   stage <- api.get(endpoint)
   
-  if(length(stage$points_by_equip_id)==0){
+  if(length(stage$points_by_equip_id) == 0){
     stop(sprintf('Staged data not found for building %s.', name))
   }
 
@@ -108,7 +108,7 @@ upload_staging <- function(building,
     stop('e.equip_id column not found in data_to_upload.')
   } else if (skip_topics ==T){
     data_to_upload <- data_to_upload %>%
-      transmute(e.equip_id = '__SKIP__', p.topic)
+      transmute(e.equip_id = '__SKIP__', .data$p.topic)
 
     operation <- 'skipping'
   } else {
@@ -118,16 +118,16 @@ upload_staging <- function(building,
   data_to_upload_json <- data_to_upload %>%
     toJSON()
 
-  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?',operation,nrow(data_to_upload),name))
+  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', operation,nrow(data_to_upload), name))
 
   if(is.na(proceed)|proceed!=T){
     stop('Stopping Operation.')
   }
 
-  print(sprintf('%s topics...',operation))
+  print(sprintf('%s topics...', operation))
 
   #get endpoint
-  endpoint <- paste0('staging/',id)
+  endpoint <- paste0('staging/', id)
 
   post_points <- api.post(endpoint,
                           json_body = data_to_upload_json)
@@ -151,14 +151,13 @@ upload_staging <- function(building,
 #' 
 #' 
 #' @export
-promote_staged_data <- function(building,
-                                data_to_promote){
+promote_staged_data <- function(building, data_to_promote){
 
   get_building_info(building)
 
   if(missing(data_to_promote)){
 
-    proceed <- askYesNo(sprintf('Do you want to proceed with promoting all valid topics for %s?',name))
+    proceed <- askYesNo(sprintf('Do you want to proceed with promoting all valid topics for %s?', name))
 
     if(is.na(proceed)|proceed!=T){
       stop('Stopping Operation.')
@@ -176,20 +175,20 @@ promote_staged_data <- function(building,
     } else {
 
       data_to_promote <- data_to_promote %>%
-        filter(e.equip_id!='__SKIP__')
+        filter(.data$e.equip_id != '__SKIP__')
 
       equip_count <-length(unique(data_to_promote$e.equip_id))
 
       proceed <-
         askYesNo(
           sprintf(
-            'Do you want to proceed with promoting %s equipment and their valid topics to %s?',equip_count,name))
+            'Do you want to proceed with promoting %s equipment and their valid topics to %s?', equip_count, name))
 
-      if(is.na(proceed)|proceed!=T){
+      if(is.na(proceed)|proceed != T){
         stop('Stopping Operation.')
       }
 
-        promote_json <- list(equip_ids=data_to_promote$e.equip_id,topics=data_to_promote$p.topic) %>%
+        promote_json <- list(equip_ids = data_to_promote$e.equip_id, topics = data_to_promote$p.topic) %>%
           toJSON()
 
         operation <- 'promote_some'
@@ -207,20 +206,20 @@ promote_staged_data <- function(building,
     tibble::rownames_to_column(var = 'p.topic')
 
   equipment_errors <- as.data.frame(do.call(
-    rbind,promote_data$equipment)) %>%
-    tibble::rownames_to_column(var='e.equip_id')
+    rbind, promote_data$equipment)) %>%
+    tibble::rownames_to_column(var = 'e.equip_id')
 
   validation_errors <- plyr::rbind.fill(point_errors,
                                 equipment_errors)  %>% 
   mutate(across(everything(),
                 ~tidyr::replace_na(as.character(.),''))) %>%
-   filter(e.equip_id!='__SKIP__')
+   filter(.data$e.equip_id != '__SKIP__')
 
   if('V1' %in% names(validation_errors)){
 
     validation_errors <- rename(validation_errors,
-                                'errors'='V1') %>%
-      filter(errors!='NULL')
+                                'errors' = 'V1') %>%
+      filter(.data$errors != 'NULL')
 
     assign('validation_errors',
            validation_errors,
