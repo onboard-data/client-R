@@ -54,8 +54,6 @@ api.access <- function(){
       'api_url' = api_url,
       'api_key' = api_key
     ))
-    # assign('api_url',api_url,parent.frame())
-    # assign('api_key',api_key,parent.frame())
   }
 }
 
