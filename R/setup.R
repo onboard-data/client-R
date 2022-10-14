@@ -32,7 +32,6 @@ api.setup <- function(api_type = 'prod') {
   
   Sys.setenv('api_url'=api_url)
   Sys.setenv('api_key'=api_key)
-  # api_data <- list('api_url' = api_url, 'api_key' <- api_key)
 }
 
 
@@ -51,8 +50,8 @@ api.access <- function(){
     stop('API credentials not set correctly.')
   } else {
     return(list(
-      'api_url' = api_url,
-      'api_key' = api_key
+      'url' = api_url,
+      'key' = api_key
     ))
   }
 }
