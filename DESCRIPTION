@@ -1,6 +1,6 @@
 Type: Package
 Package: OnboardClient
-Title: OnboardClient
+Title: R bindings for Onboard Data's building data API.
 Version: 1.0.0
 Authors@R: c(
       person(given = "Pranay",
@@ -15,7 +15,7 @@ Authors@R: c(
              role = c("cph", "fnd"),
              email = "support@onboarddata.io")
      )
-Description: Provides R bindings to Onboard Data's building data API.
+Description: Provides a simple wrapper for Onboard Data's building data API. Along with streamlining access to the API, this package includes convenience functions to access sensor timeseries data, sensor, equipment, and building metadata, and details on Onboard's data model/ontology.
 License: Apache License (>= 2)
 Imports: 
     data.table (>= 1.14.2),
