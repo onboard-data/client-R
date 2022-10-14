@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-.Rbuildignore
 client-R.Rproj
 ReadME.html
 testing_script.R

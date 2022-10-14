@@ -33,7 +33,7 @@ get_building_info <- function(buildings){
       
       if (nrow(building) == 0) {
         
-        stop(sprintf('No building found for %s.',single))
+        stop(sprintf('No building found for name/id: %s.',single))
       }
     }
     
@@ -42,6 +42,9 @@ get_building_info <- function(buildings){
     building_info <- rbind(building_info,building)
     
   }
+  
+  print(sprintf('Found building/s: %s...',
+                paste(building_info$name,collapse=', ')))
   
   return(building_info)
 }
@@ -80,11 +83,11 @@ get_metadata <- function(buildings, selection){
     stop('Provide either building name/id or selection list.')
   } else if (missing(selection)){
     
-    # get_building_info(buildings)
-    
+    info <- get_building_info(buildings)
+  
     query <- PointSelector()
     
-    query$buildings <- buildings
+    query$buildings <- info$id
     
     selection <- select_points(query)
   }
@@ -96,10 +99,10 @@ get_metadata <- function(buildings, selection){
   point_ids <- selection$points
   equipment_ids <- selection$equipment
   
-  print(sprintf('Querying %s Points...',length(point_ids)))
+  print(sprintf('Querying %s points...',length(point_ids)))
   points <- get_points_by_ids(point_ids)
   
-  print(sprintf('Querying %s Equipment...',length(equipment_ids)))
+  print(sprintf('Querying %s equipment...',length(equipment_ids)))
   equipment <- get_equipment_by_ids(equipment_ids)
   
   #Create a metadata for the specified building ID
