@@ -83,11 +83,11 @@ get_metadata <- function(buildings, selection){
     stop('Provide either building name/id or selection list.')
   } else if (missing(selection)){
     
-    info <- get_building_info(buildings)
+    building_info <- get_building_info(buildings)
   
     query <- PointSelector()
     
-    query$buildings <- info$id
+    query$buildings <- building_info$id
     
     selection <- select_points(query)
   }
