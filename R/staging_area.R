@@ -8,17 +8,21 @@
 #' 
 #' @export
 get_staged_data <- function(building){
+  
+  if(length(building)>1){
+    stop('Length of building parameter greater than 1. Enter only one building id or name')
+  }
 
-  building_name <- get_building_info(building)[["name"]]
+  info <- get_building_info(building)
 
-  print('Querying Staging Data...')
+  print('Querying staging data...')
 
-  endpoint <- paste0('staging/',id,'?points=True')
+  endpoint <- paste0('staging/',info$id,'?points=True')
 
   stage <- api.get(endpoint)
   
   if(length(stage$points_by_equip_id) == 0){
-    stop(sprintf('Staged data not found for building %s.', building_name))
+    stop(sprintf('Staged data not found for building %s.', info$name))
   }
 
   #Equip Data
@@ -71,6 +75,8 @@ get_staged_data <- function(building){
               ~ as_datetime(as.numeric(substr(., 1, 10)),
                             tz = 'America/New_York'))) %>%
     select(sort(tidyselect::peek_vars()))
+  
+  print('Staging data created.')
 
   return(staged_data)
 
@@ -94,7 +100,7 @@ upload_staging <- function(building,
                            data_to_upload,
                            skip_topics = F){
 
-  building_name <- get_building_info(building)[["name"]]
+  info <- get_building_info(building)
 
   if(missing(data_to_upload)) {
 
@@ -118,7 +124,8 @@ upload_staging <- function(building,
   data_to_upload_json <- data_to_upload %>%
     toJSON()
 
-  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', operation,nrow(data_to_upload), building_name))
+  proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', 
+                              operation,nrow(data_to_upload), info$name))
 
   if(is.na(proceed)|proceed!=T){
     stop('Stopping Operation.')
@@ -127,7 +134,7 @@ upload_staging <- function(building,
   print(sprintf('%s topics...', operation))
 
   #get endpoint
-  endpoint <- paste0('staging/', id)
+  endpoint <- paste0('staging/', info$id)
 
   post_points <- api.post(endpoint,
                           json_body = data_to_upload_json)
@@ -153,11 +160,12 @@ upload_staging <- function(building,
 #' @export
 promote_staged_data <- function(building, data_to_promote){
 
-  name <- get_building_info(building)[["name"]]
-
+  info <- get_building_info(building)
+  
   if(missing(data_to_promote)){
 
-    proceed <- askYesNo(sprintf('Do you want to proceed with promoting all valid topics for %s?', name))
+    proceed <- askYesNo(
+      sprintf('Do you want to proceed with promoting all valid topics for %s?',info$name))
 
     if(is.na(proceed)|proceed!=T){
       stop('Stopping Operation.')
@@ -181,20 +189,20 @@ promote_staged_data <- function(building, data_to_promote){
 
       proceed <-
         askYesNo(
-          sprintf(
-            'Do you want to proceed with promoting %s equipment and their valid topics to %s?', equip_count, name))
+          sprintf('Do you want to proceed with promoting %s equipment and their valid topics to %s?',equip_count,info$name))
 
       if(is.na(proceed)|proceed != T){
         stop('Stopping Operation.')
       }
 
-        promote_json <- list(equip_ids = data_to_promote$e.equip_id, topics = data_to_promote$p.topic) %>%
+        promote_json <- list(equip_ids = data_to_promote$e.equip_id,
+                             topics = data_to_promote$p.topic) %>%
           toJSON()
 
         operation <- 'promote_some'
     }
 
-  endpoint <- paste0('staging/',id,'/apply')
+  endpoint <- paste0('staging/',info$id,'/apply')
 
   promote_data <- api.post(endpoint,
                            json_body = promote_json)
