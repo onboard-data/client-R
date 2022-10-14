@@ -5,11 +5,11 @@ Version: 1.0.0
 Authors@R: c(
       person(given = "Pranay",
              family = "Shah",
-             role = c("cre", "aut"),
+             role = "aut",
              email = "pranay.shah@onboarddata.io"),
       person(given = "Christopher",
              family = "Dudas-Thomas",
-             role = "aut",
+             role = c("cre", "aut"),
              email = "christopher@onboarddata.io"),
       person(given = "Onboard Data",
              role = c("cph", "fnd"),
