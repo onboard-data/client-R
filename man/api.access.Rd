@@ -7,8 +7,8 @@
 api.access()
 }
 \value{
-A named list of api data, including 'api_url' and 'api_key'.
+A named list of api data, containing elements 'url' and 'key'.
 }
 \description{
-Returns the api_url and api_keys.
+Returns the API url and API key.
 }

@@ -39,9 +39,10 @@ api.setup <- function(api_type = 'prod') {
 #' Access API keys and URL from System Environment
 #' @description 
 #' 
-#' Returns the api_url and api_keys.
+#' Returns the API url and API key.
 #' 
-#' @return A named list of api data, including 'api_url' and 'api_key'.
+#' @return A named list of api data, containing elements 'url' and 'key'.
+#' 
 api.access <- function(){
   api_url <- Sys.getenv('api_url')
   api_key <- Sys.getenv('api_key')
@@ -59,7 +60,7 @@ api.access <- function(){
 #' Check the status of your connection with the Onboard API
 #' 
 #' @description 
-#' Gives a status code for api connection.
+#' Prints a status code for api connection.
 #'  
 #' @export
 api.status <- function() {

@@ -6,7 +6,7 @@
 #' 
 #' A list of parameters to query metadata.
 #' 
-#' @returns query: An empty named list object.
+#' @returns An empty named list.
 #' 
 #' @examples 
 #' \dontrun{
@@ -35,6 +35,8 @@ PointSelector <- function(){
 #' Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data.
 #' 
 #' @param query query supplied from PointSelector.
+#' 
+#' @return A named list of all the points requested by the query.
 #' 
 #' @examples 
 #' \dontrun{

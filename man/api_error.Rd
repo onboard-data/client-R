@@ -10,7 +10,7 @@ api_error(status_code)
 \item{status_code}{An integer, should be from 400-599, in this case the http error code returned by a faulty server request.}
 }
 \value{
-A string with nicely-formatted error description.
+A string with a nicely-formatted error description.
 }
 \description{
 Handles http errors, returning a useful formatted message.

@@ -9,6 +9,9 @@ get_buildings(id)
 \arguments{
 \item{id}{(Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.}
 }
+\value{
+A data.frame of all building information.
+}
 \description{
 Retrieve buildings that you have access to.
 }

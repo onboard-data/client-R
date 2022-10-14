@@ -9,7 +9,7 @@
 #' 
 #' @param buildings A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.
 #'
-#' @return A data.frame of building info with two columns, 'id' and name'.
+#' @return A data.frame of building info with two columns, 'id' and 'name'.
 #'
 #' @examples 
 #' \dontrun{
@@ -54,10 +54,13 @@ get_building_info <- function(buildings){
 
 #' Metadata
 #' 
-#' Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe.
+#' Retrieves points and equipment for a given building or selection and outputs a clean metadata data.frame.
 #' 
 #' @inheritParams get_building_info
+#' 
 #' @param selection Selection list from point selector.
+#' 
+#' @return A data.frame of clean metadata for the requested points.
 #' 
 #' @examples 
 #' \dontrun{

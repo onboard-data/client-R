@@ -91,7 +91,7 @@ get_staged_data <- function(building){
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_upload A dataframe to upload to the staging area. Must contain e.equip_id and p.topic columns.
+#' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
 #' @param skip_topics Logical. False (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.
 #'  
@@ -155,7 +155,6 @@ upload_staging <- function(building,
 #' @inheritParams get_staged_data
 #' 
 #' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns
-#' 
 #' 
 #' @export
 promote_staged_data <- function(building, data_to_promote){

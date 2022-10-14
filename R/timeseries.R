@@ -8,7 +8,7 @@
 #' @param end_time End Time in UTC.
 #' @param point_ids Point IDs for which timeseries data needs to be queried.
 #' 
-#' @return A long data.frame of timeseries data, with columns point_id, timestamp, and point values as columns.
+#' @return A long data.frame of time series data, with point id, timestamp, and raw point values as columns.
 #' 
 #' @export
 get_timeseries_raw <- function(start_time, end_time, point_ids){
@@ -74,11 +74,11 @@ get_timeseries_raw <- function(start_time, end_time, point_ids){
 
 #' Time-Series Data
 #' 
-#' Provides clean timeseries
+#' Provides clean time-series
 #' 
 #' @inheritParams get_timeseries_raw
 #' 
-#' @return A wide data.frame of timeseries data, with timestamp and all requested points as columns.
+#' @return A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 #' 
 #' @export
 get_timeseries <- function(start_time, end_time, point_ids){

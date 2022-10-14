@@ -9,6 +9,9 @@ get_users(id)
 \arguments{
 \item{id}{(Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.}
 }
+\value{
+A data.frame of all user information.
+}
 \description{
 Retrieve all user info in your organization.
 }

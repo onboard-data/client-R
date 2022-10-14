@@ -11,8 +11,11 @@ get_metadata(buildings, selection)
 
 \item{selection}{Selection list from point selector.}
 }
+\value{
+A data.frame of clean metadata for the requested points.
+}
 \description{
-Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe.
+Retrieves points and equipment for a given building or selection and outputs a clean metadata data.frame.
 }
 \examples{
 \dontrun{

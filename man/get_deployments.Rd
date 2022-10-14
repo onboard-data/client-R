@@ -9,6 +9,9 @@ get_deployments(org_id)
 \arguments{
 \item{org_id}{organization id}
 }
+\value{
+A data.frame of all deployments.
+}
 \description{
 Get all deployments in your organization.
 }

@@ -10,7 +10,7 @@ api.get(endpoint)
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}
 }
 \value{
-An R object of class `list` or `data.frame`
+A list or data.frame of the API output.
 }
 \description{
 Uses http GET call to return an object from the API.

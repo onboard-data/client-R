@@ -5,7 +5,8 @@
 #' 
 #' @param status_code An integer, should be from 400-599, in this case the http error code returned by a faulty server request.
 #' 
-#' @return A string with nicely-formatted error description.
+#' @return A string with a nicely-formatted error description.
+#' 
 api_error <- function(status_code){
   return(paste0('API Error: (', status_code, ') ', httr::http_status(status_code)$reason))
 }
@@ -22,7 +23,7 @@ api_error <- function(status_code){
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
 #' 
-#' @return An R object of class `list` or `data.frame`
+#' @return A list or data.frame of the API output.
 #' 
 #' @examples
 #' \dontrun{ whoami <- api.get('whoami') }
@@ -59,9 +60,9 @@ api.get <- function(endpoint) {
 #' 
 #' @param json_body A JSON payload to give to the POST call.
 #' 
-#' @param output If "list" (default), it returns the api output as a list object. If "dataframe", it returns the api output as a dataframe object
+#' @param output A string, either "list" (default) or "dataframe", to specify the API output format.
 #' 
-#' @return An R object of `list` or `data.frame` class
+#' @return A list or data.frame of the API output.
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output = 'list') {
