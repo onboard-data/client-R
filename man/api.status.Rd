@@ -6,6 +6,9 @@
 \usage{
 api.status()
 }
+\value{
+A character vector with the API server status and message.
+}
 \description{
-Prints a status code for api connection.
+Provides a status code and message for the API connection.
 }

@@ -9,6 +9,9 @@ api.setup(api_type = "prod")
 \arguments{
 \item{api_type}{Provide the API client name.}
 }
+\value{
+No return value, sets API URL and API KEY in the system environment.
+}
 \description{
 Set the Onboard API URL and API keys in the system environment.
 }

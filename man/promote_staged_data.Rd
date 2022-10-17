@@ -4,12 +4,17 @@
 \alias{promote_staged_data}
 \title{Promote data on Staging Area}
 \usage{
-promote_staged_data(building, data_to_promote)
+promote_staged_data(building, data_to_promote, verbose = TRUE)
 }
 \arguments{
-\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
 
 \item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns}
+
+\item{verbose}{Logical. TRUE (Default). Whether to print the status message of the promotion attempt.}
+}
+\value{
+Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.
 }
 \description{
 Promote valid data on the staging area to the live building.

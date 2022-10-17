@@ -7,7 +7,10 @@
 get_staged_data(building)
 }
 \arguments{
-\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
+}
+\value{
+A data.frame of metadata from the staging area.
 }
 \description{
 Gets metadata from the staging area.

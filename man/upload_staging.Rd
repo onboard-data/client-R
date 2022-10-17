@@ -4,14 +4,19 @@
 \alias{upload_staging}
 \title{Upload to Staging Area}
 \usage{
-upload_staging(building, data_to_upload, skip_topics = FALSE)
+upload_staging(building, data_to_upload, skip_topics = FALSE, verbose = TRUE)
 }
 \arguments{
-\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
 
 \item{data_to_upload}{A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.}
 
-\item{skip_topics}{Logical. False (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.}
+\item{skip_topics}{Logical. FALSE (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.}
+
+\item{verbose}{Logical. TRUE (Default). Whether to print the status message of the upload attempt.}
+}
+\value{
+Named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
 }
 \description{
 Uploads data to the staging area.
