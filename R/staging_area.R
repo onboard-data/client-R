@@ -4,7 +4,9 @@
 #' 
 #' Gets metadata from the staging area.
 #' 
-#' @param building Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.
+#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.
+#' 
+#' @return A data.frame of metadata from the staging area.
 #' 
 #' @export
 get_staged_data <- function(building){
@@ -44,7 +46,7 @@ get_staged_data <- function(building){
 
   points_list <- stage$points_by_equip_id
 
-  points_data <- data.table::rbindlist(points_list,fill=T)
+  points_data <- data.table::rbindlist(points_list, fill = TRUE)
 
   points_data_names <- names(points_data)
   points_data_names <- gsub('data\\.','',points_data_names)
@@ -93,12 +95,18 @@ get_staged_data <- function(building){
 #' 
 #' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
-#' @param skip_topics Logical. False (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.
+#' @param skip_topics Logical. FALSE (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.
+#'
+#' @param verbose Logical. TRUE (Default). Whether to print the status message of the upload attempt.
+#'
+#' @return Named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
 #'  
 #'@export
 upload_staging <- function(building,
                            data_to_upload,
-                           skip_topics = F){
+                           skip_topics = FALSE,
+                           verbose = TRUE
+                           ){
 
   building_info <- get_building_info(building)
 
@@ -110,9 +118,9 @@ upload_staging <- function(building,
     print('p.topic column not found in staging_upload.')
 
   } else if (!('e.equip_id' %in% names(data_to_upload)) &
-             skip_topics == F) {
+             skip_topics == FALSE) {
     stop('e.equip_id column not found in data_to_upload.')
-  } else if (skip_topics ==T){
+  } else if (skip_topics == TRUE){
     data_to_upload <- data_to_upload %>%
       transmute(e.equip_id = '__SKIP__', .data$p.topic)
 
@@ -127,7 +135,7 @@ upload_staging <- function(building,
   proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', 
                               operation,nrow(data_to_upload), building_info$name))
 
-  if(is.na(proceed)|proceed!=T){
+  if(is.na(proceed) | proceed != TRUE){
     stop('Stopping Operation.')
   }
 
@@ -138,15 +146,22 @@ upload_staging <- function(building,
 
   post_points <- api.post(endpoint,
                           json_body = data_to_upload_json)
+  
+  out_object <- list()
 
   if(length(post_points$row_errors)==0){
-    print('Success!')
+    out_object$message <- "Upload successful"
   } else{
-    return(post_points$row_errors)
+    out_object$message <- "Upload unsuccesful. Please check errors for more information."
+    out_object$errors <- post_points$row_errors
   }
-
+  
+  if(verbose){
+    print(out_object$message)
+  }
+  
+  return(out_object)
 }
-
 
 #' Promote data on Staging Area
 #' 
@@ -156,17 +171,23 @@ upload_staging <- function(building,
 #' 
 #' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns
 #' 
+#' @param verbose Logical. TRUE (Default). Whether to print the status message of the promotion attempt.
+#' 
+#' @return Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.
+#' 
 #' @export
-promote_staged_data <- function(building, data_to_promote){
+
+promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
 
   building_info <- get_building_info(building)
   
   if(missing(data_to_promote)){
 
     proceed <- askYesNo(
-      sprintf('Do you want to proceed with promoting all valid topics for %s?', building_info$name))
+      sprintf('Do you want to proceed with promoting all valid topics for %s?', building_info$name)
+      )
 
-    if(is.na(proceed)|proceed!=T){
+    if(is.na(proceed) | proceed != TRUE){
       stop('Stopping Operation.')
     }
 
@@ -174,8 +195,8 @@ promote_staged_data <- function(building, data_to_promote){
                            topics='') %>%
         toJSON()
 
-      promote_json <- gsub('\\["','[',promote_json)
-      promote_json <- gsub('"\\]',']',promote_json)
+      promote_json <- gsub('\\["', '[', promote_json)
+      promote_json <- gsub('"\\]', ']', promote_json)
 
       operation <- 'promote_all'
 
@@ -190,7 +211,7 @@ promote_staged_data <- function(building, data_to_promote){
         askYesNo(
           sprintf('Do you want to proceed with promoting %s equipment and their valid topics to %s?', equip_count, building_info$name))
 
-      if(is.na(proceed)|proceed != T){
+      if(is.na(proceed)|proceed != TRUE){
         stop('Stopping Operation.')
       }
 
@@ -219,8 +240,10 @@ promote_staged_data <- function(building, data_to_promote){
   validation_errors <- plyr::rbind.fill(point_errors,
                                 equipment_errors)  %>% 
   mutate(across(everything(),
-                ~tidyr::replace_na(as.character(.),''))) %>%
+                ~tidyr::replace_na(as.character(.), ''))) %>%
    filter(.data$e.equip_id != '__SKIP__')
+  
+  out_object <- list()
 
   if('V1' %in% names(validation_errors)){
 
@@ -228,13 +251,16 @@ promote_staged_data <- function(building, data_to_promote){
                                 'errors' = 'V1') %>%
       filter(.data$errors != 'NULL')
 
-    assign('validation_errors',
-           validation_errors,
-           parent.frame())
-
-    print('See validation_errors.')
+    out_object$message <- "Data promotion unsuccessful. Please check validation errors."
+    out_object$validation_errors <- validation_errors
   } else {
-    print('Promoted.')
+    out_object$message <- "Data promotion successful."
   }
+  
+  if (verbose){
+    print(out_object$message)
+  }
+  
+  return(out_object)
 
 }

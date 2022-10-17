@@ -4,6 +4,8 @@
 #' Set the Onboard API URL and API keys in the system environment.
 #'  
 #' @param api_type Provide the API client name.
+#' 
+#' @return No return value, sets API URL and API KEY in the system environment.
 #'   
 #' @export
 #' 
@@ -30,8 +32,8 @@ api.setup <- function(api_type = 'prod') {
     api_key <- readline(prompt = "Enter your Onboard API key:")
   }
   
-  Sys.setenv('api_url'=api_url)
-  Sys.setenv('api_key'=api_key)
+  Sys.setenv('api_url' = api_url)
+  Sys.setenv('api_key' = api_key)
 }
 
 
@@ -41,7 +43,7 @@ api.setup <- function(api_type = 'prod') {
 #' 
 #' Returns the API url and API key.
 #' 
-#' @return A named list of api data, containing elements 'url' and 'key'.
+#' @return A named list of API information, containing elements 'url' and 'key'.
 #' 
 api.access <- function(){
   api_url <- Sys.getenv('api_url')
@@ -60,15 +62,16 @@ api.access <- function(){
 #' Check the status of your connection with the Onboard API
 #' 
 #' @description 
-#' Prints a status code for api connection.
-#'  
+#' Provides a status code and message for the API connection.
+#' 
+#' @return A character vector with the API server status and message.
+#'
 #' @export
 api.status <- function() {
   api_data <- api.access()
   
-  request <- GET(url = api_data$api_url,
-                 add_headers(`X-OB-Api` = api_data$api_key))
-  
-  print(paste0("API Status: ", request$status_code))
-  
+  request <- GET(url = api_data$url,
+                 add_headers(`X-OB-Api` = api_data$key))
+
+  return(httr::http_status(request$status_code)$message)
 }

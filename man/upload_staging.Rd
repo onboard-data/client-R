@@ -4,7 +4,7 @@
 \alias{upload_staging}
 \title{Upload to Staging Area}
 \usage{
-upload_staging(building, data_to_upload, skip_topics = F)
+upload_staging(building, data_to_upload, skip_topics = FALSE)
 }
 \arguments{
 \item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
