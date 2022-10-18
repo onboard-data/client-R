@@ -2,9 +2,13 @@
 
 # Organizations -------------------------------------------------------
 
+#' Organizations
+#' 
 #' Retrieve Organizations that you have access to.
 #' 
 #' @param id (Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.
+#' 
+#' @return A data.frame of organization information.
 #'  
 #' @export
 get_orgs <- function(id){
@@ -32,9 +36,11 @@ get_orgs <- function(id){
 
 #' Buildings
 #' 
-#' Retrieve buildings that you have access to.
+#' Retrieve buildings that you have access to.  
 #' 
 #' @inheritParams get_orgs
+#' 
+#' @return A data.frame of all building information.
 #' 
 #' @export
 get_buildings <-function(id){
@@ -65,7 +71,10 @@ get_buildings <-function(id){
 #' 
 #' @inheritParams get_orgs
 #' 
+#' @return A data.frame of all user information.
+#' 
 #' @export
+
 get_users <- function(id){
   
   #Get roles db
@@ -127,6 +136,8 @@ get_users <- function(id){
 #' 
 #' @param org_id organization id
 #' 
+#' @return A data.frame of all deployments.
+#' 
 #' @export
 get_deployments <- function(org_id){
   api_key <- api_url <- last_heartbeat <- wg_pubkey <- 
@@ -149,5 +160,4 @@ get_deployments <- function(org_id){
   }
   
   return(deployments)
-  
 }

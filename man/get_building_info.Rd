@@ -4,19 +4,16 @@
 \alias{get_building_info}
 \title{Building Info}
 \usage{
-get_building_info(buildings)
+get_building_info(buildings, verbose = TRUE)
 }
 \arguments{
-\item{buildings}{A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.}
+\item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.}
+
+\item{verbose}{Logical. If TRUE (default), print status messages.}
 }
 \value{
-A data.frame of building info with two columns, 'id' and name'.
+A data.frame of building info with two columns, 'id' and 'name'.
 }
 \description{
 Retrieves building id(s) and name(s). Assigns each to list variables in the parent environment called "id" and "name", and prints each list.
-}
-\examples{
-\dontrun{
-get_building_info(buildings=c(427,"Laboratory"))
-}
 }

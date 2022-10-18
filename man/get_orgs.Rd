@@ -2,12 +2,15 @@
 % Please edit documentation in R/database.R
 \name{get_orgs}
 \alias{get_orgs}
-\title{Retrieve Organizations that you have access to.}
+\title{Organizations}
 \usage{
 get_orgs(id)
 }
 \arguments{
 \item{id}{(Optional) An integer if you want information on a particular entity. Returns all entities unless this argument is provided.}
+}
+\value{
+A data.frame of organization information.
 }
 \description{
 Retrieve Organizations that you have access to.

@@ -1,22 +1,22 @@
 Type: Package
 Package: OnboardClient
-Title: OnboardClient
+Title: Bindings for the Onboard Data Building Data API
 Version: 1.0.0
 Authors@R: c(
       person(given = "Pranay",
              family = "Shah",
-             role = c("cre", "aut"),
+             role = "aut",
              email = "pranay.shah@onboarddata.io"),
       person(given = "Christopher",
              family = "Dudas-Thomas",
-             role = "aut",
+             role = c("cre", "aut"),
              email = "christopher@onboarddata.io"),
       person(given = "Onboard Data",
              role = c("cph", "fnd"),
              email = "support@onboarddata.io")
      )
-Description: Provides R bindings to Onboard Data's building data API.
-License: Apache License (== 2.0)
+Description: Provides a wrapper for the Onboard Data building data API <https://api.onboarddata.io/swagger>. Along with streamlining access to the API, this package simplifies access to sensor time series data, metadata (sensors, equipment, and buildings), and details about the Onboard data model/ontology.
+License: Apache License (>= 2)
 Imports: 
     data.table (>= 1.14.2),
     dplyr (>= 1.0.10),

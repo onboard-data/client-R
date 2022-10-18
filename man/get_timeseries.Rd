@@ -14,8 +14,8 @@ get_timeseries(start_time, end_time, point_ids)
 \item{point_ids}{Point IDs for which timeseries data needs to be queried.}
 }
 \value{
-A wide data.frame of timeseries data, with timestamp and all requested points as columns.
+A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 }
 \description{
-Provides clean timeseries
+Provides clean time-series
 }

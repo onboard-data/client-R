@@ -2,3 +2,5 @@
 ^\.Rproj\.user$
 ^testing_script\.R$
 ^LICENSE\.md$
+^README\.md$
+^NEWS\.md$

@@ -4,10 +4,15 @@
 \alias{get_staged_data}
 \title{Get Staged Data}
 \usage{
-get_staged_data(building)
+get_staged_data(building, verbose = TRUE)
 }
 \arguments{
-\item{building}{Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
+
+\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
+}
+\value{
+A data.frame of metadata from the staging area.
 }
 \description{
 Gets metadata from the staging area.

@@ -4,25 +4,32 @@
 #' 
 #' Gets metadata from the staging area.
 #' 
-#' @param building Enter building id or name. Note: If you enter multiple building ids or names, only the first entry is considered.
+#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.
+#' 
+#' @param verbose Logical. If TRUE (default), prints status and progress messages.
+#' 
+#' @return A data.frame of metadata from the staging area.
 #' 
 #' @export
-get_staged_data <- function(building){
+get_staged_data <- function(building, verbose = TRUE){
   
   if(length(building)>1){
     stop('Length of building parameter greater than 1. Enter only one building id or name')
   }
 
-  info <- get_building_info(building)
+  building_info <- get_building_info(building)
 
-  print('Querying staging data...')
+  if(verbose){
+    cat('Querying staging data...\n')
+  }
 
-  endpoint <- paste0('staging/',info$id,'?points=True')
+
+  endpoint <- paste0('staging/',building_info$id,'?points=True')
 
   stage <- api.get(endpoint)
   
   if(length(stage$points_by_equip_id) == 0){
-    stop(sprintf('Staged data not found for building %s.', info$name))
+    stop(sprintf('Staged data not found for building %s.', building_info$name))
   }
 
   #Equip Data
@@ -44,7 +51,7 @@ get_staged_data <- function(building){
 
   points_list <- stage$points_by_equip_id
 
-  points_data <- data.table::rbindlist(points_list,fill=T)
+  points_data <- data.table::rbindlist(points_list, fill = TRUE)
 
   points_data_names <- names(points_data)
   points_data_names <- gsub('data\\.','',points_data_names)
@@ -76,7 +83,9 @@ get_staged_data <- function(building){
                             tz = 'America/New_York'))) %>%
     select(sort(tidyselect::peek_vars()))
   
-  print('Staging data created.')
+  if(verbose){
+    cat('Staging data created.')
+  }
 
   return(staged_data)
 
@@ -91,28 +100,32 @@ get_staged_data <- function(building){
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_upload A dataframe to upload to the staging area. Must contain e.equip_id and p.topic columns.
+#' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
-#' @param skip_topics Logical. False (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.
+#' @param skip_topics Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.
+#'
+#' @return A named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
 #'  
 #'@export
 upload_staging <- function(building,
                            data_to_upload,
-                           skip_topics = F){
+                           skip_topics = FALSE,
+                           verbose = TRUE
+                           ){
 
-  info <- get_building_info(building)
+  building_info <- get_building_info(building)
 
   if(missing(data_to_upload)) {
 
     stop('data_to_upload is missing in the function call. data_to_upload should be a dataframe including at least e.equip_id & p.topic for the upload to succeed')
 
   } else if (!('p.topic' %in% names(data_to_upload))) {
-    print('p.topic column not found in staging_upload.')
+    stop('p.topic column not found in staging_upload.')
 
   } else if (!('e.equip_id' %in% names(data_to_upload)) &
-             skip_topics == F) {
+             skip_topics == FALSE) {
     stop('e.equip_id column not found in data_to_upload.')
-  } else if (skip_topics ==T){
+  } else if (skip_topics == TRUE){
     data_to_upload <- data_to_upload %>%
       transmute(e.equip_id = '__SKIP__', .data$p.topic)
 
@@ -125,28 +138,37 @@ upload_staging <- function(building,
     toJSON()
 
   proceed <- askYesNo(sprintf('Do you want to proceed %s %s topic/s for %s?', 
-                              operation,nrow(data_to_upload), info$name))
+                              operation,nrow(data_to_upload), building_info$name))
 
-  if(is.na(proceed)|proceed!=T){
+  if(is.na(proceed) | proceed != TRUE){
     stop('Stopping Operation.')
   }
 
-  print(sprintf('%s topics...', operation))
+  if(verbose){
+    cat(sprintf('%s topics...\n', operation))
+  }
 
   #get endpoint
-  endpoint <- paste0('staging/', info$id)
+  endpoint <- paste0('staging/', building_info$id)
 
   post_points <- api.post(endpoint,
                           json_body = data_to_upload_json)
+  
+  out_object <- list()
 
   if(length(post_points$row_errors)==0){
-    print('Success!')
+    out_object$message <- "Upload successful"
   } else{
-    return(post_points$row_errors)
+    out_object$message <- "Upload unsuccesful. Please check errors for more information."
+    out_object$errors <- post_points$row_errors
   }
-
+  
+  if(verbose){
+    cat(out_object$message)
+  }
+  
+  return(out_object)
 }
-
 
 #' Promote data on Staging Area
 #' 
@@ -154,20 +176,23 @@ upload_staging <- function(building,
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns
+#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
+#' @return Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.
 #' 
 #' @export
-promote_staged_data <- function(building, data_to_promote){
 
-  info <- get_building_info(building)
+promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
+
+  building_info <- get_building_info(building)
   
   if(missing(data_to_promote)){
 
     proceed <- askYesNo(
-      sprintf('Do you want to proceed with promoting all valid topics for %s?',info$name))
+      sprintf('Do you want to proceed with promoting all valid topics for %s?', building_info$name)
+      )
 
-    if(is.na(proceed)|proceed!=T){
+    if(is.na(proceed) | proceed != TRUE){
       stop('Stopping Operation.')
     }
 
@@ -175,8 +200,8 @@ promote_staged_data <- function(building, data_to_promote){
                            topics='') %>%
         toJSON()
 
-      promote_json <- gsub('\\["','[',promote_json)
-      promote_json <- gsub('"\\]',']',promote_json)
+      promote_json <- gsub('\\["', '[', promote_json)
+      promote_json <- gsub('"\\]', ']', promote_json)
 
       operation <- 'promote_all'
 
@@ -189,9 +214,9 @@ promote_staged_data <- function(building, data_to_promote){
 
       proceed <-
         askYesNo(
-          sprintf('Do you want to proceed with promoting %s equipment and their valid topics to %s?',equip_count,info$name))
+          sprintf('Do you want to proceed with promoting %s equipment and their valid topics to %s?', equip_count, building_info$name))
 
-      if(is.na(proceed)|proceed != T){
+      if(is.na(proceed)|proceed != TRUE){
         stop('Stopping Operation.')
       }
 
@@ -202,7 +227,7 @@ promote_staged_data <- function(building, data_to_promote){
         operation <- 'promote_some'
     }
 
-  endpoint <- paste0('staging/',info$id,'/apply')
+  endpoint <- paste0('staging/', building_info$id, '/apply')
 
   promote_data <- api.post(endpoint,
                            json_body = promote_json)
@@ -220,8 +245,10 @@ promote_staged_data <- function(building, data_to_promote){
   validation_errors <- plyr::rbind.fill(point_errors,
                                 equipment_errors)  %>% 
   mutate(across(everything(),
-                ~tidyr::replace_na(as.character(.),''))) %>%
+                ~tidyr::replace_na(as.character(.), ''))) %>%
    filter(.data$e.equip_id != '__SKIP__')
+  
+  out_object <- list()
 
   if('V1' %in% names(validation_errors)){
 
@@ -229,13 +256,15 @@ promote_staged_data <- function(building, data_to_promote){
                                 'errors' = 'V1') %>%
       filter(.data$errors != 'NULL')
 
-    assign('validation_errors',
-           validation_errors,
-           parent.frame())
-
-    print('See validation_errors.')
+    out_object$message <- "Data promotion unsuccessful. Please check validation errors."
+    out_object$validation_errors <- validation_errors
   } else {
-    print('Promoted.')
+    out_object$message <- "Data promotion successful."
   }
-
+  
+  if (verbose){
+    cat(out_object$message)
+  }
+  
+  return(out_object)
 }

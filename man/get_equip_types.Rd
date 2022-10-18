@@ -7,7 +7,7 @@
 get_equip_types()
 }
 \value{
-A dataframe object.
+A data.frame containing all equipment types.
 }
 \description{
 Query all equipment types from Onboard's Data Model.

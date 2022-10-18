@@ -6,7 +6,7 @@
 #' 
 #' Query all equipment types from Onboard's Data Model.
 #' 
-#' @returns A dataframe object.
+#' @returns A data.frame containing all equipment types.
 #' @export
 get_equip_types <- function(){
   
@@ -30,7 +30,8 @@ get_equip_types <- function(){
 #' 
 #' Queries all point types, measurements and their units from Onboard's Data Model and returns a clean output.
 #' 
-#' @return point_types: A dataframe object.
+#' @return A data.frame containing all point types.
+#' 
 #' @export
 get_point_types <- function(){
   

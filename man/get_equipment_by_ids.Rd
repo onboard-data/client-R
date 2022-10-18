@@ -7,7 +7,7 @@
 get_equipment_by_ids(id)
 }
 \arguments{
-\item{id}{(Integer) One or many equipment ids.}
+\item{id}{Integer or integer vector, containing one or many equipment ids.}
 }
 \value{
 A data.frame of the requested equipment, or an empty list if no equipment matches those ids.

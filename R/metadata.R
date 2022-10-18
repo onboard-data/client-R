@@ -7,15 +7,14 @@
 #' 
 #' Retrieves building id(s) and name(s). Assigns each to list variables in the parent environment called "id" and "name", and prints each list.
 #' 
-#' @param buildings A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.
+#' @param buildings Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.
+#' 
+#' @param verbose Logical. If TRUE (default), print status messages.
 #'
-#' @return A data.frame of building info with two columns, 'id' and name'.
-#'
-#' @examples 
-#' \dontrun{
-#' get_building_info(buildings=c(427,"Laboratory"))
-#' }
-get_building_info <- function(buildings){
+#' @return A data.frame of building info with two columns, 'id' and 'name'.
+#' 
+#' @export
+get_building_info <- function(buildings, verbose = TRUE){
   
   all_buildings <- get_buildings()
   
@@ -27,24 +26,26 @@ get_building_info <- function(buildings){
     
     building <- all_buildings[all_buildings$name == single,]
     
-    if(nrow(building)==0) {
+    if(nrow(building) == 0) {
       
       building <- all_buildings[all_buildings$id == single, ]
       
       if (nrow(building) == 0) {
-        
         stop(sprintf('No building found for name/id: %s.',single))
       }
     }
     
     building <- select(building, .data$id, .data$name)
     
-    building_info <- rbind(building_info,building)
+    building_info <- rbind(building_info, building)
     
   }
   
-  print(sprintf('Found building/s: %s...',
-                paste(building_info$name,collapse=', ')))
+  if(verbose){
+    cat(sprintf('Found building(s): %s...\n',
+                  paste(building_info$name,collapse=', ')))
+  }
+
   
   return(building_info)
 }
@@ -54,10 +55,13 @@ get_building_info <- function(buildings){
 
 #' Metadata
 #' 
-#' Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe.
+#' Retrieves points and equipment for a given building or selection and outputs a clean metadata data.frame.
 #' 
 #' @inheritParams get_building_info
+#' 
 #' @param selection Selection list from point selector.
+#' 
+#' @return A data.frame of clean metadata for the requested points.
 #' 
 #' @examples 
 #' \dontrun{
@@ -77,17 +81,17 @@ get_building_info <- function(buildings){
 #' }
 #' 
 #' @export
-get_metadata <- function(buildings, selection){
+get_metadata <- function(buildings, selection, verbose = TRUE){
   
   if(missing(selection) & missing(buildings)){
     stop('Provide either building name/id or selection list.')
   } else if (missing(selection)){
     
-    info <- get_building_info(buildings)
+    building_info <- get_building_info(buildings, verbose = verbose)
   
     query <- PointSelector()
     
-    query$buildings <- info$id
+    query$buildings <- building_info$id
     
     selection <- select_points(query)
   }
@@ -99,10 +103,16 @@ get_metadata <- function(buildings, selection){
   point_ids <- selection$points
   equipment_ids <- selection$equipment
   
-  print(sprintf('Querying %s points...',length(point_ids)))
+  if(verbose){
+    cat(sprintf('Querying %s points...\n',length(point_ids)))
+  }
+  
   points <- get_points_by_ids(point_ids)
   
-  print(sprintf('Querying %s equipment...',length(equipment_ids)))
+  if(verbose){
+    cat(sprintf('Querying %s equipment...\n',length(equipment_ids)))
+  }
+
   equipment <- get_equipment_by_ids(equipment_ids)
   
   #Create a metadata for the specified building ID
@@ -153,6 +163,9 @@ get_metadata <- function(buildings, selection){
     mutate(across(c(.data$first_updated, .data$last_updated),
                   ~ as_datetime(as.numeric(substr(., 1, 10)))))
   
-  print('Metadata generated.')
+  if(verbose){
+    cat('Metadata generated.')
+  }
+
   return(metadata)
 }

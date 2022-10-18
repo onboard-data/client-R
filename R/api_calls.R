@@ -1,19 +1,4 @@
-
-#' API Error Handler
-#' @description 
-#' Handles http errors, returning a useful formatted message.
-#' 
-#' @param status_code An integer, should be from 400-599, in this case the http error code returned by a faulty server request.
-#' 
-#' @return A string with nicely-formatted error description.
-api_error <- function(status_code){
-  return(paste0('API Error: (', status_code, ') ', httr::http_status(status_code)$reason))
-}
-
-
 # GET ---------------------------------------------------------------------
-
-
 #' API GET call
 #'
 #' @description
@@ -22,7 +7,7 @@ api_error <- function(status_code){
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
 #' 
-#' @return An R object of class `list` or `data.frame`
+#' @return A list or data.frame of the API output.
 #' 
 #' @examples
 #' \dontrun{ whoami <- api.get('whoami') }
@@ -32,19 +17,19 @@ api.get <- function(endpoint) {
   api_data <- api.access()
   
   # get endpoint
-  endpoint_url <- paste(api_data$api_url, endpoint, sep = '/')
+  endpoint_url <- paste(api_data$url, endpoint, sep = '/')
   
   request_endpoint <- GET(url = endpoint_url,
                           content_type_json(),
-                          add_headers(`X-OB-Api` = api_data$api_key))
+                          add_headers(`X-OB-Api` = api_data$key))
   
   if (request_endpoint$status_code == 200) {
       api_output <-
         content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
-        fromJSON(flatten = T)
+        fromJSON(flatten = TRUE)
     return(api_output)
-  } else{
-    stop(api_error(request_endpoint$status_code))
+  } else {
+    stop(httr::http_status(status_code)$message)
   }
 }
 
@@ -59,21 +44,21 @@ api.get <- function(endpoint) {
 #' 
 #' @param json_body A JSON payload to give to the POST call.
 #' 
-#' @param output If "list" (default), it returns the api output as a list object. If "dataframe", it returns the api output as a dataframe object
+#' @param output A character string, either "list" (default) or "dataframe", to specify the API output format.
 #' 
-#' @return An R object of `list` or `data.frame` class
+#' @return A list or data.frame of the API output.
 #' 
 #' @export
 api.post <- function(endpoint, json_body, output = 'list') {
   api_data <- api.access()
   
   # post endpoint
-  endpoint_url <- paste(api_data$api_url, endpoint, sep = '/')
+  endpoint_url <- paste(api_data$url, endpoint, sep = '/')
   
   request_endpoint <- POST(
     url = endpoint_url,
     content_type_json(),
-    add_headers(`X-OB-Api` = api_data$api_key),
+    add_headers(`X-OB-Api` = api_data$key),
     body = json_body
   )
   
@@ -99,7 +84,7 @@ api.post <- function(endpoint, json_body, output = 'list') {
     }
     return(api_output)
   } else {
-    stop(api_error(request_endpoint$status_code))
+    stop(httr::http_status(status_code)$message)
   }
   
 }

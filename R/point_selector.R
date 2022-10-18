@@ -6,7 +6,7 @@
 #' 
 #' A list of parameters to query metadata.
 #' 
-#' @returns query: An empty named list object.
+#' @returns An empty named list of possible point selection criteria.
 #' 
 #' @examples 
 #' \dontrun{
@@ -35,6 +35,8 @@ PointSelector <- function(){
 #' Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data.
 #' 
 #' @param query query supplied from PointSelector.
+#' 
+#' @return A named list of all the points requested by the query.
 #' 
 #' @examples 
 #' \dontrun{
@@ -146,7 +148,7 @@ get_points_by_ids <- function(id){
 #' 
 #' Queries equipment by their ids.
 #' 
-#' @param id (Integer) One or many equipment ids. 
+#' @param id Integer or integer vector, containing one or many equipment ids. 
 #'
 #' @return A data.frame of the requested equipment, or an empty list if no equipment matches those ids.
 #' 

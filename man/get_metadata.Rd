@@ -4,15 +4,20 @@
 \alias{get_metadata}
 \title{Metadata}
 \usage{
-get_metadata(buildings, selection)
+get_metadata(buildings, selection, verbose = TRUE)
 }
 \arguments{
-\item{buildings}{A character vector or integer, or a list containing those types. Provide either building id or name. You can provide multiple buildings at once.}
+\item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.}
 
 \item{selection}{Selection list from point selector.}
+
+\item{verbose}{Logical. If TRUE (default), print status messages.}
+}
+\value{
+A data.frame of clean metadata for the requested points.
 }
 \description{
-Retrieves points and equipment for a given building or selection and outputs a clean metadata dataframe.
+Retrieves points and equipment for a given building or selection and outputs a clean metadata data.frame.
 }
 \examples{
 \dontrun{

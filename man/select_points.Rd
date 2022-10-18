@@ -9,6 +9,9 @@ select_points(query)
 \arguments{
 \item{query}{query supplied from PointSelector.}
 }
+\value{
+A named list of all the points requested by the query.
+}
 \description{
 Returns a list of ids based on the input query from PointSelector. Uses http POST call to query data.
 }
