@@ -5,7 +5,7 @@
 #'  
 #' @param api_type Provide the API client name.
 #' 
-#' @return No return value, sets API URL and API KEY in the system environment.
+#' @return No return value, sets API url and API key in the system environment.
 #'   
 #' @export
 #' 
@@ -36,8 +36,6 @@ api.setup <- function(api_type = 'prod') {
   Sys.setenv('api_key' = api_key)
 }
 
-
-
 #' Access API keys and URL from System Environment
 #' @description 
 #' 
@@ -64,7 +62,7 @@ api.access <- function(){
 #' @description 
 #' Provides a status code and message for the API connection.
 #' 
-#' @return A character vector with the API server status and message.
+#' @return A character string of the API server status and message.
 #'
 #' @export
 api.status <- function() {

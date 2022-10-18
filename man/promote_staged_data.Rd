@@ -9,9 +9,9 @@ promote_staged_data(building, data_to_promote, verbose = TRUE)
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
 
-\item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns}
+\item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.}
 
-\item{verbose}{Logical. TRUE (Default). Whether to print the status message of the promotion attempt.}
+\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
 Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.

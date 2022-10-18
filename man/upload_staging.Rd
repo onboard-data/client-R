@@ -11,12 +11,12 @@ upload_staging(building, data_to_upload, skip_topics = FALSE, verbose = TRUE)
 
 \item{data_to_upload}{A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.}
 
-\item{skip_topics}{Logical. FALSE (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.}
+\item{skip_topics}{Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.}
 
-\item{verbose}{Logical. TRUE (Default). Whether to print the status message of the upload attempt.}
+\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
-Named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
+A named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
 }
 \description{
 Uploads data to the staging area.

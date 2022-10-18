@@ -26,7 +26,7 @@ api.get <- function(endpoint) {
   if (request_endpoint$status_code == 200) {
       api_output <-
         content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
-        fromJSON(flatten = T)
+        fromJSON(flatten = TRUE)
     return(api_output)
   } else {
     stop(httr::http_status(status_code)$message)
@@ -44,7 +44,7 @@ api.get <- function(endpoint) {
 #' 
 #' @param json_body A JSON payload to give to the POST call.
 #' 
-#' @param output A string, either "list" (default) or "dataframe", to specify the API output format.
+#' @param output A character string, either "list" (default) or "dataframe", to specify the API output format.
 #' 
 #' @return A list or data.frame of the API output.
 #' 

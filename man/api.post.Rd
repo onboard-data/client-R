@@ -11,7 +11,7 @@ api.post(endpoint, json_body, output = "list")
 
 \item{json_body}{A JSON payload to give to the POST call.}
 
-\item{output}{A string, either "list" (default) or "dataframe", to specify the API output format.}
+\item{output}{A character string, either "list" (default) or "dataframe", to specify the API output format.}
 }
 \value{
 A list or data.frame of the API output.

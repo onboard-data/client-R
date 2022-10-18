@@ -6,10 +6,12 @@
 #' 
 #' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.
 #' 
+#' @param verbose Logical. If TRUE (default), prints status and progress messages.
+#' 
 #' @return A data.frame of metadata from the staging area.
 #' 
 #' @export
-get_staged_data <- function(building){
+get_staged_data <- function(building, verbose = TRUE){
   
   if(length(building)>1){
     stop('Length of building parameter greater than 1. Enter only one building id or name')
@@ -17,7 +19,10 @@ get_staged_data <- function(building){
 
   building_info <- get_building_info(building)
 
-  print('Querying staging data...')
+  if(verbose){
+    cat('Querying staging data...\n')
+  }
+
 
   endpoint <- paste0('staging/',building_info$id,'?points=True')
 
@@ -78,7 +83,9 @@ get_staged_data <- function(building){
                             tz = 'America/New_York'))) %>%
     select(sort(tidyselect::peek_vars()))
   
-  print('Staging data created.')
+  if(verbose){
+    cat('Staging data created.')
+  }
 
   return(staged_data)
 
@@ -95,11 +102,9 @@ get_staged_data <- function(building){
 #' 
 #' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
-#' @param skip_topics Logical. FALSE (default). If True, the uploaded topics will be assigned `__SKIP__` equip_id.
+#' @param skip_topics Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.
 #'
-#' @param verbose Logical. TRUE (Default). Whether to print the status message of the upload attempt.
-#'
-#' @return Named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
+#' @return A named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
 #'  
 #'@export
 upload_staging <- function(building,
@@ -115,7 +120,7 @@ upload_staging <- function(building,
     stop('data_to_upload is missing in the function call. data_to_upload should be a dataframe including at least e.equip_id & p.topic for the upload to succeed')
 
   } else if (!('p.topic' %in% names(data_to_upload))) {
-    print('p.topic column not found in staging_upload.')
+    stop('p.topic column not found in staging_upload.')
 
   } else if (!('e.equip_id' %in% names(data_to_upload)) &
              skip_topics == FALSE) {
@@ -139,7 +144,9 @@ upload_staging <- function(building,
     stop('Stopping Operation.')
   }
 
-  print(sprintf('%s topics...', operation))
+  if(verbose){
+    cat(sprintf('%s topics...\n', operation))
+  }
 
   #get endpoint
   endpoint <- paste0('staging/', building_info$id)
@@ -157,7 +164,7 @@ upload_staging <- function(building,
   }
   
   if(verbose){
-    print(out_object$message)
+    cat(out_object$message)
   }
   
   return(out_object)
@@ -169,9 +176,7 @@ upload_staging <- function(building,
 #' 
 #' @inheritParams get_staged_data
 #' 
-#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A dataframe containing e.equip_id & p.topic columns
-#' 
-#' @param verbose Logical. TRUE (Default). Whether to print the status message of the promotion attempt.
+#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
 #' @return Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.
 #' 
@@ -258,9 +263,8 @@ promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
   }
   
   if (verbose){
-    print(out_object$message)
+    cat(out_object$message)
   }
   
   return(out_object)
-
 }

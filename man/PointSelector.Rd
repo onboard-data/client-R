@@ -7,7 +7,7 @@
 PointSelector()
 }
 \value{
-An empty named list.
+An empty named list of possible point selection criteria.
 }
 \description{
 A list of parameters to query metadata.

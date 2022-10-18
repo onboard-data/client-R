@@ -4,9 +4,9 @@
 \name{OnboardClient-package}
 \alias{OnboardClient}
 \alias{OnboardClient-package}
-\title{OnboardClient: R Bindings for the Onboard Data Building Data API}
+\title{OnboardClient: Bindings for the Onboard Data Building Data API}
 \description{
-Provides a simple wrapper for the Onboard Data building data API. Along with streamlining access to the API, this package simplifies access to sensor time series data, metadata (sensors, equipment, and buildings), and details about the Onboard data model/ontology.
+Provides a wrapper for the Onboard Data building data API \url{https://api.onboarddata.io/swagger}. Along with streamlining access to the API, this package simplifies access to sensor time series data, metadata (sensors, equipment, and buildings), and details about the Onboard data model/ontology.
 }
 \author{
 \strong{Maintainer}: Christopher Dudas-Thomas \email{christopher@onboarddata.io}

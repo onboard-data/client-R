@@ -6,7 +6,7 @@
 #' 
 #' A list of parameters to query metadata.
 #' 
-#' @returns An empty named list.
+#' @returns An empty named list of possible point selection criteria.
 #' 
 #' @examples 
 #' \dontrun{
@@ -148,7 +148,7 @@ get_points_by_ids <- function(id){
 #' 
 #' Queries equipment by their ids.
 #' 
-#' @param id (Integer) One or many equipment ids. 
+#' @param id Integer or integer vector, containing one or many equipment ids. 
 #'
 #' @return A data.frame of the requested equipment, or an empty list if no equipment matches those ids.
 #' 

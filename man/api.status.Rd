@@ -7,7 +7,7 @@
 api.status()
 }
 \value{
-A character vector with the API server status and message.
+A character string of the API server status and message.
 }
 \description{
 Provides a status code and message for the API connection.
