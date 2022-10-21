@@ -106,7 +106,7 @@ get_users <- function(id){
     tidyr::pivot_longer(cols = c(4:7), values_to ='role_id') %>%
     filter(!is.na(.data$role_id)) %>%
     mutate(across(.data$role_id, ~as.integer(.)))  %>%
-    left_join(.data$roles,
+    left_join(roles,
               by = c('role_id' = 'id')) %>% 
     select(.data$id, .data$org_id, .data$org_name, .data$role, .data$email, 
            .data$username, .data$first_name, .data$last_name, .data$last_login, 
