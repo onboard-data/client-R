@@ -17,7 +17,7 @@ get_staged_data <- function(building, verbose = TRUE){
     stop('Length of building parameter greater than 1. Enter only one building id or name')
   }
 
-  building_info <- get_building_info(building)
+  building_info <- get_building_info(building, verbose = verbose)
 
   if(verbose){
     cat('Querying staging data...\n')
@@ -104,7 +104,7 @@ get_staged_data <- function(building, verbose = TRUE){
 #' 
 #' @param skip_topics Logical. If True, the uploaded topics will be assigned `__SKIP__` equip_id.
 #'
-#' @return A named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
+#' @return A named list containing any errors that may have occured during data upload.
 #'  
 #'@export
 upload_staging <- function(building,
@@ -113,23 +113,23 @@ upload_staging <- function(building,
                            verbose = TRUE
                            ){
 
-  building_info <- get_building_info(building)
+  building_info <- get_building_info(building, verbose = verbose)
 
   if(missing(data_to_upload)) {
 
     stop('data_to_upload is missing in the function call. data_to_upload should be a dataframe including at least e.equip_id & p.topic for the upload to succeed')
 
-  } else if (!('p.topic' %in% names(data_to_upload))) {
+  }else if (!('p.topic' %in% names(data_to_upload))) {
     stop('p.topic column not found in staging_upload.')
+   }
 
-  } else if (!('e.equip_id' %in% names(data_to_upload)) &
-             skip_topics == FALSE) {
-    stop('e.equip_id column not found in data_to_upload.')
-  } else if (skip_topics == TRUE){
-    data_to_upload <- data_to_upload %>%
-      transmute(e.equip_id = '__SKIP__', .data$p.topic)
-
+  if(skip_topics == TRUE){
     operation <- 'skipping'
+    
+    data_to_upload <- data_to_upload %>%
+          transmute(e.equip_id = '__SKIP__', 
+                    .data$p.topic)
+    
   } else {
     operation <- 'uploading'
   }
@@ -154,20 +154,21 @@ upload_staging <- function(building,
   post_points <- api.post(endpoint,
                           json_body = data_to_upload_json)
   
-  out_object <- list()
+  output <- post_points$row_errors
 
-  if(length(post_points$row_errors)==0){
-    out_object$message <- "Upload successful"
+  if(length(output)==0){
+    message <- "Upload successful \n"
   } else{
-    out_object$message <- "Upload unsuccesful. Please check errors for more information."
-    out_object$errors <- post_points$row_errors
+    message <- "Upload unsuccesful. Please check errors for more information. \n"
   }
   
   if(verbose){
-    cat(out_object$message)
+    cat(message)
   }
   
-  return(out_object)
+  if(length(output) != 0){
+  return(output)
+}
 }
 
 #' Promote data on Staging Area
@@ -178,13 +179,13 @@ upload_staging <- function(building,
 #' 
 #' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
-#' @return Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.
+#' @return A named list containing any errors that may have occured during data promotion.
 #' 
 #' @export
 
 promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
 
-  building_info <- get_building_info(building)
+  building_info <- get_building_info(building, verbose = verbose)
   
   if(missing(data_to_promote)){
 
@@ -232,39 +233,7 @@ promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
   promote_data <- api.post(endpoint,
                            json_body = promote_json)
 
-  #Get Validation Errors
-
-  point_errors <- as.data.frame(do.call(rbind,
-                          promote_data$points)) %>%
-    tibble::rownames_to_column(var = 'p.topic')
-
-  equipment_errors <- as.data.frame(do.call(
-    rbind, promote_data$equipment)) %>%
-    tibble::rownames_to_column(var = 'e.equip_id')
-
-  validation_errors <- plyr::rbind.fill(point_errors,
-                                equipment_errors)  %>% 
-  mutate(across(everything(),
-                ~tidyr::replace_na(as.character(.), ''))) %>%
-   filter(.data$e.equip_id != '__SKIP__')
+  output <- promote_data[-1]
   
-  out_object <- list()
-
-  if('V1' %in% names(validation_errors)){
-
-    validation_errors <- rename(validation_errors,
-                                'errors' = 'V1') %>%
-      filter(.data$errors != 'NULL')
-
-    out_object$message <- "Data promotion unsuccessful. Please check validation errors."
-    out_object$validation_errors <- validation_errors
-  } else {
-    out_object$message <- "Data promotion successful."
-  }
-  
-  if (verbose){
-    cat(out_object$message)
-  }
-  
-  return(out_object)
+  return(output)
 }

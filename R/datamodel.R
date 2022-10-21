@@ -73,7 +73,7 @@ get_point_types <- function(){
   
   #Unite data frames
   point_types <- left_join(select(
-    .data$pointtypes, .data$id, .data$tag_name, .data$measurement_id, .data$tags),
+    pointtypes, .data$id, .data$tag_name, .data$measurement_id, .data$tags),
     measurements_units,
     by = c("measurement_id" = 'id')) %>%
     mutate(across(.data$tags,  ~ gsub('c\\(|\\)', '', .))) %>%
