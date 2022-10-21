@@ -14,7 +14,7 @@ promote_staged_data(building, data_to_promote, verbose = TRUE)
 \item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
-Named list containing a status message detailing whether or not data promotion succeeded and, if errors occurred, an element detailing the validation errors.
+A named list containing any errors that may have occured during data promotion.
 }
 \description{
 Promote valid data on the staging area to the live building.

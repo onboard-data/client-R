@@ -16,7 +16,7 @@ upload_staging(building, data_to_upload, skip_topics = FALSE, verbose = TRUE)
 \item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
-A named list containing a status message detailing whether or not data upload succeeded and, if errors occurred, an element detailing the errors.
+A named list containing any errors that may have occured during data upload.
 }
 \description{
 Uploads data to the staging area.
