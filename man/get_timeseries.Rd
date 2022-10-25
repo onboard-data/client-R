@@ -4,7 +4,7 @@
 \alias{get_timeseries}
 \title{Time-Series Data}
 \usage{
-get_timeseries(start_time, end_time, point_ids)
+get_timeseries(start_time, end_time, point_ids, unit = "default")
 }
 \arguments{
 \item{start_time}{Start Time in UTC.}
@@ -12,6 +12,8 @@ get_timeseries(start_time, end_time, point_ids)
 \item{end_time}{End Time in UTC.}
 
 \item{point_ids}{Point IDs for which timeseries data needs to be queried.}
+
+\item{unit}{Provide the unit type: "default" or "raw"}
 }
 \value{
 A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.

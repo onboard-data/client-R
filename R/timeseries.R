@@ -78,23 +78,36 @@ get_timeseries_raw <- function(start_time, end_time, point_ids){
 #' 
 #' @inheritParams get_timeseries_raw
 #' 
+#' @param unit Provide the unit type: "default" or "raw"
+#' 
 #' @return A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 #' 
 #' @export
-get_timeseries <- function(start_time, end_time, point_ids){
-  
+get_timeseries <- function(start_time, end_time, point_ids,unit = 'default'){
+
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
                                        point_ids = point_ids)
   if(nrow(timeseries_raw)!=0){
-    timeseries_clean <- timeseries_raw %>%
+    
+    if(unit == 'default'){
+    timeseries_clean <- timeseries_raw %>% 
       transmute(.data$timestamp,
                 .data$point_id,
-                unit = as.character(.data$unit))  %>% 
-      pivot_wider(id_cols = .data$timestamp,
-                  names_from = .data$point_id,
-                  values_from = .data$unit,
-                  values_fill = NA) %>% 
+                unit = as.character(.data$unit))
+    
+    } else if (unit == 'raw'){
+      timeseries_clean <- timeseries_raw %>% 
+        transmute(.data$timestamp,
+                  .data$point_id,
+                  unit = as.character(.data$raw))
+    }
+    
+    timeseries_clean <-pivot_wider(timeseries_clean,
+                                   id_cols = .data$timestamp,
+                                   names_from = .data$point_id,
+                                   values_from = .data$unit,
+                                   values_fill = NA) %>% 
       mutate(across(.data$timestamp,
                     ~gsub('[.].*','',.))) %>%
       type.convert(as.is = T) %>% 
