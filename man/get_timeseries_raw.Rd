@@ -4,7 +4,7 @@
 \alias{get_timeseries_raw}
 \title{Raw Time-Series Data}
 \usage{
-get_timeseries_raw(start_time, end_time, point_ids)
+get_timeseries_raw(start_time, end_time, point_ids, units)
 }
 \arguments{
 \item{start_time}{Start Time in UTC.}
@@ -12,10 +12,28 @@ get_timeseries_raw(start_time, end_time, point_ids)
 \item{end_time}{End Time in UTC.}
 
 \item{point_ids}{Point IDs for which timeseries data needs to be queried.}
+
+\item{units}{(Optional) A data.frame consisting of preferred units for given mesaurments}
 }
 \value{
 A long data.frame of time series data, with point id, timestamp, and raw point values as columns.
 }
 \description{
 Retrieves timeseries data in raw format.
+}
+\examples{
+\dontrun{
+
+end_time <- as.POSIXlt(Sys.time(), tz = 'UTC')
+
+start_time <- end_time - lubridate::hours(6)
+
+point_ids <- c(290631, 290643) 
+
+units <- data.frame("temperature" = "k")
+
+timeseries <- get_timeseries_raw(start_time, end_time, point_ids, units)
+
+}
+
 }
