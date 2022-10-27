@@ -29,7 +29,7 @@ api.get <- function(endpoint) {
         fromJSON(flatten = TRUE)
     return(api_output)
   } else {
-    stop(httr::http_status(status_code)$message)
+    stop(httr::http_status(request_endpoint$status_code)$message)
   }
 }
 
@@ -84,7 +84,7 @@ api.post <- function(endpoint, json_body, output = 'list') {
     }
     return(api_output)
   } else {
-    stop(httr::http_status(status_code)$message)
+    stop(httr::http_status(request_endpoint$status_code)$message)
   }
   
 }

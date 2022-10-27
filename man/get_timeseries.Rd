@@ -4,7 +4,7 @@
 \alias{get_timeseries}
 \title{Time-Series Data}
 \usage{
-get_timeseries(start_time, end_time, point_ids, unit = "default")
+get_timeseries(start_time, end_time, point_ids, units, unit_type = "default")
 }
 \arguments{
 \item{start_time}{Start Time in UTC.}
@@ -13,11 +13,29 @@ get_timeseries(start_time, end_time, point_ids, unit = "default")
 
 \item{point_ids}{Point IDs for which timeseries data needs to be queried.}
 
-\item{unit}{Provide the unit type: "default" or "raw"}
+\item{units}{(Optional) A data.frame consisting of preferred units for given mesaurments}
+
+\item{unit_type}{Provide the unit type: "default" or "raw"}
 }
 \value{
 A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 }
 \description{
 Provides clean time-series
+}
+\examples{
+\dontrun{
+
+end_time <- as.POSIXlt(Sys.time(), tz = 'UTC')
+
+start_time <- end_time - lubridate::hours(6)
+
+point_ids <- c(290631, 290643) 
+
+units <- data.frame("temperature" = "k")
+
+timeseries <- get_timeseries(start_time, end_time, point_ids, units)
+
+}
+
 }
