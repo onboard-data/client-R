@@ -1,6 +1,6 @@
 Type: Package
 Package: OnboardClient
-Title: Bindings for the Onboard Data Building Data API
+Title: Bindings for Onboard Data's Building Data API
 Version: 1.0.0
 Authors@R: c(
       person(given = "Pranay",
