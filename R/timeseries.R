@@ -7,7 +7,7 @@
 #' @param start_time Start Time in UTC.
 #' @param end_time End Time in UTC.
 #' @param point_ids Point IDs for which timeseries data needs to be queried.
-#' @param units (Optional) A data.frame consisting of preferred units for given mesaurments
+#' @param units (Optional) A data.frame consisting of preferred units for given measurements
 #' 
 #' @return A long data.frame of time series data, with point id, timestamp, and raw point values as columns.
 #' 
@@ -41,16 +41,15 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units){
     
     if(!missing(units)){
     
-    if(class(units) != "data.frame"){
-       stop("units must be a dataframe.")
-      
-    } else {
-      
-      timeseries_query <- append(timeseries_query,
-                                 list(units=units)) 
+      if(class(units) != "data.frame"){
+         stop("units must be a dataframe.")
+        
+      } else {
+        
+        timeseries_query <- append(timeseries_query,
+                                   list(units=units)) 
+      }
     }
-  }
-  
   
   timeseries_query <- jsonlite::toJSON(timeseries_query)
   
