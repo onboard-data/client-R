@@ -15,5 +15,5 @@ get_building_info(buildings, verbose = TRUE)
 A data.frame of building info with two columns, 'id' and 'name'.
 }
 \description{
-Retrieves building id(s) and name(s). Assigns each to list variables in the parent environment called "id" and "name", and prints each list.
+Returns building id(s) and name(s) in a named list.
 }

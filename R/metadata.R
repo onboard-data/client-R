@@ -5,7 +5,7 @@
 
 #' Building Info
 #' 
-#' Retrieves building id(s) and name(s). Assigns each to list variables in the parent environment called "id" and "name", and prints each list.
+#' Returns building id(s) and name(s) in a named list.
 #' 
 #' @param buildings Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.
 #' 
