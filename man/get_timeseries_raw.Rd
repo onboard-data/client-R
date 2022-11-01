@@ -13,7 +13,7 @@ get_timeseries_raw(start_time, end_time, point_ids, units)
 
 \item{point_ids}{Point IDs for which timeseries data needs to be queried.}
 
-\item{units}{(Optional) A data.frame consisting of preferred units for given mesaurments}
+\item{units}{(Optional) A data.frame consisting of preferred units for given measurements}
 }
 \value{
 A long data.frame of time series data, with point id, timestamp, and raw point values as columns.
