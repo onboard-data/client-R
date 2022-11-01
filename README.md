@@ -10,12 +10,10 @@ If you would like to get access to Onboard and start prototyping against an exam
 
 #### Installing API Library and verifying connectivity
 
-You can install the client via github.
+You can install the client CRAN.
 
 ```R
-install.packages('devtools') # Install devtools package first
-devtools::install_github(repo='onboard-data/client-R',
-                          auth='Github-Personal-Access-Token') # Need PAT since repo is currently private
+install.packages('OnboardClient')
 ```
 To test if your API key is working correctly, use `api.setup()`, and enter your api keys in the dialogue box when prompted.
 Check the `Remember with keyring` option if you wish to save your api keys securely with the [keyring](https://support.rstudio.com/hc/en-us/articles/360000969634) package  
