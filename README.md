@@ -10,13 +10,13 @@ If you would like to get access to Onboard and start prototyping against an exam
 
 #### Installing API Library and verifying connectivity
 
-You can install the client CRAN.
+You can install the client from CRAN using the standard `install.packages()` function.
 
 ```R
 install.packages('OnboardClient')
 ```
 To test if your API key is working correctly, use `api.setup()`, and enter your api keys in the dialogue box when prompted.
-Check the `Remember with keyring` option if you wish to save your api keys securely with the [keyring](https://support.rstudio.com/hc/en-us/articles/360000969634) package  
+Check the `Remember with keyring` option if you wish to save your api keys securely with the [keyring](https://support.rstudio.com/hc/en-us/articles/360000969634) package.
 
 ```R
 library(OnboardClient)
