@@ -5,11 +5,13 @@
 #'  
 #' @param api_type Provide the API client name.
 #' 
+#' @param verbose Logical. If TRUE, prints the API status.
+#' 
 #' @return No return value, sets API url and API key in the system environment.
 #'   
 #' @export
 #' 
-api.setup <- function(api_type = 'prod') {
+api.setup <- function(api_type = 'prod', verbose = TRUE) {
   
   if(!(api_type %in% c('prod','dev','rtem'))){
     stop("Please use 'prod', 'dev', or 'rtem' for api_type")
@@ -34,6 +36,10 @@ api.setup <- function(api_type = 'prod') {
   
   Sys.setenv('api_url' = api_url)
   Sys.setenv('api_key' = api_key)
+  
+  if(verbose){
+    cat(api.status())
+  }
 }
 
 #' Access API keys and URL from System Environment
@@ -70,6 +76,6 @@ api.status <- function() {
   
   request <- GET(url = api_data$url,
                  add_headers(`X-OB-Api` = api_data$key))
-
+  
   return(httr::http_status(request$status_code)$message)
 }
