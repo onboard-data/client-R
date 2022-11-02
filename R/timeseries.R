@@ -54,6 +54,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units){
   timeseries_query <- jsonlite::toJSON(timeseries_query)
   
   # Format JSON query
+  . <- NULL
   timeseries_query <- timeseries_query %>% 
     gsub('start":\\[', 'start":', .) %>% 
     gsub('\\],"end":\\[', ',"end":', .) %>% 
