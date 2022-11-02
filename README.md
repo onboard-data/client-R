@@ -25,9 +25,7 @@ Check the `Remember with keyring` option if you wish to save your api keys secur
 ```R
 library(OnboardClient)
 
-api.setup() # set up api url and api keys.
-
-api.status() # Your connection is established if it returns 200.
+api.setup() # set up api url and api keys. Your connection is established if it returns 200.
 
 whoami <- api.get('whoami') # Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
 
