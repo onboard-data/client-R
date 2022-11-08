@@ -6,7 +6,7 @@
 
 If you are an existing Onboard user you can head over to [your account’s api keys page](https://portal.onboarddata.io/account?tab=api) and generate a new key and grant scopes for `general`, `auth` and `buildings:read`.
 
-If you would like to get access to Onboard and start prototyping against an example building please request access [here](https://www.onboarddata.io/contact-us).
+If you would like to get access to Onboard and start prototyping against an example building please request access [here](https://www.onboarddata.io/sandbox).
 
 #### Installing API Library and verifying connectivity
 
