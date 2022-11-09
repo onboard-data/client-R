@@ -29,9 +29,9 @@
 #' @export
 get_timeseries_raw <- function(start_time, end_time, point_ids, units){
 
-  start_time <- as.numeric(as.POSIXlt(start_time))
+  start_time <- as.numeric(as.POSIXlt(start_time, tz = 'UTC'))
   
-  end_time <- as.numeric(as.POSIXlt(end_time))
+  end_time <- as.numeric(as.POSIXlt(end_time, tz = 'UTC'))
   
 
     
