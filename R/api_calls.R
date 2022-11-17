@@ -44,23 +44,35 @@ api.get <- function(endpoint) {
 #' 
 #' @param json_body A JSON payload to give to the POST call.
 #' 
+#' @param upload_path (Optional) A character string containing the file path for the file to upload
+#' 
 #' @param output A character string, either "list" (default) or "dataframe", to specify the API output format.
+#' 
 #' 
 #' @return A list or data.frame of the API output.
 #' 
 #' @export
-api.post <- function(endpoint, json_body, output = 'list') {
+api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
   api_data <- api.access()
   
   # post endpoint
   endpoint_url <- paste(api_data$url, endpoint, sep = '/')
   
+  if(length(upload_path) == 0){
   request_endpoint <- POST(
     url = endpoint_url,
     content_type_json(),
     add_headers(`X-OB-Api` = api_data$key),
     body = json_body
   )
+  } else {
+    request_endpoint <- POST(
+      url = endpoint_url,
+      add_headers(`X-OB-Api` = api_data$key),
+      body = list(file = upload_file(upload_path)),
+      encode= 'multipart'
+    )
+  }
   
   if (request_endpoint$status_code == 200) {
     if (output == 'list') {

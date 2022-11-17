@@ -4,12 +4,14 @@
 \alias{api.post}
 \title{API POST call}
 \usage{
-api.post(endpoint, json_body, output = "list")
+api.post(endpoint, json_body, upload_path = NULL, output = "list")
 }
 \arguments{
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}
 
 \item{json_body}{A JSON payload to give to the POST call.}
+
+\item{upload_path}{(Optional) A character string containing the file path for the file to upload}
 
 \item{output}{A character string, either "list" (default) or "dataframe", to specify the API output format.}
 }
