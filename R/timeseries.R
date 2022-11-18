@@ -93,7 +93,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units){
   }
   
   if(4 %in% names(timeseries_df)){
-    timeseries_df <- timeseries_df %>% rename(raw = .data$`4`)
+    timeseries_df <- timeseries_df %>% select(-raw) %>%  rename(raw = .data$`4`)
   }
   } else {
     timeseries_df <- data.frame()
