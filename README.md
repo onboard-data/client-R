@@ -1,4 +1,4 @@
-# OnboardClient: Onboard Data's API Bindings for R
+# OnboardClient: API Bindings for R
 
 ### General Usage Example 
 
