@@ -13,6 +13,7 @@ If you would like to get access to Onboard and start prototyping against an exam
 You can install the official release (stable) from CRAN using the standard `install.packages()` function, or use the development version (unstable) by installing from github. 
 
 >**Note**
+>
 >Proceed at your own risk if using the dev version! While the dev version may offer extra functionality, it is our active development platform. This means it is also more prone to error as it's not necessarily fully tested. If something breaks or doesn't work as expected, though, please let us know, as we would certainly like to know so we can push a patch.
 
 ```R
