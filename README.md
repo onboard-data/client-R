@@ -8,6 +8,8 @@ If you are an existing Onboard user you can head over to [your account’s api k
 
 If you would like to get access to Onboard and start prototyping against an example building please request access [here](https://www.onboarddata.io/sandbox).
 
+Instructions and examples for how to use these API bindings are further documented on [our docs!](https://onboard-api-wrappers-documentation.readthedocs.io/en/latest/Initial%20Setup.html)
+
 #### Installing API Library and verifying connectivity
 
 You can install the official release (stable) from CRAN using the standard `install.packages()` function, or use the development version (unstable) by installing from github. 
