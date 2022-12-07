@@ -88,3 +88,14 @@ get_point_types <- function(){
   
 }
 
+
+#' Tags
+#' 
+#' Queries all tags data and information from Onboard's Data Model.
+#' 
+#' @return A data.frame containing all tag information.
+#' 
+#' @export
+get_tags <- function(){
+  return(api.get('tags'))
+}

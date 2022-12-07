@@ -1,4 +1,4 @@
-# Onboard API R Client
+# OnboardClient: API Bindings for R
 
 ### General Usage Example 
 
@@ -8,9 +8,16 @@ If you are an existing Onboard user you can head over to [your account’s api k
 
 If you would like to get access to Onboard and start prototyping against an example building please request access [here](https://www.onboarddata.io/sandbox).
 
+Instructions and examples for how to use these API bindings are further documented on [our docs!](https://onboard-api-wrappers-documentation.readthedocs.io/en/latest/index.html)
+
 #### Installing API Library and verifying connectivity
 
-You can install the official release (stable) from CRAN using the standard `install.packages()` function, or use the development version (unstable) by installing from github. Proceed at your own risk if using the dev version! While the dev version may offer extra functionality, it is our active development platform. This means it is also more prone to error as it's not necessarily fully tested. If something breaks or doesn't work as expected, though, please let us know, as we would certainly like to know so we can push a patch.
+You can install the official release (stable) from CRAN using the standard `install.packages()` function, or use the development version (unstable) by installing from github. 
+
+>**Note**
+>
+>Proceed at your own risk if using the dev version! While the dev version may offer extra functionality, it is our active development platform. This means it is also more prone to error as it's not necessarily fully tested. If something breaks or doesn't work as expected, though, please let us know, as we would certainly like to know so we can push a patch.
+
 ```R
 # official version (stable)
 install.packages('OnboardClient')
