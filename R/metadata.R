@@ -159,9 +159,11 @@ get_metadata <- function(buildings, selection, verbose = TRUE){
     select(everything(),
            equip_ref = .data$equip_id.y,
            -.data$parent_equip) %>%
-    #Convert unix time-stamps to EST
+    #Convert epoch time-stamps to UTC 
     mutate(across(c(.data$first_updated, .data$last_updated),
-                  ~ as_datetime(as.numeric(substr(., 1, 10)))))
+                  ~ as.POSIXct(as.integer(substr(.,1,10)),
+                               origin = '1970-01-01',
+                               tz = 'UTC')))
   
   if(verbose){
     cat('Metadata generated.')
