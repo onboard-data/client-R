@@ -99,3 +99,25 @@ get_point_types <- function(){
 get_tags <- function(){
   return(api.get('tags'))
 }
+
+#' Units
+#'
+#' Queries all unit data and information from Onboard's Data Model.
+#'
+#' @return A data.frame containing all unit information.
+#'
+#' @export
+get_all_units <- function(){
+  return(api.get('unit'))
+}
+
+#' Measurements
+#'
+#' Queries all measurement data and information from Onboard's Data Model.
+#'
+#' @return A data.frame containing all measurement information..
+#'
+#' @export
+get_all_measurements <- function(){
+  return(api.get('measurements'))
+}
