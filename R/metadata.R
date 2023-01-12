@@ -81,7 +81,7 @@ get_building_info <- function(buildings, verbose = TRUE){
 #' }
 #' 
 #' @export
-get_metadata <- function(buildings, selection, verbose = TRUE){
+get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   
   if(missing(selection) & missing(buildings)){
     stop('Provide either building name/id or selection list.')
@@ -94,6 +94,12 @@ get_metadata <- function(buildings, selection, verbose = TRUE){
     query$buildings <- building_info$id
     
     selection <- select_points(query)
+  }
+  
+  if(!is.list(selection) | is.atomic(selection)){
+    stop('selection should be a non-atomic named list with some subset of fields: 
+         c(orgs, buildings, point_ids, point_names, point_topics, updated_since, 
+         point_types, equipment, equipment_types, point_hashes)')
   }
   
   if(length(selection$points)==0){
