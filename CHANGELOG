@@ -1,0 +1,39 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added 
+
+- added getter wrappers for unit, measurement, and tag queries to data model
+- api.setup now prints HTTP status code
+- option to upload CSV with POST calls
+
+### Fixed
+
+- get_timeseries_raw
+  - default timezone format now UTC instead of user's time zone
+  - columns no longer duplicated
+- convert epoch timestamps to UTC instead of EST in get_metadata and get_staged_data
+- make some arguments optional for get_metadata, check that selection is non-atomic list
+
+## [1.0.0] - 2022-10-21
+
+### Added
+
+
+### Changed
+
+
+### Removed
+
+
+### Fixed
+
+
+[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...HEAD
+[1.0.0]: https://github.com/onboard-data/client-R/commit/e5546cd548685a44ce5d302b06f05518f5fe1f16
