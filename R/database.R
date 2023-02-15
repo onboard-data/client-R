@@ -92,10 +92,11 @@ get_users <- function(id){
     select(.data$id, .data$org_id, .data$org_name, .data$roles, 
            .data$email, .data$username, .data$first_name, .data$last_name, 
            .data$last_login, .data$created, .data$password_reset, 
-           .data$active) %>% 
-    mutate(across(c(.data$password_reset, .data$last_login, .data$created),
-                  ~ as_datetime(as.numeric(substr(., 1, 10))),
-                  tz = 'America/New_York')) %>% 
+           .data$active) %>%   
+    mutate(across(c(.data$password_reset, 
+                    .data$last_login, .data$created),
+                  ~ as_datetime(as.numeric(substr(., 1, 10)),
+                  tz = 'UTC'))) %>%   
     mutate(across(.data$roles,
                   ~gsub('c\\(|\\)','',.))) %>%  
     mutate(across(.data$roles,
@@ -146,7 +147,7 @@ get_deployments <- function(org_id){
   deployments <- deployments %>%
     mutate(across(last_heartbeat,
                   ~ as_datetime(as.numeric(substr(., 1, 10)),
-                                tz = 'America/New_York'))) %>%
+                                tz = 'UTC'))) %>%
     select(-.data$api_key,-.data$wg_pubkey)
   
   if(!missing(org_id)){

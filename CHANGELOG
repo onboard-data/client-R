@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - columns no longer duplicated
 - convert epoch timestamps to UTC instead of EST in get_metadata and get_staged_data
 - make some arguments optional for get_metadata, check that selection is non-atomic list
+- get_users
+  - Fixed an error where timestamps conversion from unix threw an error 
 
 ## [1.0.0] - 2022-10-21
 
