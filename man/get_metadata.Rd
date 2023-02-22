@@ -4,7 +4,7 @@
 \alias{get_metadata}
 \title{Metadata}
 \usage{
-get_metadata(buildings, selection, verbose = TRUE)
+get_metadata(buildings = NULL, selection = NULL, verbose = TRUE)
 }
 \arguments{
 \item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.}
