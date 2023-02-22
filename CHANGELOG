@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added getter wrappers for unit, measurement, and tag queries to data model
 - api.setup now prints HTTP status code
 - option to upload CSV with POST calls
+- option to provide api keys as an argument with api.setup. It is NULL by default
 
 ### Fixed
 

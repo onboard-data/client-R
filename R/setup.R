@@ -5,13 +5,15 @@
 #'  
 #' @param api_type Provide the API client name.
 #' 
+#' @param api_key Option to include your API keys in the argument. It is NULL by default
+#' 
 #' @param verbose Logical. If TRUE, prints the API status.
 #' 
 #' @return No return value, sets API url and API key in the system environment.
 #'   
 #' @export
 #' 
-api.setup <- function(api_type = 'prod', verbose = TRUE) {
+api.setup <- function(api_type = 'prod', api_key = NULL, verbose = TRUE) {
   
   if(!(api_type %in% c('prod','dev','rtem'))){
     stop("Please use 'prod', 'dev', or 'rtem' for api_type")
@@ -25,7 +27,10 @@ api.setup <- function(api_type = 'prod', verbose = TRUE) {
   
   api_name <- paste0('api_key_', api_type)
   
+  if(is.null(api_key)){
+  
   if (Sys.getenv("RSTUDIO") == "1"){
+  
     api_key <- rstudioapi::askForSecret(
       name = api_name,
       message = 'Enter your API key here',
@@ -33,6 +38,7 @@ api.setup <- function(api_type = 'prod', verbose = TRUE) {
   } else {
     api_key <- readline(prompt = "Enter your Onboard API key:")
   }
+  } 
   
   Sys.setenv('api_url' = api_url)
   Sys.setenv('api_key' = api_key)
