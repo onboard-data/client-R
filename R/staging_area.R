@@ -181,11 +181,14 @@ upload_staging <- function(building,
 #' 
 #' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
+#' @param topic_deletes Logical. If True, topics will be deleted from the live building 
+#' 
 #' @return A named list containing any errors that may have occured during data promotion.
 #' 
 #' @export
 
-promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
+promote_staged_data <- function(building, data_to_promote,
+                                topic_deletes = FALSE, verbose = TRUE){
 
   building_info <- get_building_info(building, verbose = verbose)
   
@@ -200,9 +203,9 @@ promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
     }
 
       promote_json <- list(equip_ids='',
-                           topics='') %>%
+                           topics='') %>% 
         toJSON()
-
+      
       promote_json <- gsub('\\["', '[', promote_json)
       promote_json <- gsub('"\\]', ']', promote_json)
 
@@ -223,13 +226,22 @@ promote_staged_data <- function(building, data_to_promote, verbose = TRUE){
         stop('Stopping Operation.')
       }
 
-        promote_json <- list(equip_ids = data_to_promote$e.equip_id,
-                             topics = data_to_promote$p.topic) %>%
-          toJSON()
+        promote_list <- list(equip_ids = data_to_promote$e.equip_id,
+                             topics = data_to_promote$p.topic) 
+        
+        if(topic_deletes == TRUE){
+          
+          promote_list$allowed_topic_deletes = 
+                                   data_to_promote$p.topic
+          
+        }
+        
+        promote_json <- promote_list %>%  toJSON()
 
         operation <- 'promote_some'
     }
 
+  
   endpoint <- paste0('staging/', building_info$id, '/apply')
 
   promote_data <- api.post(endpoint,

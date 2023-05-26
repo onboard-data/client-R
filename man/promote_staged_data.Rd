@@ -4,12 +4,19 @@
 \alias{promote_staged_data}
 \title{Promote data on Staging Area}
 \usage{
-promote_staged_data(building, data_to_promote, verbose = TRUE)
+promote_staged_data(
+  building,
+  data_to_promote,
+  topic_deletes = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
 
 \item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.}
+
+\item{topic_deletes}{Logical. If True, topics will be deleted from the live building}
 
 \item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
