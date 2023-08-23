@@ -9,7 +9,7 @@
 #' @param org_id  (Optional) If missing, the org_id will be grabbed from user's API access
 #' 
 #' @export
-create.building <- function(building_name,org_id = NULL, verbose = TRUE){
+create_building <- function(building_name,org_id = NULL, verbose = TRUE){
   
   #If org_id is not provided, grab an org_id from user's API access
   if(is.null(org_id)){
