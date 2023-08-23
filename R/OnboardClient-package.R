@@ -21,3 +21,6 @@
 #' @importFrom utils type.convert
 ## usethis namespace: end
 NULL
+
+# turn off scientific notations
+options(scipen = 999)
