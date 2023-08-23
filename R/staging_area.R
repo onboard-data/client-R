@@ -79,7 +79,7 @@ get_staged_data <- function(building, verbose = TRUE){
                            by = c('e.equip_id' = 'p.equip_id')) %>%
     #Convert epoch timestamps to UTC
     mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
-                    .data$e.modified, .data$p.modified),
+                    .data$e.modified, .data$p.modified, .data$p.last_updated),
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
                                tz = 'UTC'))) %>% 
