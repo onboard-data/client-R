@@ -17,7 +17,7 @@ get_equip_types <- function(){
   
   equip_types <- equiptype %>%
     filter(.data$active == T) %>%
-    select(-c(.data$sub_types, .data$critical_point_types, .data$flow_order, .data$active)) %>%
+    select(-c(.data$sub_types, .data$flow_order, .data$active)) %>%
     left_join(subtypes,by = c('id' = 'equipment_type_id'),
               suffix = c('','_subtype'))
   
