@@ -1,5 +1,39 @@
 # Staging Area --------------------------------------------------------
 
+#' Create building
+#' 
+#' Creates an empty building on the staging area
+#' 
+#' @param building_name Enter the name of the building you want to create on the staging area
+#' 
+#' @param org_id  (Optional) If missing, the org_id will be grabbed from user's API access
+#' 
+#' @export
+create.building <- function(building_name,org_id = NULL, verbose = TRUE){
+  
+  #If org_id is not provided, grab an org_id from user's API access
+  if(is.null(org_id)){
+    org_id <- api.get("whoami")$userInfo$org_id
+  }
+  
+  orgs <- api.get("organizations")$data
+  org_name <- orgs$name[which(orgs$id == org_id)]
+  
+  building_json <- data.frame(name = building_name,  
+                              org_id = org_id) %>% 
+    toJSON()
+  
+  building_json <- gsub("\\[|\\]","",building_json)
+  
+  create_building <- api.post(endpoint = "buildings",
+           json_body =  building_json
+          )
+
+  if(verbose){
+  print(sprintf("Success!! Building %s created for %s",building_name,org_name))
+  }
+} 
+
 #' Get Staged Data
 #' 
 #' Gets metadata from the staging area.
