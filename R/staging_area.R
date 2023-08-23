@@ -97,7 +97,7 @@ get_staged_data <- function(building, verbose = TRUE){
                    'statusflags','outofservice','unit_id','type_id',
                    'datasource','limit','deadband','@prop',
                    'timedelay',
-                   'notif','acked','resolution','state_text',
+                   'notif','acked','resolution','stateText',
                    'relinquish','priority','p\\.e\\.','confidences',
                    'check','created',sep='|')
 
