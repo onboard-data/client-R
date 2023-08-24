@@ -57,7 +57,6 @@ get_staged_data <- function(building, verbose = TRUE){
     cat('Querying staging data...\n')
   }
 
-
   endpoint <- paste0('staging/',building_info$id,'?points=True')
 
   stage <- api.get(endpoint)
@@ -97,7 +96,7 @@ get_staged_data <- function(building, verbose = TRUE){
                    'statusflags','outofservice','unit_id','type_id',
                    'datasource','limit','deadband','@prop',
                    'timedelay',
-                   'notif','acked','resolution','stateText',
+                   'notif','acked','resolution','p.state_text',
                    'relinquish','priority','p\\.e\\.','confidences',
                    'check','created',sep='|')
 
@@ -106,9 +105,9 @@ get_staged_data <- function(building, verbose = TRUE){
 
   points_data<- points_data %>%
     select(points_data_names$names)
-
-
-  staged_data <- left_join(equip_data,
+  
+  
+staged_data <- left_join(equip_data,
                            points_data,
                            by = c('e.equip_id' = 'p.equip_id')) %>%
     #Convert epoch timestamps to UTC
