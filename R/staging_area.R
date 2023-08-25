@@ -216,7 +216,7 @@ upload_staging <- function(building,
 #' 
 #' @param topic_deletes Logical. If True, topics will be deleted from the live building 
 #' 
-#' @return A named list containing any errors that may have occured during data promotion.
+#' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #' 
 #' @export
 
@@ -279,8 +279,59 @@ promote_staged_data <- function(building, data_to_promote,
 
   promote_data <- api.post(endpoint,
                            json_body = promote_json)
-
-  output <- promote_data[-1]
   
-  return(output)
+  errors<-rrapply::rrapply(promote_data,
+                           how="melt") %>% 
+    filter(.data$L1!="building_id") %>%  
+    filter(!grepl(
+      "Skipped equipment not validated|No valid equipment for topic",
+      value
+    ))  
+  
+  
+  if(nrow(errors != 0)){
+    
+    if(verbose){
+    cat("Partially promoted. Invalid data found in staging area. Please check.")
+    }
+    
+    errors <- errors %>% 
+      rename(type = .data$L1, topic = .data$L2, error = .data$value)
+    
+    points_error <- errors[errors$type =="points",] 
+    
+    if(nrow(points_error)!=0){
+    points_error_list <- setNames(split(points_error$error, 
+                                        seq(nrow(points_error))),
+                                  points_error$topic)
+    } else {
+      points_error_list <- NULL
+    }
+    
+    
+    equip_error <- errors[errors$type =="equipment",] 
+    
+    
+    if(nrow(equip_error)!=0){
+    equip_error_list <- setNames(split(equip_error$error, 
+                                       seq(nrow(equip_error))),
+                                 equip_error$topic)
+    } else {
+      equip_error_list <- NULL
+    }
+    
+    unexp_del <-errors[errors$type =="unexpected_deletes",
+                       "error"]
+    
+    output <- list("points" =points_error_list,
+                       "equipment" = equip_error_list,
+                       "unexpected_deletes" = unexp_del)
+    
+    return(output)
+    
+  } else {
+    if(verbose){
+  print("Data Promotion Successful!")
+    }
+  }
 }
