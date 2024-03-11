@@ -147,8 +147,7 @@ get_deployments <- function(org_id){
   deployments <- deployments %>%
     mutate(across(last_heartbeat,
                   ~ as_datetime(as.numeric(substr(., 1, 10)),
-                                tz = 'UTC'))) %>%
-    select(-.data$api_key,-.data$wg_pubkey)
+                                tz = 'UTC'))) 
   
   if(!missing(org_id)){
     org_id = as.integer(org_id)
