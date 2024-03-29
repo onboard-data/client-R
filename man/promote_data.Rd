@@ -4,12 +4,14 @@
 \alias{promote_data}
 \title{Promote data on Staging Area}
 \usage{
-promote_data(building, data_to_promote, verbose = TRUE)
+promote_data(building, data_to_promote, proceed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
 
 \item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.}
+
+\item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 
 \item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }

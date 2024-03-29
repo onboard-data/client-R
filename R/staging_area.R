@@ -138,12 +138,14 @@ staged_data <- left_join(equip_data,
 #' 
 #' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
+#' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting  
 #'
 #' @return A named list containing any errors that may have occured during data upload.
 #'  
 #'@export
 upload_staging <- function(building,
                            data_to_upload,
+                           proceed= NULL,
                            verbose = TRUE
                            ){
 
@@ -159,9 +161,11 @@ upload_staging <- function(building,
 
   data_to_upload_json <- data_to_upload %>%
     toJSON()
-
+  
+if(is.null(proceed)){
   proceed <- askYesNo(sprintf('Do you want to proceed uploading %s point/s for %s?', 
                               nrow(data_to_upload), building_info$name))
+}
 
   if(is.na(proceed) | proceed != TRUE){
     stop('Stopping Operation.')
@@ -266,13 +270,16 @@ api.promote <- function(building_id, payload_json, verbose){
 #' 
 #' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
+#' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #' 
 #' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #' 
 #' @export
 
-promote_data <- function(building, data_to_promote, 
-                                verbose = TRUE){
+promote_data <- function(building, 
+                         data_to_promote,
+                         proceed = NULL,
+                         verbose = TRUE){
 
   building_info <- get_building_info(building, verbose = verbose)
   
@@ -302,9 +309,11 @@ promote_data <- function(building, data_to_promote,
 
       equip_count <-length(unique(data_to_promote$e.equip_id))
 
+      if(is.null(proceed)){
       proceed <-
         askYesNo(
           sprintf('Do you want to proceed with promoting %s equipment and their valid topics to %s?', equip_count, building_info$name))
+      }
 
       if(is.na(proceed)|proceed != TRUE){
         stop('Stopping Operation.')
@@ -331,11 +340,16 @@ promote_data <- function(building, data_to_promote,
 #' 
 #' @param data_to_unpromote A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
+#' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
+#' 
 #' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #' 
 #' @export
  
-unpromote_data <- function(building, data_to_unpromote, verbose = TRUE){
+unpromote_data <- function(building, 
+                           data_to_unpromote,
+                           proceed = NULL,
+                           verbose = TRUE){
   
   building_info <- get_building_info(building, verbose = verbose)
   
@@ -347,11 +361,13 @@ unpromote_data <- function(building, data_to_unpromote, verbose = TRUE){
     stop('p.topic column not found in data_to_unpromote.')
   } 
   
+  if(is.null(proceed)){
   proceed <-
     askYesNo(
       sprintf('Do you want to proceed with unpromoting %s points from %s?',
               nrow(data_to_unpromote),
               building_info$name))
+  }
   
   if(is.na(proceed) | proceed != TRUE){
     stop('Stopping Operation.')
