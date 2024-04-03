@@ -71,7 +71,7 @@ get_staged_data <- function(building, verbose = TRUE){
                    'statusflags','outofservice','unit_id','type_id',
                    'datasource','limit','deadband','@prop',
                    'timedelay','.cnf','instance_tagger','ob_predicted',
-                   'notif','acked','resolution','p.state_text',
+                   'notif','acked','resolution',
                    'relinquish','priority','p\\.e\\.','auto_tagger',
                    'check','created','\\.err','type_id','tags',
                    sep='|')
