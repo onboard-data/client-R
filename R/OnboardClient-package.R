@@ -5,20 +5,19 @@
 #' @import dplyr
 #' @import httr
 #' @import rrapply
-#' @importFrom tidyr pivot_wider
-#' @importFrom jsonlite toJSON
-#' @importFrom jsonlite fromJSON
-#' @importFrom plyr rbind.fill
-#' @importFrom lubridate as_datetime
 #' @importFrom data.table rbindlist
-#' @importFrom rstudioapi askForSecret
-#' @importFrom jsonlite toJSON
 #' @importFrom jsonlite fromJSON
+#' @importFrom jsonlite toJSON
+#' @importFrom lubridate as_datetime
+#' @importFrom plyr rbind.fill
+#' @importFrom rlist list.flatten
+#' @importFrom rstudioapi askForSecret
 #' @importFrom stringr str_split
 #' @importFrom tibble rownames_to_column
-#' @importFrom utils URLencode
+#' @importFrom tidyr pivot_wider
 #' @importFrom utils askYesNo
 #' @importFrom utils type.convert
+#' @importFrom utils URLencode
 ## usethis namespace: end
 NULL
 

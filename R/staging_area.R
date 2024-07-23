@@ -68,15 +68,23 @@ get_staged_data <- function(building, verbose = TRUE){
   #List of strings that filters non required columns from equip & point tables 
   rem_col <- paste('polarity','reliability',
                    'activeText','event','covIncrement','presvalue',
-                   'statusflags','outofservice','unit_id','type_id',
+                   'statusflags','outofservice',
                    'datasource','limit','deadband','@prop',
-                   'timedelay','.cnf','instance_tagger','ob_predicted',
+                   'timedelay','instance_tagger','ob_predicted',
                    'notif','acked','resolution','state_text',
                    'relinquish','priority','p\\.e\\.','auto_tagger',
-                   'check','created','\\.err','type_id','tags',
+                   'check','created','\\.err','tags',"type_id","unit_id",
+                   #Device fields
+                   "maxMaster","offset","d.objectList","systemStatus",
+                   "maxInfo","protocolVersion","Revision","vendorId","lastRestart",
+                   "Segment","apdu","binding","daylight","Software","d.objectInstance",
+                   "covsubscription","align","backup","restore","Sync",
                    sep='|')
 
   #Equip Data
+  if(verbose){
+    cat("Extracting equipment details...\n")
+  }
   
   equip_data <- stage$equipment
   equip_data_names <- names(equip_data)
@@ -89,8 +97,49 @@ get_staged_data <- function(building, verbose = TRUE){
 
   equip_data <- equip_data %>%
     select(equip_data_names$names)
-
+  
+  
+  #Device Data
+  if(is.null(stage$devices_by_device_id)){
+    
+    #Temporary fix until all staging data is transformed
+    device_data <- data.frame(d.device_id="NA")
+  } else {
+    if(verbose){
+      cat("Extracting device details...\n")
+    }
+    
+  device_list <- stage$devices_by_device_id
+  
+  device_list <- rlist::list.flatten(device_list)
+  device_data <- Filter(function(x)length(x)==1, device_list)  %>% 
+    bind_rows() %>%
+    t() %>% 
+    data.frame() %>% 
+    rownames_to_column(var = "device_details") %>% 
+    tidyr::separate(col="device_details",into=c("device","details"),
+                    sep="\\.",extra = "merge") %>% 
+    pivot_wider(id_cols = "device",
+                names_from = "details",values_from = ".") %>% 
+    select(-device)
+  
+  
+  device_data_names <- names(device_data)
+  device_data_names <- gsub('properties\\.','',device_data_names)
+  device_data_names <- paste0('d.',device_data_names)
+  names(device_data) <- device_data_names
+  
+  device_data_names <- data.frame(names=device_data_names) %>%
+    filter(!grepl(rem_col,names,ignore.case=T))
+  
+  device_data<- device_data %>%
+    select(device_data_names$names)
+}
   #Points Data
+  
+  if(verbose){
+    cat("Extracting point details...\n")
+  }
 
   points_list <- stage$points_by_equip_id
 
@@ -111,13 +160,16 @@ get_staged_data <- function(building, verbose = TRUE){
 staged_data <- left_join(equip_data,
                            points_data,
                            by = c('e.equip_id' = 'p.equip_id')) %>%
+  left_join(device_data,
+            by=c('p.device_id' = "d.device_id")) %>% 
+  select(sort(tidyselect::peek_vars()))  %>% 
     #Convert epoch timestamps to UTC
     mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
-                    .data$e.modified, .data$p.modified, .data$p.last_updated),
+                    .data$e.modified,.data$e.modified ,.data$p.modified, .data$p.last_updated),
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
-                               tz = 'UTC'))) %>% 
-    select(sort(tidyselect::peek_vars()))
+                               tz = 'UTC')))
+  
   
   if(verbose){
     cat('Staging data created.')
@@ -155,9 +207,10 @@ upload_staging <- function(building,
 
     stop('data_to_upload is missing in the function call. data_to_upload should be a dataframe including at least e.equip_id & p.topic for the upload to succeed')
 
-  }else if (!('p.topic' %in% names(data_to_upload))) {
-    stop('p.topic column not found in staging_upload.')
-   }
+  } else if (!('p.topic' %in% names(data_to_upload)) |
+             !('e.equip_id') %in% names(data_to_upload)) {
+    stop('Please include the p.topic or e.equip_id column in data_to_upload')
+  }
 
   data_to_upload_json <- data_to_upload %>%
     toJSON()
@@ -177,7 +230,7 @@ if(is.null(proceed)){
 
   #get endpoint
   endpoint <- paste0('staging/', building_info$id)
-
+  
   post_points <- api.post(endpoint,
                           json_body = data_to_upload_json)
   
