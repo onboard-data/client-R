@@ -100,7 +100,7 @@ get_staged_data <- function(building, verbose = TRUE){
   
   
   #Device Data
-  if(is.null(stage$devices_by_device_id)){
+  if(length(stage$devices_by_device_id)==0){
     
     #Temporary fix until all staging data is transformed
     device_data <- data.frame(d.device_id="NA")
