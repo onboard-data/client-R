@@ -207,8 +207,7 @@ upload_staging <- function(building,
 
     stop('data_to_upload is missing in the function call. data_to_upload should be a dataframe including at least e.equip_id & p.topic for the upload to succeed')
 
-  } else if (!('p.topic' %in% names(data_to_upload)) |
-             !('e.equip_id') %in% names(data_to_upload)) {
+  } else if (!any(c('p.topic','e.equip_id') %in% colnames(data_to_upload))) {
     stop('Please include the p.topic or e.equip_id column in data_to_upload')
   }
 
