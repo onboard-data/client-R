@@ -77,7 +77,7 @@ get_staged_data <- function(building, verbose = TRUE){
                    #Device fields
                    "maxMaster","offset","d.objectList","systemStatus",
                    "maxInfo","protocolVersion","Revision","vendorId","lastRestart",
-                   "Segment","apdu","binding","daylight","Software","d.objectInstance",
+                   "Segment","apdu","binding","daylight","d.objectInstance",
                    "covsubscription","align","backup","restore","Sync",
                    sep='|')
 
