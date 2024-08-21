@@ -30,7 +30,7 @@ create_building <- function(building_name,org_id = NULL, verbose = TRUE){
           )
 
   if(verbose){
-  print(sprintf("Success!! Building %s created for %s",building_name,org_name))
+  print(sprintf("Success!! Building %s created for %s\n",building_name,org_name))
   }
 } 
 
@@ -172,7 +172,7 @@ staged_data <- left_join(equip_data,
   
   
   if(verbose){
-    cat('Staging data created.')
+    cat('Staging data created.\n')
   }
 
   return(staged_data)
@@ -270,7 +270,7 @@ api.promote <- function(building_id, payload_json, verbose){
   if(nrow(errors != 0)){
     
     if(verbose){
-      cat("Invalid data found in staging area. Please check the errors.")
+      cat("Invalid data found in staging area. Please check the errors.\n")
     }
     
     errors <- errors %>% 
@@ -309,7 +309,7 @@ api.promote <- function(building_id, payload_json, verbose){
     
   } else {
     if(verbose){
-      print("Operation Successful!")
+      print("Operation Successful!\n")
     }
   }
 }
@@ -407,10 +407,10 @@ unpromote_data <- function(building,
   
   if(missing(data_to_unpromote)) {
     
-    stop('data_to_unpromote is missing in the function call. It should be a dataframe including at least e.equip_id & p.topic for the upload to succeed')
+    stop('data_to_unpromote is missing in the function call. It should be a dataframe including at least e.equip_id & p.topic for the upload to succeed\n')
     
   }else if (!('p.topic' %in% names(data_to_unpromote))) {
-    stop('p.topic column not found in data_to_unpromote.')
+    stop('p.topic column not found in data_to_unpromote.\n')
   } 
   
   if(is.null(proceed)){
@@ -422,7 +422,7 @@ unpromote_data <- function(building,
   }
   
   if(is.na(proceed) | proceed != TRUE){
-    stop('Stopping Operation.')
+    stop('Stopping Operation.\n')
   }
   
 
@@ -436,7 +436,6 @@ unpromote_data <- function(building,
     
   unpromote_json <- unpromote_list %>%
     toJSON()
-  
 
   api.promote(building_id = building_info$id,
               payload_json = unpromote_json,

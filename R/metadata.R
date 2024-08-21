@@ -31,7 +31,7 @@ get_building_info <- function(buildings, verbose = TRUE){
       building <- all_buildings[all_buildings$id == single, ]
       
       if (nrow(building) == 0) {
-        stop(sprintf('No building found for name/id: %s.',single))
+        stop(sprintf('No building found for name/id: %s\n',single))
       }
     }
     
@@ -187,7 +187,7 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   }
   
   if(verbose){
-    cat('Metadata generated.')
+    cat('Metadata generated.\n')
   }
 
   return(metadata)
