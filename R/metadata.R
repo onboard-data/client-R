@@ -113,63 +113,63 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
     cat(sprintf('Querying %s points...\n',length(point_ids)))
   }
   
-  points <- get_points_by_ids(point_ids)
+  ## Get points
+  points_data <- get_points_by_ids(point_ids) %>% 
+  mutate(across(.data$equip_id, ~as.integer(.)))
+
+  points_data_names <- names(points_data)
+  points_data_names <- paste0('p.', points_data_names)
+  names(points_data) <- points_data_names
   
   if(verbose){
     cat(sprintf('Querying %s equipment...\n',length(equipment_ids)))
   }
 
-  equipment <- get_equipment_by_ids(equipment_ids)
+  #Get equipment
+  equip_data <- get_equipment_by_ids(equipment_ids)
+  
+  equip_data_names <- names(equip_data)
+  equip_data_names <- paste0('e.', equip_data_names)
+  names(equip_data) <- equip_data_names
   
   #Create a metadata for the specified building ID
-  metadata <- inner_join(equipment,points,
-                         by = c('id' = 'equip_id'),
-                         suffix = c('', '.y')) %>%
+  metadata <- inner_join(equip_data,points_data,
+                         by = c('e.id' = 'p.equip_id')) %>% 
     #Get tagged units if NA
-    mutate(across(.data$tagged_units,
+    mutate(across(.data$p.tagged_units,
                   ~ifelse(is.na(.),
-                          units,as.character(.)))) %>%
-    #Replace equip_type tag with subtype tag if present
-    mutate(across(.data$equip_type_tag,
-                  ~ifelse(is.na(equip_subtype_tag),
-                          .,equip_subtype_tag))) %>%
-    select(
-      .data$building_id,
-      equipment_id = .data$id,
-      point_id = .data$id.y,
-      .data$device,
-      .data$objectId,
-      .data$name,
-      .data$description,
-      .data$first_updated,
-      .data$last_updated,
-      .data$value,
-      .data$tagged_units,
-      point_type = .data$type,
-      equip_type = .data$equip_type_tag,
-      .data$suffix,
-      .data$equip_id,
-      .data$parent_equip,
-      .data$floor_num_physical,
-      .data$floor_num_served,
-      .data$area_served_desc,
-      .data$topic
-    ) %>%
+                          units,as.character(.)))) %>% 
+    #Rename some fields
+    rename(e.equipment_id = .data$e.id,
+           p.point_id = .data$p.id,
+           p.point_type = .data$p.type,
+           e.equip_type = .data$e.equip_type_tag,
+           building_id=e.building_id) %>% 
     # Grab Equip Refs by joining with Equip DB again
-    mutate(parent_equip = as.integer(.data$parent_equip)) %>%
+    mutate(e.parent_equip = as.integer(.data$e.parent_equip)) %>% 
     left_join(
-      select(equipment, id, .data$equip_id),
-      by = c('parent_equip' = 'id'),
+      select(equip_data, .data$e.id, .data$e.equip_id),
+      by = c('e.parent_equip' = 'e.id'),
       suffix = c('', '.y')
-    ) %>%
-    select(everything(),
-           equip_ref = .data$equip_id.y,
-           -.data$parent_equip) %>%
+    ) %>% 
+    rename(e.parent = .data$e.equip_id.y) %>% 
     #Convert epoch time-stamps to UTC 
-    mutate(across(c(.data$first_updated, .data$last_updated),
+    mutate(across(c(.data$p.first_updated, .data$p.last_updated),
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
-                               tz = 'UTC')))
+                               tz = 'UTC'))) 
+  
+  #Columns to remove from metadata
+  rem_col <- paste('p.building_id','type_id','type_name','type_abbr','subtype',
+                   'flow','.y','child','parent','measurement',
+                   'raw_unit','hash','points','tags', sep ="|")
+  
+  metadata_cols <- data.frame(names=colnames(metadata)) %>% 
+  filter(!grepl(rem_col,names)) 
+  
+  metadata <- metadata %>% 
+    select(metadata_cols$names) %>% 
+    select(sort(tidyselect::peek_vars())) 
   
   if(verbose){
     cat('Metadata generated.')
