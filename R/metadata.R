@@ -42,7 +42,7 @@ get_building_info <- function(buildings, verbose = TRUE){
   }
   
   if(verbose){
-    cat(sprintf('Found building(s): %s...\n',
+    cat(sprintf('\nFound building(s): %s...\n',
                   paste(building_info$name,collapse=', ')))
   }
 
