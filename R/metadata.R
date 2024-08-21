@@ -171,6 +171,21 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
     select(metadata_cols$names) %>% 
     select(sort(tidyselect::peek_vars())) 
   
+  #Handle state_texts
+  if(grepl("state_text",metadata_cols)){
+    
+    if(verbose){
+      cat(print("Handling state_text fields...\n"))
+    }
+    
+    state_text_fields <- metadata_cols %>% 
+      filter(grepl("state_text",names)) %>% 
+      pull()
+      
+    metadata <- metadata %>% 
+      tidyr::unite('p.state_text',all_of(state_text_fields),sep=", ",na.rm = TRUE)
+  }
+  
   if(verbose){
     cat('Metadata generated.')
   }
