@@ -175,7 +175,7 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   if(grepl("state_text",metadata_cols)){
     
     if(verbose){
-      cat(print("Handling state_text fields...\n"))
+      cat("Handling state_text fields...\n")
     }
     
     state_text_fields <- metadata_cols %>% 
