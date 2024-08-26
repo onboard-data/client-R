@@ -100,3 +100,29 @@ api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
   }
   
 }
+
+
+
+# DELETE ------------------------------------------------------------------
+
+api.delete <- function(endpoint, json_body){  
+  
+api_data <- api.access()
+
+# get endpoint
+endpoint_url <- paste(api_data$url, endpoint, sep = '/')
+
+request_endpoint <- DELETE(url = endpoint_url,
+                        content_type_json(),
+                        add_headers(`X-OB-Api` = api_data$key),
+                        body = json_body)
+
+if (request_endpoint$status_code == 200) {
+  api_output <-
+    content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
+    fromJSON(flatten = TRUE)
+  return(api_output)
+} else {
+  stop(httr::http_status(request_endpoint$status_code)$message)
+}
+}
