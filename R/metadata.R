@@ -160,9 +160,9 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
                                tz = 'UTC'))) 
   
   #Columns to remove from metadata
-  rem_col <- paste('p.building_id','type_id','type_name','type_abbr','subtype',
-                   'flow','.y','child','parent','measurement',
-                   'raw_unit','hash','points','tags', sep ="|")
+  rem_col <- paste('p\\.building_id','_type_name','_type_abbr','_subtype',
+                   'flow','\\.y','child','parent_equip','measurement',
+                   'raw_unit_id','hash','e\\.points','e\\.tags', sep ="|")
   
   metadata_cols <- data.frame(names=colnames(metadata)) %>% 
   filter(!grepl(rem_col,names)) 
