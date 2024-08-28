@@ -73,6 +73,7 @@ get_staged_data <- function(building, verbose = TRUE){
                    'timedelay','instance_tagger','ob_predicted',
                    'notif','acked','resolution','state_text',
                    'relinquish','priority','p\\.data\\.e\\.','_tagger',
+                   'p\\.confidences\\.e\\.',
                    'check','created','\\.err','tags',"type_id","unit_id",
                    #Device fields
                    "maxMaster","offset","objectList","systemStatus",
