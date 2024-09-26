@@ -15,6 +15,7 @@
 #' @importFrom stringr str_split
 #' @importFrom tibble rownames_to_column
 #' @importFrom tidyr pivot_wider
+#' @importFrom tidyr separate_rows
 #' @importFrom utils askYesNo
 #' @importFrom utils type.convert
 #' @importFrom utils URLencode

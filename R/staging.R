@@ -98,7 +98,6 @@ get_staged_data <- function(building, verbose = TRUE){
   equip_data <- equip_data %>%
     select(equip_data_names$names)
   
-  
   #Device Data
   if(length(stage$devices_by_device_id)==0){
     
@@ -136,13 +135,17 @@ get_staged_data <- function(building, verbose = TRUE){
 }
   #Points Data
   
-  if(verbose){
+ if(verbose){
     cat("Extracting point details...\n")
   }
 
   points_list <- stage$points_by_equip_id
-
-  points_data <- data.table::rbindlist(points_list, fill = TRUE)
+  
+  processed_points_list <- lapply(points_list,process_columns)
+  
+  points_data <- bind_rows(processed_points_list) %>% 
+    tidyr::separate_rows(equip_ids,sep=", ") %>% 
+      distinct(equip_ids,topic,.keep_all = TRUE)
 
   points_data_names <- names(points_data)
   points_data_names <- paste0('p.',points_data_names)
@@ -152,12 +155,11 @@ get_staged_data <- function(building, verbose = TRUE){
     filter(!grepl(rem_col,names,ignore.case=T))
 
   points_data<- points_data %>%
-    select(points_data_names$names)
+    select(points_data_names$names) 
   
-  
-staged_data <- left_join(equip_data,
-                           points_data,
-                           by = c('e.equip_id' = 'p.equip_id')) %>%
+staged_data <- left_join(points_data,equip_data,
+                           by = c('p.equip_ids' = 'e.equip_id')) %>%
+  rename(e.equip_id = p.equip_ids) %>% 
   left_join(device_data,
             by=c('p.device_id' = "d.device_id")) %>% 
   select(sort(tidyselect::peek_vars()))  %>% 
@@ -167,7 +169,6 @@ staged_data <- left_join(equip_data,
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
                                tz = 'UTC')))
-  
   
   if(verbose){
     cat('Staging data created.\n')
