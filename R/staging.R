@@ -157,10 +157,10 @@ get_staged_data <- function(building, verbose = TRUE){
   points_data<- points_data %>%
     select(points_data_names$names) 
   
-staged_data <- left_join(points_data,equip_data,
+staged_data <- full_join(points_data,equip_data,
                            by = c('p.equip_ids' = 'e.equip_id')) %>%
   rename(e.equip_id = p.equip_ids) %>% 
-  left_join(device_data,
+  full_join(device_data,
             by=c('p.device_id' = "d.device_id")) %>% 
   select(sort(tidyselect::peek_vars()))  %>% 
     #Convert epoch timestamps to UTC
