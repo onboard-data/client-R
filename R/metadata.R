@@ -89,13 +89,28 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
     
     building_info <- get_building_info(buildings, verbose = verbose)
     
-    building_id <- building_info$id
+    building_ids <- building_info$id
     
+    building_names <- building_info$name
+    
+    equip_data <- data.frame()
+    points_data <-data.frame()
+    
+    for (i in 1:length(building_ids)){
+      
+    bid <- building_ids[i]  
+    bname <- building_names[i]
+      
     if(verbose){
-      cat(sprintf("Querying equipment & points for building: %s (bid:%s)...\n",building_info$name,building_id))
+        cat(sprintf("Querying equipment & points for building: %s (bid:%s)...\n",bname,bid))
+      }  
+    equip_data_bid <- api.get(paste0("buildings/",bid,"/equipment"))
+    equip_data <- plyr::rbind.fill(equip_data_bid)
+    
+    points_data_bid <- api.get(paste0("buildings/",bid,"/points"))
+    points_data <- plyr::rbind.fill(points_data_bid)
+    
     }
-    equip_data <- api.get(paste0("buildings/",building_id,"/equipment"))
-    points_data <- api.get(paste0("buildings/",building_id,"/points"))
   } else if (missing(buildings)){
   
   if(!is.list(selection) | is.atomic(selection)){
