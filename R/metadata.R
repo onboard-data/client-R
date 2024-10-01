@@ -105,10 +105,10 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
         cat(sprintf("Querying equipment & points for building: %s (bid:%s)...\n",bname,bid))
       }  
     equip_data_bid <- api.get(paste0("buildings/",bid,"/equipment"))
-    equip_data <- plyr::rbind.fill(equip_data_bid)
+    equip_data <- plyr::rbind.fill(equip_data, equip_data_bid)
     
     points_data_bid <- api.get(paste0("buildings/",bid,"/points"))
-    points_data <- plyr::rbind.fill(points_data_bid)
+    points_data <- plyr::rbind.fill(points_data, points_data_bid)
     
     }
   } else if (missing(buildings)){
