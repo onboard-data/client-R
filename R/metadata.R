@@ -88,13 +88,15 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   } else if (missing(selection)){
     
     building_info <- get_building_info(buildings, verbose = verbose)
-  
-    query <- PointSelector()
     
-    query$buildings <- building_info$id
+    building_id <- building_info$id
     
-    selection <- select_points(query)
-  }
+    if(verbose){
+      cat(sprintf("Querying equipment & points for building: %s (bid:%s)...\n",building_info$name,building_id))
+    }
+    equip_data <- api.get(paste0("buildings/",building_id,"/equipment"))
+    points_data <- api.get(paste0("buildings/",building_id,"/points"))
+  } else if (missing(buildings)){
   
   if(!is.list(selection) | is.atomic(selection)){
     stop('selection should be a non-atomic named list with some subset of fields: 
@@ -112,33 +114,32 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   if(verbose){
     cat(sprintf('Querying %s points...\n',length(point_ids)))
   }
-  
-  ## Get points
-  points_data <- get_points_by_ids(point_ids) %>% 
-  mutate(across(.data$equip_id, ~as.integer(.)))
-
-  points_data_names <- names(points_data)
-  points_data_names <- paste0('p.', points_data_names)
-  names(points_data) <- points_data_names
+  points_data <- get_points_by_ids(point_ids)
   
   if(verbose){
     cat(sprintf('Querying %s equipment...\n',length(equipment_ids)))
   }
-
-  #Get equipment
   equip_data <- get_equipment_by_ids(equipment_ids)
+  }
+  
+  points_data <- points_data %>%
+    mutate(across(.data$equip_id, ~ as.integer(.)))
+  
+  points_data_names <- names(points_data)
+  points_data_names <- paste0('p.', points_data_names)
+  names(points_data) <- points_data_names
   
   equip_data_names <- names(equip_data)
   equip_data_names <- paste0('e.', equip_data_names)
   names(equip_data) <- equip_data_names
   
   #Create a metadata for the specified building ID
-  metadata <- inner_join(equip_data,points_data,
+  metadata <- full_join(equip_data,points_data,
                          by = c('e.id' = 'p.equip_id')) %>% 
     #Get tagged units if NA
     mutate(across(.data$p.tagged_units,
                   ~ifelse(is.na(.),
-                          units,as.character(.)))) %>% 
+                          p.units,as.character(.))))  %>% 
     #Rename some fields
     rename(e.equipment_id = .data$e.id,
            p.point_id = .data$p.id,
