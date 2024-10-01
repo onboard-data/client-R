@@ -249,6 +249,7 @@ if(is.null(proceed)){
 }
 }
 
+# Promote & Unpromote -----------------------------------------------------
 
 api.promote <- function(building_id, payload_json, verbose){  
   
@@ -384,69 +385,7 @@ promote_data <- function(building,
   
 }
 
-
 #' Unpromote Data from the live Building
-#' 
-#' @inheritParams get_staged_data
-#' 
-#' @param data_to_unpromote A data.frame containing columns 'e.equip_id' & 'p.topic'.
-#' 
-#' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
-#' 
-#' @return (Conditional) A named list containing errors that may have occurred during data promotion.
-#' 
-#' @export
- 
-unpromote_data <- function(building, 
-                           data_to_unpromote,
-                           proceed = NULL,
-                           verbose = TRUE){
-  
-  building_info <- get_building_info(building, verbose = verbose)
-  
-  if(missing(data_to_unpromote)) {
-    
-    stop('data_to_unpromote is missing in the function call. It should be a dataframe including at least e.equip_id & p.topic for the upload to succeed\n')
-    
-  }else if (!('p.topic' %in% names(data_to_unpromote))) {
-    stop('p.topic column not found in data_to_unpromote.\n')
-  } 
-  
-  if(is.null(proceed)){
-  proceed <-
-    askYesNo(
-      sprintf('Do you want to proceed with unpromoting %s points from %s?',
-              nrow(data_to_unpromote),
-              building_info$name))
-  }
-  
-  if(is.na(proceed) | proceed != TRUE){
-    stop('Stopping Operation.\n')
-  }
-  
-
-   #Assigning all e.equip_ids to __SKIP__ if that is not already done
-    data_to_unpromote <- data_to_unpromote %>% 
-      mutate(e.equip_id = "__SKIP__")
-  
-  unpromote_list <- list(equip_ids = data_to_unpromote$e.equip_id,
-                       topics = data_to_unpromote$p.topic,
-                       allowed_topic_deletes = data_to_unpromote$p.topic) 
-    
-  unpromote_json <- unpromote_list %>%
-    toJSON()
-
-  api.promote(building_id = building_info$id,
-              payload_json = unpromote_json,
-              verbose = verbose)
-  
-}
-
-
-
-# New Unpromote -----------------------------------------------------------
-
-#' New Unpromote Data from the live Building
 #' 
 #' @inheritParams get_staged_data
 #' 
@@ -457,14 +396,41 @@ unpromote_data <- function(building,
 #' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #' 
 #' @export
-new.unpromote_data <- function(building,points_to_unpromote, proceed = NULL, verbose= TRUE){
+unpromote_data <- function(building,points_to_unpromote = NULL, equipment_to_unpromote = NULL, proceed = NULL, verbose= TRUE){
   
-  if(missing(points_to_unpromote)) {
+  if(missing(points_to_unpromote) & missing(equipment_to_unpromote)) {
   
-    stop('points_to_unpromote is missing in the function call. It should be a dataframe including e.equipment_id & p.point_id for the unpromote to succeed\n')
+    stop('Please provide either points_to_unpromote or equipment_to_unpromote. It should be a dataframe including e.equipment_id & p.point_id for the unpromote to succeed.\n ')
+  } 
+  
+  if (missing(equipment_to_unpromote)){
     
+    equipment_point_pairs <- points_to_unpromote %>% 
+      distinct()
+    
+    equipment_ids = 0
+
+  } else if(missing(points_to_unpromote)) {
+    
+    equipment_point_pairs <- equipment_to_unpromote %>% 
+      distinct()
+    
+    equipment_ids = equipment_point_pairs$e.equipment_id
   }
   
+  if('p.point_id' %in% names(equipment_point_pairs)){
+    point_ids = equipment_point_pairs$p.point_id  
+    
+    equipment_point_pairs <- equipment_point_pairs %>% 
+      rename(equipment_id = e.equipment_id, point_id = p.point_id)
+    
+  } else {
+    equipment_point_pairs <- data.frame(
+      equipment_id = 0, point_id = 0)
+    
+    point_ids = 0
+  }
+
   building_info <- get_building_info(building)
   
   if(is.null(proceed)){
@@ -479,16 +445,7 @@ new.unpromote_data <- function(building,points_to_unpromote, proceed = NULL, ver
   if(is.na(proceed) | proceed != TRUE){
     stop('Stopping Operation.\n')
   }
-
-equipment_point_pairs <- points_to_unpromote %>% 
-  select(equipment_id = e.equipment_id,
-         point_id = p.point_id) %>% 
-  distinct()
-
-equipment_ids = 0
-
-point_ids = equipment_point_pairs$point_id
-
+  
 unpromote_list <- list(equipment_ids = equipment_ids,
                        point_ids = point_ids,
                        point_equipment_relationships = equipment_point_pairs)
