@@ -415,7 +415,7 @@ unpromote_data <- function(building,points_to_unpromote = NULL, equipment_to_unp
     equipment_point_pairs <- equipment_to_unpromote %>% 
       distinct()
     
-    equipment_ids = equipment_point_pairs$e.equipment_id
+    equipment_ids = unique(equipment_point_pairs$e.equipment_id)
   }
   
   if('p.point_id' %in% names(equipment_point_pairs)){
@@ -437,8 +437,8 @@ unpromote_data <- function(building,points_to_unpromote = NULL, equipment_to_unp
     proceed <-
       askYesNo(
         sprintf('Do you want to proceed with unpromoting %s points across %s equipment from %s?',
-                nrow(points_to_unpromote),
-                length(unique(points_to_unpromote$e.equipment_id)),
+                nrow(equipment_point_pairs),
+                length(unique(equipment_point_pairs$e.equipment_id)),
                 building_info$name))
   }
   
