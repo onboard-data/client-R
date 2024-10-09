@@ -52,22 +52,10 @@ get_staged_data <- function(building, verbose = TRUE){
   }
 
   building_info <- get_building_info(building, verbose = verbose)
-
-  if(verbose){
-    cat('Querying staging data...\n')
-  }
-
-  endpoint <- paste0('staging/',building_info$id,'?points=True')
-
-  stage <- api.get(endpoint)
   
-  if(length(stage$points_by_equip_id) == 0){
-    stop(sprintf('Staged data not found for building %s.', building_info$name))
-  }
-  
-  #List of strings that filters non required columns from equip & point tables 
+  #List of strings that filters non required columns from equip, point & device tables 
   rem_col <- paste('polarity','reliability',
-                   'activeText','event','covIncrement','presvalue',
+                   'event','covIncrement','presvalue',
                    'statusflags','outofservice',
                    'datasource','limit','deadband','@prop',
                    'timedelay','instance_tagger','ob_predicted',
@@ -82,12 +70,16 @@ get_staged_data <- function(building, verbose = TRUE){
                    "covsubscription","align","backup","restore","Sync",
                    sep='|')
 
-  #Equip Data
+# Get Staged Equipment ----------------------------------------------------
+  
   if(verbose){
-    cat("Extracting equipment details...\n")
+    cat("Getting equipment details...\n")
   }
   
-  equip_data <- stage$equipment
+  endpoint <- paste0('staging/',building_info$id)
+  
+  equip_data <- api.get(endpoint)$equipment
+  
   equip_data_names <- names(equip_data)
   equip_data_names <- paste0('e.', equip_data_names)
   names(equip_data) <- equip_data_names
@@ -97,31 +89,43 @@ get_staged_data <- function(building, verbose = TRUE){
 
   equip_data <- equip_data %>%
     select(equip_data_names$names)
+
+
+# Get Staged Devices ------------------------------------------------------
   
-  #Device Data
-  if(length(stage$devices_by_device_id)==0){
+  if(verbose){
+    cat("Getting device details...\n")
+  }
+  
+  endpoint <- paste0('staging/',building_info$id,'/devices')
+  device_data <- api.get(endpoint)
+  
+  if(nrow(device_data)==0){
     
     #Temporary fix until all staging data is transformed
     device_data <- data.frame(d.device_id="NA")
-  } else {
+    
     if(verbose){
-      cat("Extracting device details...\n")
+      cat("No device details found...\n")
     }
     
-  device_list <- stage$devices_by_device_id
+  } else {
   
-  device_list <- rlist::list.flatten(device_list)
-  device_data <- Filter(function(x)length(x)==1, device_list)  %>% 
-    bind_rows() %>%
-    t() %>% 
-    data.frame() %>% 
-    rownames_to_column(var = "device_details") %>% 
-    tidyr::separate(col="device_details",into=c("device","details"),
-                    sep="\\.",extra = "merge") %>% 
-    pivot_wider(id_cols = "device",
-                names_from = "details",values_from = ".") %>% 
-    select(-device)
-  
+  # Remove below lines after testing    
+  # device_list <- stage$devices_by_device_id
+  # 
+  # device_list <- rlist::list.flatten(device_list)
+  # device_data <- Filter(function(x)length(x)==1, device_list)  %>% 
+  #   bind_rows() %>%
+  #   t() %>% 
+  #   data.frame() %>% 
+  #   rownames_to_column(var = "device_details") %>% 
+  #   tidyr::separate(col="device_details",into=c("device","details"),
+  #                   sep="\\.",extra = "merge") %>% 
+  #   pivot_wider(id_cols = "device",
+  #               names_from = "details",values_from = ".") %>% 
+  #   select(-device)
+  # Remove above lines after testing
   
   device_data_names <- names(device_data)
   device_data_names <- paste0('d.',device_data_names)
@@ -132,21 +136,33 @@ get_staged_data <- function(building, verbose = TRUE){
   
   device_data<- device_data %>%
     select(device_data_names$names)
-}
-  #Points Data
-  
- if(verbose){
-    cat("Extracting point details...\n")
   }
-
-  points_list <- stage$points_by_equip_id
   
-  processed_points_list <- lapply(points_list,process_columns)
-  
-  points_data <- bind_rows(processed_points_list) %>% 
-    tidyr::separate_rows(equip_ids,sep=", ") %>% 
-      distinct(equip_ids,topic,.keep_all = TRUE)
 
+# Get Staged Points -------------------------------------------------------
+  
+  if(verbose){
+    cat("Getting point details...\n")
+  }
+  
+  endpoint <- paste0('staging/',building_info$id,'/points')
+  
+  points_data <- api.get(endpoint)
+
+  if(nrow(points_data) == 0){
+    stop(sprintf('No points found for building %s.', building_info$name))
+  }  
+
+  # Remove below lines after testing  
+  # points_list <- stage$points_by_equip_id
+  # 
+  # processed_points_list <- lapply(points_list,process_columns)
+  # 
+  # points_data <- bind_rows(processed_points_list) %>% 
+  #   tidyr::separate_rows(equip_ids,sep=", ") %>% 
+  #     distinct(equip_ids,topic,.keep_all = TRUE)
+  # Remove above lines after testing
+  
   points_data_names <- names(points_data)
   points_data_names <- paste0('p.',points_data_names)
   names(points_data) <- points_data_names
@@ -154,19 +170,19 @@ get_staged_data <- function(building, verbose = TRUE){
   points_data_names <- data.frame(names=points_data_names) %>%
     filter(!grepl(rem_col,names,ignore.case=T))
 
-  points_data<- points_data %>%
-    select(points_data_names$names) 
+  points_data <- points_data %>%
+    select(points_data_names$names) %>% 
+    mutate(across(p.equip_ids,~as.character(.)))
   
 staged_data <- full_join(points_data,equip_data,
                            by = c('p.equip_ids' = 'e.equip_id')) %>%
-  rename(e.equip_id = p.equip_ids) %>% 
   full_join(device_data,
             by=c('p.device_id' = "d.device_id")) %>% 
   select(sort(tidyselect::peek_vars()))  %>% 
     #Convert epoch timestamps to UTC
     mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
-                    .data$e.modified,.data$p.created ,.data$p.modified, 
-                    .data$p.last_updated),
+                    .data$e.modified, .data$e.created, .data$p.created ,
+                    .data$p.modified, .data$p.last_updated),
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
                                tz = 'UTC')))
