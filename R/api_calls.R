@@ -105,17 +105,23 @@ api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
 
 # DELETE ------------------------------------------------------------------
 
-api.delete <- function(endpoint, json_body){  
+api.delete <- function(endpoint, json_body = NULL){  
   
 api_data <- api.access()
 
 # get endpoint
 endpoint_url <- paste(api_data$url, endpoint, sep = '/')
 
+if(is.null(json_body)){
+  request_endpoint <- DELETE(url = endpoint_url,
+                             content_type_json(),
+                             add_headers(`X-OB-Api` = api_data$key))
+} else {  
 request_endpoint <- DELETE(url = endpoint_url,
                         content_type_json(),
                         add_headers(`X-OB-Api` = api_data$key),
                         body = json_body)
+}
 
 if (request_endpoint$status_code == 200) {
   api_output <-
