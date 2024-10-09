@@ -165,7 +165,8 @@ staged_data <- full_join(points_data,equip_data,
   select(sort(tidyselect::peek_vars()))  %>% 
     #Convert epoch timestamps to UTC
     mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
-                    .data$e.modified,.data$e.modified ,.data$p.modified, .data$p.last_updated),
+                    .data$e.modified,.data$p.created ,.data$p.modified, 
+                    .data$p.last_updated),
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
                                tz = 'UTC')))
