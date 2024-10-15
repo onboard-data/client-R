@@ -9,7 +9,7 @@ Authors@R: c(
              email = "pranay.shah@onboarddata.io"),
       person(given = "Christopher",
              family = "Dudas-Thomas",
-             role = "aut"),
+             role = "ctb"),
       person(given = "Onboard Data",
              role = c("cph", "fnd"),
              email = "support@onboarddata.io")
