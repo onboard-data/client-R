@@ -27,19 +27,17 @@
 #' }
 #' 
 #' @export
-get_timeseries_raw <- function(start_time, end_time, point_ids, units){
+get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL){
 
   start_time <- as.numeric(as.POSIXlt(start_time, tz = 'UTC'))
   
   end_time <- as.numeric(as.POSIXlt(end_time, tz = 'UTC'))
   
-
+  timeseries_query <- list(start = start_time,
+                           end = end_time,
+                           point_ids = point_ids)
     
-    timeseries_query <- list(start = start_time,
-                             end = end_time,
-                             point_ids = point_ids)
-    
-    if(!missing(units)){
+    if(!is.null(units)){
     
       if(class(units) != "data.frame"){
          stop("units must be a dataframe.")
@@ -66,29 +64,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units){
                                 json_body = timeseries_query)
   
   if(length(timeseries_output)!=0){
-    timeseries_df <- do.call(plyr::rbind.fill,
-                             lapply(1:length(timeseries_output), function(i) {
-                               single_output <- timeseries_output[[i]]
-                               
-                               col_names <-
-                                 unlist(single_output$columns)
-                               
-                               point_id <- single_output$point_id
-                               
-                               ts_single <-
-                                 rrapply::rrapply(
-                                   single_output$values, how = 'melt') %>%
-                                 pivot_wider(id_cols = L1,
-                                             names_from = L2,
-                                             values_from = value) %>%
-                                 mutate(L1 = point_id)
-                               
-                               colnames(ts_single) <-
-                                 c('point_id',"timestamp","raw", "unit")
-                               
-                               return(ts_single)
-                               
-                             }))  
+    timeseries_df <-  nested_list_to_df(timeseries_output)
 
   } else {
     timeseries_df <- data.frame()
@@ -97,7 +73,6 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units){
   
   return(timeseries_df)
 }
-
 
 
 # Clean timeseries --------------------------------------------------------
