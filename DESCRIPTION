@@ -5,12 +5,11 @@ Version: 1.0.1
 Authors@R: c(
       person(given = "Pranay",
              family = "Shah",
-             role = "aut",
+             role = c("cre","aut"),
              email = "pranay.shah@onboarddata.io"),
       person(given = "Christopher",
              family = "Dudas-Thomas",
-             role = c("cre", "aut"),
-             email = "christopher@onboarddata.io"),
+             role = "aut"),
       person(given = "Onboard Data",
              role = c("cph", "fnd"),
              email = "support@onboarddata.io")
@@ -30,7 +29,8 @@ Imports:
     tidyr (>= 1.2.1),
     tidyselect (>= 1.1.2),
     stringr (>= 1.4.1),
-    rlist
+    rlist,
+    purrr
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
