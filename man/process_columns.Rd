@@ -13,5 +13,5 @@ process_columns(df)
 Processed df
 }
 \description{
-Function to process all columns in a dataframe inside a list. Converts list type columns to character. Used in `get_staged_data`
+Deprecated. Function to process all columns in a dataframe inside a list. Converts list type columns to character. Used in `get_staged_data`
 }
