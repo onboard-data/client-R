@@ -18,6 +18,8 @@ nested_list_to_df <- function(nested_list) {
     topic <- item$topic
     display <- item$display
     columns <- item$columns
+    #Remove attribute "clean" from columns
+    columns <- columns[columns != "clean"]
     #Convert 3rd name in columns to "unit"
     columns[[3]] <- "unit"
     
