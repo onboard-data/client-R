@@ -13,18 +13,27 @@
 nested_list_to_df <- function(nested_list) {
   # Use map to iterate over each list element and process
   df_list <- purrr::map(nested_list, function(item) {
-    # Extract point-specific data
+    # Extract data
     point_id <- item$point_id
     topic <- item$topic
     display <- item$display
     columns <- item$columns
-    #Remove attribute "clean" from columns
-    columns <- columns[columns != "clean"]
+    values <- item$values
+    #Check if attribute "clean" exists in columns list and remove it from columns list and values list as well. This is present in older time-series data
+    if("clean" %in% columns){ 
+    #Get index of "clean" in columns
+    clean_index <- which(columns=="clean")
+    
+    columns <- columns[-clean_index]
+    
+    values <- lapply(values,function(x) x[-clean_index])
+    }
+    
     #Convert 3rd name in columns to "unit"
     columns[[3]] <- "unit"
     
     # Convert the values list into a data frame
-    values_df <- as_tibble(do.call(rbind, item$values))
+    values_df <- as_tibble(do.call(rbind, values))
     
     # Set the column names from the 'columns' field
     colnames(values_df) <- columns
