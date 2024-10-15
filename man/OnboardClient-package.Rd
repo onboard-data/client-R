@@ -9,15 +9,11 @@
 Provides a wrapper for the Onboard Data building data API \url{https://api.onboarddata.io/swagger}. Along with streamlining access to the API, this package simplifies access to sensor time series data, metadata (sensors, equipment, and buildings), and details about the Onboard data model/ontology.
 }
 \author{
-\strong{Maintainer}: Christopher Dudas-Thomas \email{christopher@onboarddata.io}
-
-Authors:
-\itemize{
-  \item Pranay Shah \email{pranay.shah@onboarddata.io}
-}
+\strong{Maintainer}: Pranay Shah \email{pranay.shah@onboarddata.io}
 
 Other contributors:
 \itemize{
+  \item Christopher Dudas-Thomas [contributor]
   \item Onboard Data \email{support@onboarddata.io} [copyright holder, funder]
 }
 
