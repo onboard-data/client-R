@@ -4,7 +4,13 @@
 \alias{get_timeseries}
 \title{Time-Series Data}
 \usage{
-get_timeseries(start_time, end_time, point_ids, units, unit_type = "default")
+get_timeseries(
+  start_time,
+  end_time,
+  point_ids,
+  units = NULL,
+  unit_type = "default"
+)
 }
 \arguments{
 \item{start_time}{Start Time in UTC.}

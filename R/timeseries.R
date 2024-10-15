@@ -103,39 +103,36 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL){
 #' }
 #' 
 #' @export
-get_timeseries <- function(start_time, end_time, point_ids,units,
+get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
                            unit_type = 'default'){
 
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
                                        point_ids = point_ids,
                                        units = units)
-  if(nrow(timeseries_raw)!=0){
     
     if(unit_type == 'default'){
     timeseries_clean <- timeseries_raw %>% 
-      transmute(.data$timestamp,
-                .data$point_id,
+      transmute(.data$time,
+                .data$display,
                 unit = as.character(.data$unit))
     
     } else if (unit_type == 'raw'){
       timeseries_clean <- timeseries_raw %>% 
-        transmute(.data$timestamp,
-                  .data$point_id,
+        transmute(.data$time,
+                  .data$display,
                   unit = as.character(.data$raw))
     }
     
-    timeseries_clean <-pivot_wider(timeseries_clean,
-                                   id_cols = .data$timestamp,
-                                   names_from = .data$point_id,
-                                   values_from = .data$unit,
-                                   values_fill = NA) %>% 
-      mutate(across(.data$timestamp,
+    timeseries_clean <- timeseries_clean %>% 
+      mutate(across(.data$time,
                     ~gsub('[.].*','',.))) %>%
       type.convert(as.is = T) %>% 
-      mutate(timestamp = as_datetime(.data$timestamp))
-  } else {
-    timeseries_clean <- timeseries_raw
-  }
-  
-}
+      mutate(time = as_datetime(.data$time)) %>% 
+      pivot_wider(id_cols = .data$time,
+                  names_from = .data$display,
+                  values_from = .data$unit,
+                  values_fill = NA) 
+    
+    return(timeseries_clean)
+  } 
