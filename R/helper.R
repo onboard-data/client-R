@@ -33,7 +33,7 @@ nested_list_to_df <- function(nested_list) {
     columns[[3]] <- "unit"
     
     # Convert the values list into a data frame
-    values_df <- as_tibble(do.call(rbind, values))
+    values_df <- as.data.frame(do.call(rbind, values))
     
     # Set the column names from the 'columns' field
     colnames(values_df) <- columns
