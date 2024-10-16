@@ -27,8 +27,13 @@
 #' }
 #' 
 #' @export
-get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL){
-
+get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL, 
+                               verbose = TRUE){
+  
+  if(verbose){
+  print(sprintf("Querying time-series data from %s to %s for %s points...\n",
+                start_time, end_time, length(point_ids)))
+}
   start_time <- as.numeric(as.POSIXlt(start_time, tz = 'UTC'))
   
   end_time <- as.numeric(as.POSIXlt(end_time, tz = 'UTC'))
