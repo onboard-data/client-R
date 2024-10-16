@@ -2,7 +2,7 @@
 % Please edit documentation in R/staging.R
 \name{create_building}
 \alias{create_building}
-\title{Create building}
+\title{Create building (Deprecated)}
 \usage{
 create_building(building_name, org_id = NULL, verbose = TRUE)
 }

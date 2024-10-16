@@ -13,7 +13,7 @@ unpromote_data(
 )
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
 
 \item{points_to_unpromote}{A data.frame containing columns 'e.equipment_id' & 'p.point_id'.}
 

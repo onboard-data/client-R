@@ -4,7 +4,13 @@
 \alias{get_timeseries_raw}
 \title{Raw Time-Series Data}
 \usage{
-get_timeseries_raw(start_time, end_time, point_ids, units = NULL)
+get_timeseries_raw(
+  start_time,
+  end_time,
+  point_ids,
+  units = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{start_time}{Start Time in UTC.}

@@ -7,7 +7,7 @@
 promote_data(building, data_to_promote, proceed = NULL, verbose = TRUE)
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
 
 \item{data_to_promote}{(Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.}
 

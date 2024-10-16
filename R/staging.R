@@ -1,6 +1,6 @@
-# Staging Area --------------------------------------------------------
+# Create Building (Deprecated) --------------------------------------------------------
 
-#' Create building
+#' Create building (Deprecated)
 #' 
 #' Creates an empty building on the staging area
 #' 
@@ -8,7 +8,6 @@
 #' 
 #' @param org_id  (Optional) If missing, the org_id will be grabbed from user's API access
 #' 
-#' @export
 create_building <- function(building_name,org_id = NULL, verbose = TRUE){
   
   #If org_id is not provided, grab an org_id from user's API access
@@ -34,24 +33,102 @@ create_building <- function(building_name,org_id = NULL, verbose = TRUE){
   }
 } 
 
-#' Get Staged Data
+# Equipment ----------------------------------------------------
+
+#' Get Staging Equip
+#' 
+#' Get unfiltered staging details on the building equipment
+#' 
+#' @param building_id Integer corresponding to the building id
+#' 
+#' @return A data.frame of staging equipment
+#' 
+#' @export
+get_staging_equip <- function(building_id, verbose = TRUE){    
+  
+  if(verbose){
+    cat("Getting staging equipment...\n")
+  }
+  
+  endpoint <- paste0('staging/',building_id)
+  
+  staging_equip <- api.get(endpoint)$equipment
+  
+  return(staging_equip)
+}
+
+
+# Devices ------------------------------------------------------
+
+#' Get Staging Devices
+#' 
+#' Get unfiltered staging details on the building devices
+#' 
+#' @inheritParams get_staging_equip
+#' 
+#' @return A data.frame of staging devices
+#' 
+#' @export
+get_staging_devices <- function(building_id, verbose = TRUE) {
+  
+  if(verbose){
+    cat("Getting staging devices...\n")
+  }
+  
+  endpoint <- paste0('staging/',building_id,'/devices')
+  
+  staging_devices <- api.get(endpoint)
+  
+  return(staging_devices)
+}  
+
+# Points -------------------------------------------------------
+
+#' Get Staging Points
+#' 
+#' Get unfiltered staging details on the building points
+#' 
+#' @inheritParams get_staging_equip
+#' 
+#' @return A data.frame of staging points
+#' 
+#' @export
+get_staging_points <- function(building_id, verbose = TRUE){
+  
+  if(verbose){
+    cat("Getting staging points...\n")
+  }
+  
+  endpoint <- paste0('staging/',building_id,'/points')
+  
+  staging_points <- api.get(endpoint)
+ 
+  return(staging_points) 
+}
+
+
+# Combined Data --------------------------------------------------------
+
+#' Get Staging Data
 #' 
 #' Gets metadata from the staging area.
 #' 
-#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.
+#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
 #' 
 #' @param verbose Logical. If TRUE (default), prints status and progress messages.
 #' 
 #' @return A data.frame of metadata from the staging area.
 #' 
 #' @export
-get_staged_data <- function(building, verbose = TRUE){
+get_staging_data <- function(building, verbose = TRUE){
   
   if(length(building)>1){
     stop('Length of building parameter greater than 1. Enter only one building id or name')
   }
 
   building_info <- get_building_info(building, verbose = verbose)
+  
+  building_id = building_info$id
   
   #List of strings that filters non required columns from equip, point & device tables 
   rem_col <- paste('polarity','reliability',
@@ -69,114 +146,70 @@ get_staged_data <- function(building, verbose = TRUE){
                    "Segment","apdu","binding","daylight","d.objectInstance",
                    "covsubscription","align","backup","restore","Sync",
                    sep='|')
+  
+#Get Staging Equip  
+staging_equip <- get_staging_equip(building_id = building_id, verbose = verbose)
+  
+##Organize & Filter Staging Equip
+  staging_equip_names <- names(staging_equip)
+  staging_equip_names <- paste0('e.', staging_equip_names)
+  names(staging_equip) <- staging_equip_names
 
-# Get Staged Equipment ----------------------------------------------------
-  
-  if(verbose){
-    cat("Getting equipment details...\n")
-  }
-  
-  endpoint <- paste0('staging/',building_info$id)
-  
-  equip_data <- api.get(endpoint)$equipment
-  
-  equip_data_names <- names(equip_data)
-  equip_data_names <- paste0('e.', equip_data_names)
-  names(equip_data) <- equip_data_names
-
-  equip_data_names <- data.frame(names=names(equip_data)) %>%
+  staging_equip_names <- data.frame(names=names(staging_equip)) %>%
     filter(!grepl(rem_col,names))
 
-  equip_data <- equip_data %>%
-    select(equip_data_names$names)
+  staging_equip <- staging_equip %>%
+    select(staging_equip_names$names)
 
-
-# Get Staged Devices ------------------------------------------------------
+#Get Staging Devices  
+staging_devices <- get_staging_devices(building_id = building_id, verbose = verbose)
   
-  if(verbose){
-    cat("Getting device details...\n")
-  }
-  
-  endpoint <- paste0('staging/',building_info$id,'/devices')
-  device_data <- api.get(endpoint)
-  
-  if(nrow(device_data)==0){
+  if(nrow(staging_devices)==0){
     
     #Temporary fix until all staging data is transformed
-    device_data <- data.frame(d.device_id="NA")
+    staging_devices <- data.frame(d.device_id="NA")
     
     if(verbose){
       cat("No device details found...\n")
     }
     
   } else {
+
+  #Organize & Filter Staging Devices 
+  staging_devices_names <- names(staging_devices)
+  staging_devices_names <- paste0('d.',staging_devices_names)
+  names(staging_devices) <- staging_devices_names
   
-  # Remove below lines after testing    
-  # device_list <- stage$devices_by_device_id
-  # 
-  # device_list <- rlist::list.flatten(device_list)
-  # device_data <- Filter(function(x)length(x)==1, device_list)  %>% 
-  #   bind_rows() %>%
-  #   t() %>% 
-  #   data.frame() %>% 
-  #   rownames_to_column(var = "device_details") %>% 
-  #   tidyr::separate(col="device_details",into=c("device","details"),
-  #                   sep="\\.",extra = "merge") %>% 
-  #   pivot_wider(id_cols = "device",
-  #               names_from = "details",values_from = ".") %>% 
-  #   select(-device)
-  # Remove above lines after testing
-  
-  device_data_names <- names(device_data)
-  device_data_names <- paste0('d.',device_data_names)
-  names(device_data) <- device_data_names
-  
-  device_data_names <- data.frame(names=device_data_names) %>%
+  staging_devices_names <- data.frame(names=staging_devices_names) %>%
     filter(!grepl(rem_col,names,ignore.case=T))
   
-  device_data<- device_data %>%
-    select(device_data_names$names)
+  staging_devices<- staging_devices %>%
+    select(staging_devices_names$names)
   }
   
+# Get Staging Points
 
-# Get Staged Points -------------------------------------------------------
-  
-  if(verbose){
-    cat("Getting point details...\n")
-  }
-  
-  endpoint <- paste0('staging/',building_info$id,'/points')
-  
-  points_data <- api.get(endpoint)
+staging_points <- get_staging_points(building_id = building_id, verbose = verbose)
 
-  if(nrow(points_data) == 0){
+  if(nrow(staging_points) == 0){
     stop(sprintf('No points found for building %s.', building_info$name))
   }  
 
-  # Remove below lines after testing  
-  # points_list <- stage$points_by_equip_id
-  # 
-  # processed_points_list <- lapply(points_list,process_columns)
-  # 
-  # points_data <- bind_rows(processed_points_list) %>% 
-  #   tidyr::separate_rows(equip_ids,sep=", ") %>% 
-  #     distinct(equip_ids,topic,.keep_all = TRUE)
-  # Remove above lines after testing
-  
-  points_data_names <- names(points_data)
-  points_data_names <- paste0('p.',points_data_names)
-  names(points_data) <- points_data_names
+##Organize & Filter Staging Points  
+  staging_points_names <- names(staging_points)
+  staging_points_names <- paste0('p.',staging_points_names)
+  names(staging_points) <- staging_points_names
 
-  points_data_names <- data.frame(names=points_data_names) %>%
+  staging_points_names <- data.frame(names=staging_points_names) %>%
     filter(!grepl(rem_col,names,ignore.case=T))
 
-  points_data <- points_data %>%
-    select(points_data_names$names) %>% 
+  staging_points <- staging_points %>%
+    select(staging_points_names$names) %>% 
     mutate(across(p.equip_ids,~as.character(.)))
   
-staged_data <- full_join(points_data,equip_data,
+staging_data <- full_join(staging_points,staging_equip,
                            by = c('p.equip_ids' = 'e.equip_id')) %>%
-  full_join(device_data,
+  full_join(staging_devices,
             by=c('p.device_id' = "d.device_id")) %>% 
   select(sort(tidyselect::peek_vars()))   
     # #Convert epoch timestamps to UTC
@@ -191,9 +224,13 @@ staged_data <- full_join(points_data,equip_data,
     cat('Staging data created.\n')
   }
 
-  return(staged_data)
+  return(staging_data)
 
 }
+
+
+# Upload -------------------------------------------------------
+
 
 ##Upload data to the staging area or assign __SKIP__ equip_id to topics on the staging area
 ##skip_topics is optional (T or F)(Use with Caution)
@@ -202,7 +239,7 @@ staged_data <- full_join(points_data,equip_data,
 #' 
 #' Uploads data to the staging area.
 #' 
-#' @inheritParams get_staged_data
+#' @inheritParams get_staging_data
 #' 
 #' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #' 
@@ -266,7 +303,7 @@ if(is.null(proceed)){
 }
 }
 
-# Promote & Unpromote -----------------------------------------------------
+# Promote -----------------------------------------------------
 
 api.promote <- function(building_id, payload_json, verbose){  
   
@@ -335,7 +372,7 @@ api.promote <- function(building_id, payload_json, verbose){
 #' 
 #' Promote valid data on the staging area to the live building.
 #' 
-#' @inheritParams get_staged_data
+#' @inheritParams get_staging_data
 #' 
 #' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #' 
@@ -402,9 +439,13 @@ promote_data <- function(building,
   
 }
 
+
+# Unpromote ---------------------------------------------------------------
+
+
 #' Unpromote Data from the live Building
 #' 
-#' @inheritParams get_staged_data
+#' @inheritParams get_staging_data
 #' 
 #' @param points_to_unpromote A data.frame containing columns 'e.equipment_id' & 'p.point_id'.
 #' 

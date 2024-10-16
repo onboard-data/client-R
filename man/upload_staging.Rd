@@ -7,7 +7,7 @@
 upload_staging(building, data_to_upload, proceed = NULL, verbose = TRUE)
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry is considered.}
+\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
 
 \item{data_to_upload}{A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.}
 
