@@ -454,50 +454,66 @@ promote_data <- function(building,
 #' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #' 
 #' @export
-unpromote_data <- function(building,points_to_unpromote = NULL, equipment_to_unpromote = NULL, proceed = NULL, verbose= TRUE){
+unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points", proceed = NULL, verbose= TRUE){
   
-  if(missing(points_to_unpromote) & missing(equipment_to_unpromote)) {
+  #Check arguments
+  if(missing(unpromote_data)) {
   
-    stop('Please provide either points_to_unpromote or equipment_to_unpromote. It should be a dataframe including e.equipment_id & p.point_id for the unpromote to succeed.\n ')
+    stop('Please provide either data_to_unpromote. It should be a dataframe including e.equipment_id and/or p.point_id for the unpromote to succeed.\n ')
   } 
   
-  if (missing(equipment_to_unpromote)){
-    
-    equipment_point_pairs <- points_to_unpromote %>% 
-      distinct()
-    
-    equipment_ids = 0
-
-  } else if(missing(points_to_unpromote)) {
-    
-    equipment_point_pairs <- equipment_to_unpromote %>% 
-      distinct()
-    
-    equipment_ids = unique(equipment_point_pairs$e.equipment_id)
+  if(!(unpromote_type %in% c("points","equipment"))){
+    stop("Wrong unpromote_type provided. Only 'points' or 'equipment' values are accepted.")
   }
   
-  if('p.point_id' %in% names(equipment_point_pairs)){
+  #Get building info & make equipment_point pairs
+  building_info <- get_building_info(buildings = building, verbose = verbose)
+  
+  equipment_point_pairs <- data_to_unpromote %>% 
+    select_if(names(.) %in% c('e.equipment_id', 'p.point_id')) %>% 
+    distinct()
+  
+  if (unpromote_type == "points"){
+  
+    if(is.null(equipment_point_pairs$p.point_id)){
+      stop("p.point_id column required in 'data_to_unpromote' for unpromoting points")
+    }
+    
+  #Setting equipment_ids to 0 because we are only un-promoting points
+    equipment_ids = 0
+    
+    unpromote_message = sprintf("Do you want to proceed with unpromoting %s points across %s equipment from %s?",
+                                nrow(equipment_point_pairs),
+                                length(unique(equipment_point_pairs$e.equipment_id)),
+                                building_info$name)
+
+  } else if(unpromote_type == "equipment") {
+    
+  equipment_ids = unique(equipment_point_pairs$e.equipment_id)
+    
+  unpromote_message = sprintf("Do you want to proceed with unpromoting %s equipment with %s points from %s?",
+                                nrow(equipment_point_pairs),
+                                length(equipment_point_pairs$p.point_id),
+                                building_info$name)
+  
+  if(!is.null(equipment_point_pairs$p.point_id)){
     point_ids = equipment_point_pairs$p.point_id  
     
     equipment_point_pairs <- equipment_point_pairs %>% 
       rename(equipment_id = e.equipment_id, point_id = p.point_id)
     
   } else {
+    #Since no point_ids are provided. 0 points will be unpromoted. This happens when equipmnent is empty
     equipment_point_pairs <- data.frame(
       equipment_id = 0, point_id = 0)
     
     point_ids = 0
   }
-
-  building_info <- get_building_info(building)
+}
   
-  if(is.null(proceed)){
+  if (is.null(proceed)) {
     proceed <-
-      askYesNo(
-        sprintf('Do you want to proceed with unpromoting %s points across %s equipment from %s?',
-                nrow(equipment_point_pairs),
-                length(unique(equipment_point_pairs$e.equipment_id)),
-                building_info$name))
+      askYesNo(unpromote_message)
   }
   
   if(is.na(proceed) | proceed != TRUE){
