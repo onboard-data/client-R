@@ -481,6 +481,8 @@ unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points
       stop("p.point_id column required in 'data_to_unpromote' for unpromoting points")
     }
     
+    point_ids = equipment_point_pairs$p.point_id  
+    
   #Setting equipment_ids to 0 because we are only un-promoting points
     equipment_ids = 0
     
@@ -501,17 +503,18 @@ unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points
   if(!is.null(equipment_point_pairs$p.point_id)){
     point_ids = equipment_point_pairs$p.point_id  
     
-    equipment_point_pairs <- equipment_point_pairs %>% 
-      rename(equipment_id = e.equipment_id, point_id = p.point_id)
-    
   } else {
-    #Since no point_ids are provided. 0 points will be unpromoted. This happens when equipmnent is empty
+    #Since no point_ids are provided. 0 points will be unpromoted. This happens when equipment is empty
     equipment_point_pairs <- data.frame(
       equipment_id = 0, point_id = 0)
     
     point_ids = 0
   }
-}
+  }
+  
+  equipment_point_pairs <- equipment_point_pairs %>% 
+  plyr::rename(replace = c('e.equipment_id' = 'equipment_id','p.point_id' = 'point_id'),
+               warn_missing = FALSE)
   
   if (is.null(proceed)) {
     proceed <-
@@ -521,7 +524,8 @@ unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points
   if(is.na(proceed) | proceed != TRUE){
     stop('Stopping Operation.\n')
   }
-  
+
+    
 unpromote_list <- list(equipment_ids = equipment_ids,
                        point_ids = point_ids,
                        point_equipment_relationships = equipment_point_pairs)
