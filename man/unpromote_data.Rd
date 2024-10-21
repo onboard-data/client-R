@@ -6,8 +6,8 @@
 \usage{
 unpromote_data(
   building,
-  points_to_unpromote = NULL,
-  equipment_to_unpromote = NULL,
+  data_to_unpromote,
+  unpromote_type = "points",
   proceed = NULL,
   verbose = TRUE
 )
@@ -15,11 +15,13 @@ unpromote_data(
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
 
-\item{points_to_unpromote}{A data.frame containing columns 'e.equipment_id' & 'p.point_id'.}
+\item{unpromote_type}{Type of data to unpromote. "equipment" or "points"(default)}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 
 \item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
+
+\item{data_to_unpromotw}{A data.frame containing columns 'e.equipment_id' and/or 'p.point_id'.}
 }
 \value{
 (Conditional) A named list containing errors that may have occurred during data promotion.

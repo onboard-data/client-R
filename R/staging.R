@@ -447,7 +447,9 @@ promote_data <- function(building,
 #' 
 #' @inheritParams get_staging_data
 #' 
-#' @param points_to_unpromote A data.frame containing columns 'e.equipment_id' & 'p.point_id'.
+#' @param data_to_unpromotw A data.frame containing columns 'e.equipment_id' and/or 'p.point_id'.
+#' 
+#' @param unpromote_type Type of data to unpromote. "equipment" or "points"(default)
 #' 
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #' 
