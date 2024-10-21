@@ -459,7 +459,7 @@ promote_data <- function(building,
 unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points", proceed = NULL, verbose= TRUE){
   
   #Check arguments
-  if(missing(unpromote_data)) {
+  if(missing(data_to_unpromote)) {
   
     stop('Please provide either data_to_unpromote. It should be a dataframe including e.equipment_id and/or p.point_id for the unpromote to succeed.\n ')
   } 
