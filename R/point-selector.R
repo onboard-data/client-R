@@ -52,24 +52,22 @@ PointSelector <- function(){
 #' @export
 select_points <- function(query){
   
-  if(query$updated_since!='') {
+  if(query$updated_since != "") {
     updated_since <- as.numeric(
       as.POSIXct(query$updated_since))
-  } else {
-    updated_since<- ''
-  }
+  } 
   
-  query <- query[names(query)!='updated_since']
+  query <- query[query != ""]
   
   query_json <- query %>%
-    toJSON()
+    jsonlite::toJSON()
   
-  query_json <- gsub('\\[""\\]','[]',query_json)
+#  query_json <- gsub('\\[""\\]','[]',query_json)
   
-  if(updated_since!=''){
-    query_json <-
-      gsub('}',paste0(',"updated_since":',updated_since,'}'),query_json)
-  }
+  # if(updated_since!=''){
+  #   query_json <-
+  #     gsub('}',paste0(',"updated_since":',updated_since,'}'),query_json)
+  # }
   
   endpoint <- 'points/select'
   
