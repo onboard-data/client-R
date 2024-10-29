@@ -477,8 +477,10 @@ unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points
   
   if (unpromote_type == "points"){
   
-    if(is.null(equipment_point_pairs$p.point_id)){
-      stop("p.point_id column required in 'data_to_unpromote' for unpromoting points")
+    ## Check that e.equipment_id & p.point_id columns are present
+    if (is.null(equipment_point_pairs$p.point_id) |
+        is.null(equipment_point_pairs$e.equipment_id)) {
+      stop("e.equipment_id & p.point_id columns required in 'data_to_unpromote' for unpromoting points")
     }
     
     point_ids = equipment_point_pairs$p.point_id  
@@ -493,10 +495,15 @@ unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points
 
   } else if(unpromote_type == "equipment") {
     
+    ## Check that e.equipment_id & p.point_id columns are present
+    if (is.null(equipment_point_pairs$e.equipment_id)) {
+      stop("e.equipment_id column is required in 'data_to_unpromote' for unpromoting equipment")
+    }
+    
   equipment_ids = unique(equipment_point_pairs$e.equipment_id)
     
   unpromote_message = sprintf("Do you want to proceed with unpromoting %s equipment with %s points from %s?",
-                                nrow(equipment_point_pairs),
+                                length(equipment_ids),
                                 length(equipment_point_pairs$p.point_id),
                                 building_info$name)
   
@@ -504,7 +511,7 @@ unpromote_data <- function(building, data_to_unpromote, unpromote_type = "points
     point_ids = equipment_point_pairs$p.point_id  
     
   } else {
-    #Since no point_ids are provided. 0 points will be unpromoted. This happens when equipment is empty
+    #Since no point_ids are provided. 0 points will be unpromoted. This happens when equipment is empty. If equipment is not empty the unpromote will fail with an error
     equipment_point_pairs <- data.frame(
       equipment_id = 0, point_id = 0)
     
