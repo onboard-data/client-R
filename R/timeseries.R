@@ -68,15 +68,18 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
   timeseries_output <- api.post(endpoint = 'timeseries',
                                 json_body = timeseries_query)
   
-  if(length(timeseries_output)!=0){
-    timeseries_df <-  nested_list_to_df(timeseries_output)
-
-  } else {
-    timeseries_df <- data.frame()
-    print('No timeseries data found.')
-  }
   
-  return(timeseries_df)
+  if (is.null(timeseries_output$status)) {
+
+    timeseries_output <-  nested_list_to_df(timeseries_output)
+    
+    return(timeseries_output)
+  } else {
+    if(verbose){
+      print(timeseries_output)
+    }
+  }
+
 }
 
 
