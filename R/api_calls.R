@@ -22,15 +22,12 @@ api.get <- function(endpoint) {
   request_endpoint <- GET(url = endpoint_url,
                           content_type_json(),
                           add_headers(`X-OB-Api` = api_data$key))
-  
-  if (request_endpoint$status_code == 200) {
       api_output <-
         content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
         fromJSON(flatten = TRUE)
-    return(api_output)
-  } else {
-    stop(httr::http_status(request_endpoint$status_code)$message)
-  }
+ 
+   return(api_output)
+ 
 }
 
 # POST --------------------------------------------------------------------
@@ -74,7 +71,6 @@ api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
     )
   }
   
-  if (request_endpoint$status_code == 200) {
     if (output == 'list') {
       api_output <- content(request_endpoint)
       
@@ -95,10 +91,7 @@ api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
       
     }
     return(api_output)
-  } else {
-    stop(httr::http_status(request_endpoint$status_code)$message)
-  }
-  
+
 }
 
 
@@ -123,12 +116,10 @@ request_endpoint <- DELETE(url = endpoint_url,
                         body = json_body)
 }
 
-if (request_endpoint$status_code == 200) {
   api_output <-
     content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
     fromJSON(flatten = TRUE)
-  return(api_output)
-} else {
-  stop(httr::http_status(request_endpoint$status_code)$message)
-}
+
+    return(api_output)
+
 }
