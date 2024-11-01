@@ -119,20 +119,23 @@ get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
                                        point_ids = point_ids,
                                        units = units)
     
+  if(nrow(timeseries_raw)==0){
+    timeseries <- timeseries_raw
+  } else {
     if(unit_type == 'default'){
-    timeseries_clean <- timeseries_raw %>% 
+    timeseries <- timeseries_raw %>% 
       transmute(.data$time,
                 .data$display,
                 unit = as.character(.data$unit))
     
     } else if (unit_type == 'raw'){
-      timeseries_clean <- timeseries_raw %>% 
+      timeseries <- timeseries_raw %>% 
         transmute(.data$time,
                   .data$display,
                   unit = as.character(.data$raw))
     }
     
-    timeseries_clean <- timeseries_clean %>% 
+    timeseries <- timeseries %>% 
       mutate(across(.data$time,
                     ~gsub('[.].*','',.))) %>%
       type.convert(as.is = T) %>% 
@@ -141,6 +144,7 @@ get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
                   names_from = .data$display,
                   values_from = .data$unit,
                   values_fill = NA) 
-    
-    return(timeseries_clean)
+}
+
+    return(timeseries)
   } 
