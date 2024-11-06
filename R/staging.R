@@ -208,7 +208,8 @@ staging_points <- get_staging_points(building_id = building_id, verbose = verbos
     mutate(across(p.equip_ids,~as.character(.)))
   
 staging_data <- full_join(staging_points,staging_equip,
-                           by = c('p.equip_ids' = 'e.equip_id')) %>%
+                           by = c('p.equip_ids' = 'e.equip_id'),
+                          keep = TRUE) %>%
   full_join(staging_devices,
             by=c('p.device_id' = "d.device_id")) %>% 
   select(sort(tidyselect::peek_vars()))   
