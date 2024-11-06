@@ -149,7 +149,16 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   names(equip_data) <- equip_data_names
   
   #Create a metadata for the specified building ID
-  metadata <- full_join(equip_data,points_data,
+  metadata <- equip_data %>% 
+    # Grab Equip Refs by joining with Equip DB again
+    mutate(e.parent_equip = as.integer(.data$e.parent_equip)) %>% 
+    left_join(
+      select(equip_data, .data$e.id, .data$e.equip_id),
+      by = c('e.parent_equip' = 'e.id'),
+      suffix = c('', '.y')
+    ) %>% 
+    rename(e.parent = .data$e.equip_id.y) %>%
+    full_join(points_data,
                          by = c('e.id' = 'p.equip_id')) %>% 
     #Get tagged units if NA
     mutate(across(.data$p.tagged_units,
@@ -160,20 +169,13 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
            p.point_id = .data$p.id,
            p.point_type = .data$p.type,
            e.equip_type = .data$e.equip_type_tag,
-           building_id=e.building_id) %>% 
-    # Grab Equip Refs by joining with Equip DB again
-    mutate(e.parent_equip = as.integer(.data$e.parent_equip)) %>% 
-    left_join(
-      select(equip_data, .data$e.id, .data$e.equip_id),
-      by = c('e.parent_equip' = 'e.id'),
-      suffix = c('', '.y')
-    ) %>% 
-    rename(e.parent = .data$e.equip_id.y) %>% 
+           building_id=e.building_id) %>%  
     #Convert epoch time-stamps to UTC 
     mutate(across(c(.data$p.first_updated, .data$p.last_updated),
                   ~ as.POSIXct(as.integer(substr(.,1,10)),
                                origin = '1970-01-01',
-                               tz = 'UTC'))) 
+                               tz = 'UTC')))  %>% 
+    select(where(~!all(is.na(.))))
   
   #Columns to remove from metadata
   rem_col <- paste('p\\.building_id','_type_name','_type_abbr','_subtype',
