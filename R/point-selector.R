@@ -21,7 +21,7 @@
 PointSelector <- function(){
   query <- list(orgs='',buildings='',point_ids='',point_names='',
                 point_topics='',updated_since='',point_types='',
-                equipment='',equipment_types='',point_hashes='')
+                equipment='',equipment_types='')
   
   return(query)
 }
