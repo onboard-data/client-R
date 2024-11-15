@@ -325,7 +325,7 @@ api.promote <- function(building_id, payload_json, verbose){
   if(nrow(errors != 0)){
     
     if(verbose){
-      cat("Invalid data found in staging area. Please check the errors.\n")
+      cat("Invalid data found in staging area. Please check the errors. \n")
     }
     
     errors <- errors %>% 
@@ -364,7 +364,7 @@ api.promote <- function(building_id, payload_json, verbose){
     
   } else {
     if(verbose){
-      print("Operation Successful!\n")
+      print("Operation Successful! \n")
     }
   }
 }
