@@ -97,7 +97,7 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
     points_data <-data.frame()
     
     for (i in 1:length(building_ids)){
-      
+    
     bid <- building_ids[i]  
     bname <- building_names[i]
       
@@ -138,7 +138,9 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   }
   
   points_data <- points_data %>%
-    mutate(across(.data$equip_id, ~ as.integer(.)))
+    mutate(across(equip_id, ~gsub("c\\(|\\)", "", .))) %>% # Remove "c()" if present
+    separate_rows(equip_id, sep = ",\\s*") %>%      # Split by comma and optional space
+    mutate(across(equip_id,~ as.numeric(.)))    
   
   points_data_names <- names(points_data)
   points_data_names <- paste0('p.', points_data_names)
