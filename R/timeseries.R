@@ -137,9 +137,10 @@ get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
     
     timeseries <- timeseries %>% 
       mutate(across(.data$time,
-                    ~gsub('[.].*','',.))) %>%
+                    ~gsub('[.].*','',.))) %>% 
       type.convert(as.is = T) %>% 
       mutate(time = as_datetime(.data$time)) %>% 
+      distinct() %>% 
       pivot_wider(id_cols = .data$time,
                   names_from = .data$display,
                   values_from = .data$unit,
