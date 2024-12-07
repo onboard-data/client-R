@@ -198,8 +198,7 @@ get_staging_data <- function(building, verbose = TRUE) {
   #Get Staging Devices
   staging_devices <- get_staging_devices(building_id = building_id, verbose = verbose)
   
-  if (nrow(staging_devices) == 0) {
-    #Temporary fix until all staging data is transformed
+  if (length(staging_devices)==0) {
     staging_devices <- data.frame(d.device_id = "NA")
     
     if (verbose) {
