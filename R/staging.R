@@ -237,7 +237,10 @@ get_staging_data <- function(building, verbose = TRUE) {
   
   staging_points <- staging_points %>%
     select(staging_points_names$names) %>%
-    mutate(across(p.equip_ids,  ~ as.character(.)))
+    mutate(across(p.equip_ids, ~ gsub('c\\(|\\)|"', "", .))) %>% # Remove "c()" if present
+    separate_rows(p.equip_ids, sep = ",\\s*") %>% # Split by comma and optional space
+    mutate(across(p.equip_ids, ~ gsub("character\\(0", "", .))) %>%
+    mutate(across(p.equip_ids, ~ as.character(.))) 
   
   staging_data <- full_join(
     staging_points,
@@ -246,7 +249,8 @@ get_staging_data <- function(building, verbose = TRUE) {
     keep = TRUE
   ) %>%
     full_join(staging_devices, by = c('p.device_id' = "d.device_id")) %>%
-    select(sort(tidyselect::peek_vars()))
+    select(sort(tidyselect::peek_vars())) %>% 
+    distinct()
   # #Convert epoch timestamps to UTC
   # mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
   #                 .data$e.modified, .data$e.created, .data$p.created ,
