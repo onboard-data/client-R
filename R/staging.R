@@ -484,120 +484,50 @@ promote <- function(building,
 }
 
 
-# Unpromote ---------------------------------------------------------------
+# Demote ---------------------------------------------------------------
 
 
-#' Unpromote Data from the live Building
+#' Demote Data from the live Building
 #'
 #' @inheritParams get_staging_data
 #'
-#' @param data_to_unpromotw A data.frame containing columns 'e.equipment_id' and/or 'p.point_id'.
+#' @param equipment_ids NULL (default) or A vector of equipment_ids to demote. Provide atleast one of equipment_ids or point_ids
 #'
-#' @param unpromote_type Type of data to unpromote. "equipment", "points"(default) or "relationships_only"
+#' @param point_ids NULL(default) A vector of equipment_ids to demoted. Provide atleast one of equipment_ids or point_ids
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #'
 #' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #'
 #' @export
-unpromote <- function(building,
-                      data_to_unpromote,
-                      unpromote_type = "points",
-                      proceed = NULL,
-                      verbose = TRUE) {
+demote <- function(building,
+                   equipment_ids = NULL,
+                   point_ids = NULL,
+                   proceed = NULL,
+                   verbose = TRUE) {
   #Check arguments
-  if (missing(data_to_unpromote)) {
-    stop(
-      'Please provide either data_to_unpromote. It should be a dataframe including e.equipment_id and/or p.point_id for the unpromote to succeed.\n '
-    )
-  }
-  
-  if (!(unpromote_type %in% c("points", "equipment", "relationships_only"))) {
-    stop("Wrong unpromote_type provided. Only 'points', 'equipment' or 'relationships_only' values are accepted.")
+  if (is.null(equipment_ids) & is.null(point_ids)) {
+    stop('Please provide atleast one of the equipment_ids or point_ids to demote.')
   }
   
   #Get building info & make equipment_point pairs
   building_info <- get_building_info(buildings = building, verbose = verbose)
   
-  equipment_point_pairs <- data_to_unpromote %>%
-    select_if(names(.) %in% c('e.equipment_id', 'p.point_id')) %>%
-    distinct()
+  metadata <- get_metadata(buildings = building_info$id)
   
-  if (unpromote_type == "points") {
-    ## Check that e.equipment_id & p.point_id columns are present
-    if (is.null(equipment_point_pairs$p.point_id) |
-        is.null(equipment_point_pairs$e.equipment_id)) {
-      stop(
-        "e.equipment_id & p.point_id columns required in 'data_to_unpromote' for unpromoting points"
-      )
-    }
-    
-    point_ids = equipment_point_pairs$p.point_id
-    
-    #Setting equipment_ids to 0 because we are only un-promoting points
-    equipment_ids = 0
-    
-    unpromote_message = sprintf(
-      "Do you want to proceed with unpromoting %s points across %s equipment from %s?",
-      nrow(equipment_point_pairs),
-      length(unique(
-        equipment_point_pairs$e.equipment_id
-      )),
-      building_info$name
-    )
-    
-  } else if (unpromote_type == "equipment") {
-    ## Check that e.equipment_id & p.point_id columns are present
-    if (is.null(equipment_point_pairs$e.equipment_id)) {
-      stop(
-        "e.equipment_id column is required in 'data_to_unpromote' for unpromoting equipment"
-      )
-    }
-    
-    equipment_ids = unique(equipment_point_pairs$e.equipment_id)
-    
-    unpromote_message = sprintf(
-      "Do you want to proceed with unpromoting %s equipment with %s points from %s?",
-      length(equipment_ids),
-      length(equipment_point_pairs$p.point_id),
-      building_info$name
-    )
-    
-    if (!is.null(equipment_point_pairs$p.point_id)) {
-      point_ids = equipment_point_pairs$p.point_id
-      
-    } else {
-      #Since no point_ids are provided. 0 points will be unpromoted. This happens when equipment is empty. If equipment is not empty the unpromote will fail with an error
-      equipment_point_pairs <- data.frame(equipment_id = 0, point_id = 0)
-      
-      point_ids = 0
-      
-      unpromote_message = sprintf(
-        "Do you want to proceed with unpromoting %s equipment with 0 points from %s?",
-        length(equipment_ids),
-        building_info$name
-      )
-      
-    }
-  } else if (unpromote_type == "relationships_only") {
-    equipment_ids = 0
-    
-    point_ids = 0
-    
-    unpromote_message = sprintf(
-      "Do you want to proceed with unpromoting only relationships between %s equipment and %s points from %s?",
-      nrow(equipment_point_pairs),
-      nrow(equipment_point_pairs),
-      building_info$name
-    )
-    
-  }
+  equipment_point_pairs <- metadata %>%
+    filter(e.equipment_id %in% equipment_ids |
+             p.point_id %in% point_ids) %>%
+    select(equipment_id = e.equipment_id,
+           point_id = p.point_id)
   
-  equipment_point_pairs <- equipment_point_pairs %>%
-    plyr::rename(
-      replace = c('e.equipment_id' = 'equipment_id', 'p.point_id' = 'point_id'),
-      warn_missing = FALSE
-    )
+  
+  unpromote_message = sprintf(
+    "Do you want to proceed with demoting %s equipment & %s points from %s?",
+    length(equipment_ids),
+    length(point_ids),
+    building_info$name
+  )
   
   if (is.null(proceed)) {
     proceed <-
@@ -608,6 +538,9 @@ unpromote <- function(building,
     stop('Stopping Operation.\n')
   }
   
+  if(is.null(equipment_ids)){ equipment_ids = 0}
+  
+  if(is.null(point_ids)){ point_ids = 0}
   
   unpromote_list <- list(
     equipment_ids = equipment_ids,
