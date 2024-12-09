@@ -162,6 +162,8 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
     rename(e.parent = .data$e.equip_id.y) %>%
     full_join(points_data,
                          by = c('e.id' = 'p.equip_id')) %>% 
+    #Remove NA equipment rows
+    filter(!is.na(e.equip_id)) %>% 
     #Get tagged units if NA
     mutate(across(.data$p.tagged_units,
                   ~ifelse(is.na(.),
