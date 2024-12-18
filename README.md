@@ -87,11 +87,11 @@ timeseries <- get_timeseries(start_time= start_time, end_time = end_time, point_
 This example requires an Onboard API key with scopes `admin`, `collection:admin`, and `staging` 
 
 ```R
-staged_data <- get_staged_data(building = 427) # Query staged data for building id 427
+staged_data <- get_staging_data(building = 427) # Query staged data for building id 427
 
-staged_data <- get_staged_data(building ='Laboratory') # Query staged data for building name: Laboratory
+staged_data <- get_staging_data(building ='Laboratory') # Query staged data for building name: Laboratory
 
-deployments <- get_deployments() #Query all deployments in your organization
+deployments <- api.get('deployments') #Query all deployments in your organization
 
 users <- get_users() #Qeury all users in your organization
 
