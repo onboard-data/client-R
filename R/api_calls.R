@@ -31,8 +31,10 @@ api.get <- function(endpoint) {
     stop(paste("API call failed:", http_status(response)$message))
   }
   
-  # Parse JSON response
-  api_output <- content(response, as = "parsed", type = "application/json")
+
+  # Parse the response and flatten
+  api_output <- content(response, as = "text", encoding = "UTF-8") %>% 
+    fromJSON(flatten = TRUE)
   
   return(api_output)
 }
