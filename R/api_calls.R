@@ -137,7 +137,7 @@ api.delete <- function(endpoint, json_body = NULL){
   }
 
   api_output <-
-    content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
+    content(response, as = 'text', encoding = 'UTF-8') %>% 
     fromJSON(flatten = TRUE)
 
     return(api_output)
