@@ -74,3 +74,17 @@ process_columns <- function(df) {
   })
   return(df)
 }
+
+
+
+# Prefix Column Names ---------------------
+
+#' Prefix Column Names
+#' 
+#' Helper function to add prefixes to column names for Staging Data
+#' 
+# 
+prefix_column_names <- function(data, prefix) {
+  names(data) <- paste0(prefix, ".", names(data))
+  data
+}
