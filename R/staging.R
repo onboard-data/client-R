@@ -116,7 +116,6 @@ get_staging_data <- function(building, verbose = TRUE) {
   } else {
     staging_devices <- prefix_column_names(staging_devices, "d")
   }
-    
   
 # Combine data
 staging_data <- full_join(staging_points,
@@ -144,7 +143,7 @@ staging_data <- full_join(staging_points,
 #'
 #' @inheritParams get_staging_data
 #'
-#' @param data_to_upload A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
+#' @param staging_data A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #'
@@ -152,57 +151,72 @@ staging_data <- full_join(staging_points,
 #'
 #'@export
 upload_staging <- function(building,
-                           data_to_upload,
+                           staging_data,
                            proceed = NULL,
                            verbose = TRUE) {
+    # Get building info
   building_info <- get_building_info(building, verbose = verbose)
   
-  if (missing(data_to_upload)) {
+  # Validate `staging_data`
+  if (missing(staging_data) || nrow(staging_data) == 0) {
     stop(
-      'data_to_upload is missing in the function call. data_to_upload should be a dataframe including at least e.equip_id & p.topic for the upload to succeed'
+      "`staging_data` is missing or empty. It should be a data.frame containing at least 'e.equip_id' and/or 'p.topic' for the upload to succeed."
     )
-    
-  } else if (!any(c('p.topic', 'e.equip_id') %in% colnames(data_to_upload))) {
-    stop('Please include the p.topic or e.equip_id column in data_to_upload')
   }
   
-  data_to_upload_json <- data_to_upload %>%
-    toJSON()
+  if (!any(c("p.topic", "e.equip_id") %in% colnames(staging_data))) {
+    stop("`staging_data` must include at least 'p.topic' or 'e.equip_id' as a column.")
+  }
+
+  # Convert data to JSON
+  staging_data_json <- toJSON(staging_data, auto_unbox = TRUE)
   
+  # Confirm upload if `proceed` is NULL
   if (is.null(proceed)) {
     proceed <- askYesNo(
       sprintf(
-        'Do you want to proceed uploading %s point/s for %s?',
-        nrow(data_to_upload),
+        "Do you want to proceed with uploading modified data for building '%s'?",
         building_info$name
       )
     )
   }
   
-  if (is.na(proceed) | proceed != TRUE) {
-    stop('Stopping Operation.')
+  # Stop if not confirmed
+  if (is.na(proceed) || !proceed) {
+    stop("Operation canceled by user.")
   }
   
   if (verbose) {
-    cat('Uploading...\n')
+    cat("Uploading data to staging...\n")
   }
   
-  #get endpoint
-  endpoint <- paste0('staging/', building_info$id)
+  # Construct endpoint URL
+  endpoint <- paste0("staging/", building_info$id)
   
-  post_points <- api.post(endpoint, json_body = data_to_upload_json)
+  # Make POST request
+  response <- api.post(endpoint, json_body = staging_data_json)
   
-  output <- post_points$row_errors
+  # Check response for errors
+  row_errors <- response$row_errors
   
-  if (length(output) == 0) {
-    message <- "Upload successful \n"
-  } else{
-    message <- "Upload unsuccesful. Please check errors for more information. \n"
+  # Provide feedback
+  if (length(row_errors) == 0) {
+    message <- "Upload successful!\n"
+  } else {
+    message <- "Upload unsuccessful. Check the returned errors for details.\n"
   }
   
   if (verbose) {
     cat(message)
   }
+
+  # Return row errors if any
+  if (length(row_errors) > 0) {
+    return(row_errors)
+  }
+  
+  # Return success message explicitly for consistency
+  return(message)
   
   if (length(output) != 0) {
     return(output)
@@ -211,73 +225,13 @@ upload_staging <- function(building,
 
 # Promote -----------------------------------------------------
 
-api.promote <- function(building_id, payload_json, verbose) {
-  endpoint <- paste0('staging/', building_id, '/apply')
-  
-  promotion <- api.post(endpoint, json_body = payload_json)
-  
-  errors <- rrapply::rrapply(promotion, how = "melt") %>%
-    filter(.data$L1 != "building_id") %>%
-    filter(
-      !grepl(
-        "Skipped (equipment|points are) not validated|No valid equipment for topic",
-        value
-      )
-    )
-  
-  
-  if (nrow(errors != 0)) {
-    if (verbose) {
-      cat("Invalid data found in staging area. Please check the errors. \n")
-    }
-    
-    errors <- errors %>%
-      rename(type = .data$L1,
-             topic = .data$L2,
-             error = .data$value)
-    
-    points_error <- errors[errors$type == "points", ]
-    
-    if (nrow(points_error) != 0) {
-      points_error_list <- setNames(split(points_error$error, seq(nrow(points_error))), points_error$topic)
-    } else {
-      points_error_list <- NULL
-    }
-    
-    
-    equip_error <- errors[errors$type == "equipment", ]
-    
-    
-    if (nrow(equip_error) != 0) {
-      equip_error_list <- setNames(split(equip_error$error, seq(nrow(equip_error))), equip_error$topic)
-    } else {
-      equip_error_list <- NULL
-    }
-    
-    unexp_del <- errors[errors$type == "unexpected_deletes", "error"]
-    
-    output <- list(
-      "points" = points_error_list,
-      "equipment" = equip_error_list,
-      "unexpected_deletes" = unexp_del
-    )
-    
-    return(output)
-    
-  } else {
-    if (verbose) {
-      print("Operation Successful! \n")
-    }
-  }
-}
-
 #' Promote data on Staging Area
 #'
 #' Promote valid data on the staging area to the live building.
 #'
 #' @inheritParams get_staging_data
 #'
-#' @param data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
+#' @param staging_data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #'
@@ -286,12 +240,13 @@ api.promote <- function(building_id, payload_json, verbose) {
 #' @export
 
 promote <- function(building,
-                    data_to_promote,
+                    staging_data_to_promote = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
+  
   building_info <- get_building_info(building, verbose = verbose)
   
-  if (missing(data_to_promote)) {
+  if (is.null(staging_data_to_promote)) {
     proceed <- askYesNo(
       sprintf(
         'Do you want to proceed with promoting all valid topics for %s?',
@@ -303,51 +258,48 @@ promote <- function(building,
       stop('Stopping Operation.')
     }
     
-    promote_json <- list(equip_ids = '', topics = '') %>%
-      toJSON()
-    
-    promote_json <- gsub('\\["', '[', promote_json)
-    promote_json <- gsub('"\\]', ']', promote_json)
-    
-    operation <- 'promote_all'
+    promote_json <- list(equip_ids = character(0), topics = character(0)) %>%
+      toJSON() %>%
+      gsub('\\["', '[', .) %>%
+      gsub('"\\]', ']', .)
     
   } else {
-    data_to_promote <- data_to_promote %>%
+    
+    staging_data_to_promote <- staging_data_to_promote %>%
       filter(.data$e.equip_id != '__SKIP__')
     
-    equip_count <- length(unique(data_to_promote$e.equip_id))
+    equip_count <- length(unique(staging_data_to_promote$e.equip_id))
     
     if (is.null(proceed)) {
-      proceed <-
-        askYesNo(
-          sprintf(
-            'Do you want to proceed with promoting %s equipment and their valid topics to %s?',
-            equip_count,
-            building_info$name
-          )
+      proceed <- askYesNo(
+        sprintf(
+          'Do you want to proceed with promoting %s equipment and their valid topics to %s?',
+          equip_count,
+          building_info$name
         )
+      )
     }
     
     if (is.na(proceed) | proceed != TRUE) {
       stop('Stopping Operation.')
     }
     
-    promote_list <- list(equip_ids = data_to_promote$e.equip_id,
-                         topics = data_to_promote$p.topic)
+    promote_json <- list(
+      equip_ids = staging_data_to_promote$e.equip_id,
+      topics = staging_data_to_promote$p.topic
+    ) %>%
+      toJSON()
     
-    promote_json <- promote_list %>%  toJSON()
-    
-    operation <- 'promote_some'
   }
   
-  api.promote(
-    building_id = building_info$id,
-    payload_json = promote_json,
-    verbose = verbose
-  )
+  errors <- api.promote(building_id = building_info$id,
+                        payload_json = promote_json,
+                        verbose = verbose)
   
+  if (!is.null(errors)) {
+    return(errors)
+  }
 }
-
 
 # Demote ---------------------------------------------------------------
 
@@ -373,61 +325,74 @@ demote <- function(building,
                    point_equipment_relationships = NULL,
                    proceed = NULL,
                    verbose = TRUE) {
-  #Check arguments
-  if (is.null(equipment_ids) & 
-      is.null(point_ids) & 
+  
+  # Check if at least one of the necessary parameters is provided
+  if (is.null(equipment_ids) &&
+      is.null(point_ids) &&
       is.null(point_equipment_relationships)) {
-    stop('Please provide atleast one of the equipment_ids or point_ids or point_equipment_relationships to demote.')
+    stop(
+      'Please provide at least one of the equipment_ids, point_ids, or point_equipment_relationships to demote.'
+    )
   }
   
-  #Get building info & make equipment_point pairs
-  building_info <- get_building_info(buildings = building, verbose = verbose)
+  # Get building info and ensure relationships are available
+  building_info <- get_building_info(building, verbose = verbose)
   
-  if(is.null(point_equipment_relationships)){
-  #Fetch all point_equipment_relationships from the promoted data
-    metadata <- get_metadata(buildings = building_info$id)
+  if (is.null(point_equipment_relationships)) {
+    
+    confirm_metadata_pull <- askYesNo(
+      "You have not provided explicit point-equipment relationships to demote. Metadata will be pulled, and all existing point-equipment relationships will be removed. Do you want to proceed?"
+    )
+    
+    if (is.na(confirm_metadata_pull) | confirm_metadata_pull != TRUE) {
+      stop('Stopping Operation.\n')
+    }
+    
+    # Fetch point-equipment relationships if not provided
+    metadata <- get_metadata(building_id = building_info$id)
     
     point_equipment_relationships <- metadata %>%
-    filter(e.equipment_id %in% equipment_ids |
-             p.point_id %in% point_ids) %>%
-    select(equipment_id = e.equipment_id,
-           point_id = p.point_id)
-  
+      filter(e.equipment_id %in% equipment_ids | p.point_id %in% point_ids) %>%
+      select(equipment_id = e.equipment_id, point_id = p.point_id)
   }
   
-  unpromote_message = sprintf(
-    "Do you want to proceed with demoting %s equipment, %s points & %s equipment-point relationships from %s?",
+  # Prepare the demotion message
+  unpromote_message <- sprintf(
+    "Proceed with demotion on %s:\n%s equipment \n%s points \n%s equipment-point relationships",
+    building_info$name,
     length(equipment_ids),
     length(point_ids),
-    length(point_equipment_relationships),
-    building_info$name
+    nrow(point_equipment_relationships)
   )
   
+  # Prompt for confirmation
   if (is.null(proceed)) {
-    proceed <-
-      askYesNo(unpromote_message)
+    proceed <- askYesNo(unpromote_message)
   }
   
   if (is.na(proceed) | proceed != TRUE) {
     stop('Stopping Operation.\n')
   }
   
+  # Default to empty lists if arguments are NULL
   if(is.null(equipment_ids)){ equipment_ids = 0}
   
   if(is.null(point_ids)){ point_ids = 0}
   
+  # Create a list for the demotion payload
   unpromote_list <- list(
     equipment_ids = equipment_ids,
     point_ids = point_ids,
     point_equipment_relationships = point_equipment_relationships
   )
   
-  unpromote_json <- unpromote_list %>% toJSON()
+  # Convert the payload to JSON
+  unpromote_json <- toJSON(unpromote_list)
   
+  # Define the endpoint
   endpoint <- paste0('staging/', building_info$id, '/apply')
   
-  json_body <- unpromote_json
-  
-  api.delete(endpoint, json_body)
+  # Send the delete request
+  api.delete(endpoint, json_body = unpromote_json)
   
 }
