@@ -88,3 +88,45 @@ prefix_column_names <- function(data, prefix) {
   names(data) <- paste0(prefix, ".", names(data))
   data
 }
+
+
+
+# Handle Promotion Errors -------------------------------------------------
+
+#' Handle Promotion Errors
+#'
+#' Helper function to handle promotion errors
+#'
+process_promotion_errors <- function(promotion, verbose) {
+  errors <- rrapply::rrapply(promotion, how = "melt") %>%
+    filter(.data$L1 != "building_id") %>%
+    filter(
+      !grepl(
+        "Skipped (equipment|points are) not validated|No valid equipment for topic",
+        value
+      )
+    )
+  
+  if (nrow(errors) > 0) {
+    if (verbose) {
+      cat("Invalid data found in staging area. Please check the errors. \n")
+    }
+    
+    errors <- errors %>%
+      rename(type = .data$L1, topic = .data$L2, error = .data$value)
+    
+    points_error_list <- split(errors$topic[errors$type == "points"], seq(nrow(errors)))
+    equip_error_list <- split(errors$topic[errors$type == "equipment"], seq(nrow(errors)))
+    
+    unexp_del <- errors[errors$type == "unexpected_deletes", "error"]
+    
+    return(list(
+      points = points_error_list,
+      equipment = equip_error_list,
+      unexpected_deletes = unexp_del
+    ))
+  } else {
+    return(NULL)
+  }
+}
+
