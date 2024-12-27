@@ -8,6 +8,7 @@ demote(
   building,
   equipment_ids = NULL,
   point_ids = NULL,
+  point_equipment_relationships = NULL,
   proceed = NULL,
   verbose = TRUE
 )
@@ -18,6 +19,8 @@ demote(
 \item{equipment_ids}{NULL (default) or A vector of equipment_ids to demote. Provide atleast one of equipment_ids or point_ids}
 
 \item{point_ids}{NULL(default) A vector of equipment_ids to demoted. Provide atleast one of equipment_ids or point_ids}
+
+\item{point_equipment_relationships}{NULL(default) A data.frame containing equipment_id and point_id relationships to demote}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 
