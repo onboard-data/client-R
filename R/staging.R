@@ -152,6 +152,7 @@ staging_data <- full_join(staging_points,
 #'@export
 upload_staging <- function(building,
                            staging_data,
+                           promoted_topics = FALSE,
                            proceed = NULL,
                            verbose = TRUE) {
     # Get building info
@@ -169,11 +170,13 @@ upload_staging <- function(building,
   }
 
   if('p.topic' %in% names(staging_data)){
+    if(promoted_topics==FALSE){
   # Group by p.topic and combine e.equip_id into a list of unique values
   staging_data <- staging_data %>% 
     group_by(p.topic) %>%
     summarise(e.equip_id = list(unique(e.equip_id))) %>%
     ungroup()
+  }
   }
   
   # Convert data to JSON
