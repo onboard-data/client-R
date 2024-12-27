@@ -136,8 +136,9 @@ api.delete <- function(endpoint, json_body = NULL){
     stop(paste("API call failed:", http_status(response)$message))
   }
 
-  # Parse and return the response
-  api_output <- content(response, as = "parsed", type = "application/json")  
+  api_output <-
+    content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
+    fromJSON(flatten = TRUE)
 
     return(api_output)
 
