@@ -10,17 +10,13 @@
 #'
 #' @export
 get_staging_equip <- function(building_id, verbose = TRUE) {
-  if (verbose) {
-    cat("Getting staging equipment...\n")
-  }
-  
-  endpoint <- paste0('staging/', building_id)
-  
-  staging_equip <- api.get(endpoint)$equipment
-  
-  return(staging_equip)
-}
+if (verbose) cat("Fetching staging equipment...\n")
 
+endpoint <- sprintf("staging/%d", building_id)
+
+api.get(endpoint)$equipment
+
+}
 
 # Devices ------------------------------------------------------
 
@@ -34,15 +30,10 @@ get_staging_equip <- function(building_id, verbose = TRUE) {
 #'
 #' @export
 get_staging_devices <- function(building_id, verbose = TRUE) {
-  if (verbose) {
-    cat("Getting staging devices...\n")
-  }
+  if (verbose) cat("Fetching staging devices...\n")
   
-  endpoint <- paste0('staging/', building_id, '/devices')
-  
-  staging_devices <- api.get(endpoint)
-  
-  return(staging_devices)
+  endpoint <- sprintf("staging/%d/devices", building_id)
+  api.get(endpoint)
 }
 
 # Points -------------------------------------------------------
@@ -57,15 +48,10 @@ get_staging_devices <- function(building_id, verbose = TRUE) {
 #'
 #' @export
 get_staging_points <- function(building_id, verbose = TRUE) {
-  if (verbose) {
-    cat("Getting staging points...\n")
-  }
+  if (verbose) cat("Fetching staging points...\n")
   
-  endpoint <- paste0('staging/', building_id, '/points')
-  
-  staging_points <- api.get(endpoint)
-  
-  return(staging_points)
+  endpoint <- sprintf("staging/%d/points", building_id)
+  api.get(endpoint)
 }
 
 
@@ -83,150 +69,66 @@ get_staging_points <- function(building_id, verbose = TRUE) {
 #'
 #' @export
 get_staging_data <- function(building, verbose = TRUE) {
-  if (length(building) > 1) {
-    stop('Length of building parameter greater than 1. Enter only one building id or name')
-  }
+  if (length(building) > 1) 
+    stop("Only one building ID or name is allowed.")
   
-  building_info <- get_building_info(building, verbose = verbose)
+  building_info <- get_building_info(building, verbose)
+  building_id <- building_info$id
   
-  building_id = building_info$id
+  #Remove this in the future.
+  # #List of strings that filters non required columns from equip, point & device tables
+  # rem_col <- paste(
+  #   'polarity','reliability','event','covIncrement','presvalue',
+  #   'statusflags','outofservice',    'datasource',    'limit',
+  #   'deadband', '@prop','timedelay','instance_tagger',
+  #   'ob_predicted', 'notif', 'acked','resolution',    'state_text',
+  #   'relinquish', 'priority', 'p\\.data\\.e\\.', '_tagger',    'p\\.confidences\\.e\\.',
+  #   'check',    '\\.err','tags',    "type_id", "unit_id",    #Device fields "maxMaster",
+  #   "offset",    "objectList", "systemStatus", "maxInfo",    "protocolVersion",
+  #   "Revision",    "vendorId", "lastRestart", "Segment",    "apdu",
+  #   "binding",    "daylight", "d.objectInstance","covsubscription", "align",
+  #   "backup", "restore", "Sync",    
+  #   sep = '|'
+  # )
   
-  #List of strings that filters non required columns from equip, point & device tables
-  rem_col <- paste(
-    'polarity',
-    'reliability',
-    'event',
-    'covIncrement',
-    'presvalue',
-    'statusflags',
-    'outofservice',
-    'datasource',
-    'limit',
-    'deadband',
-    '@prop',
-    'timedelay',
-    'instance_tagger',
-    'ob_predicted',
-    'notif',
-    'acked',
-    'resolution',
-    'state_text',
-    'relinquish',
-    'priority',
-    'p\\.data\\.e\\.',
-    '_tagger',
-    'p\\.confidences\\.e\\.',
-    'check',
-    '\\.err',
-    'tags',
-    "type_id",
-    "unit_id",
-    #Device fields
-    "maxMaster",
-    "offset",
-    "objectList",
-    "systemStatus",
-    "maxInfo",
-    "protocolVersion",
-    "Revision",
-    "vendorId",
-    "lastRestart",
-    "Segment",
-    "apdu",
-    "binding",
-    "daylight",
-    "d.objectInstance",
-    "covsubscription",
-    "align",
-    "backup",
-    "restore",
-    "Sync",
-    sep = '|'
-  )
+# Fetch Staging Sata
+  # Staging Points
+  staging_points <- get_staging_points(building_id, verbose)
+  if (nrow(staging_points) == 0) 
+    stop(sprintf("No points found for building %s.", building_info$name))
   
-  #Get Staging Equip
-  staging_equip <- get_staging_equip(building_id = building_id, verbose = verbose)
-  
-  ##Organize & Filter Staging Equip
-  staging_equip_names <- names(staging_equip)
-  staging_equip_names <- paste0('e.', staging_equip_names)
-  names(staging_equip) <- staging_equip_names
-  
-  staging_equip_names <- data.frame(names = names(staging_equip)) %>%
-    filter(!grepl(rem_col, names))
-  
-  staging_equip <- staging_equip %>%
-    select(staging_equip_names$names)
-  
-  #Get Staging Devices
-  staging_devices <- get_staging_devices(building_id = building_id, verbose = verbose)
-  
-  if (length(staging_devices)==0) {
-    staging_devices <- data.frame(d.device_id = "NA")
-    
-    if (verbose) {
-      cat("No device details found...\n")
-    }
-    
-  } else {
-    #Organize & Filter Staging Devices
-    staging_devices_names <- names(staging_devices)
-    staging_devices_names <- paste0('d.', staging_devices_names)
-    names(staging_devices) <- staging_devices_names
-    
-    staging_devices_names <- data.frame(names = staging_devices_names) %>%
-      filter(!grepl(rem_col, names, ignore.case = T))
-    
-    staging_devices <- staging_devices %>%
-      select(staging_devices_names$names)
-  }
-  
-  # Get Staging Points
-  
-  staging_points <- get_staging_points(building_id = building_id, verbose = verbose)
-  
-  if (nrow(staging_points) == 0) {
-    stop(sprintf('No points found for building %s.', building_info$name))
-  }
-  
-  ##Organize & Filter Staging Points
-  staging_points_names <- names(staging_points)
-  staging_points_names <- paste0('p.', staging_points_names)
-  names(staging_points) <- staging_points_names
-  
-  staging_points_names <- data.frame(names = staging_points_names) %>%
-    filter(!grepl(rem_col, names, ignore.case = T))
-  
-  staging_points <- staging_points %>%
-    select(staging_points_names$names) %>%
+  staging_points <- prefix_column_names(staging_points, "p") %>%
     mutate(across(p.equip_ids, ~ gsub('c\\(|\\)|"', "", .))) %>% # Remove "c()" if present
     separate_rows(p.equip_ids, sep = ",\\s*") %>% # Split by comma and optional space
     mutate(across(p.equip_ids, ~ gsub("character\\(0", "", .))) %>%
     mutate(across(p.equip_ids, ~ as.character(.))) 
   
-  staging_data <- full_join(
-    staging_points,
-    staging_equip,
-    by = c('p.equip_ids' = 'e.equip_id'),
-    keep = TRUE
-  ) %>%
-    full_join(staging_devices, by = c('p.device_id' = "d.device_id")) %>%
-    select(sort(tidyselect::peek_vars())) %>% 
-    distinct()
-  # #Convert epoch timestamps to UTC
-  # mutate(across(c(.data$e.last_promoted, .data$p.last_promoted,
-  #                 .data$e.modified, .data$e.created, .data$p.created ,
-  #                 .data$p.modified, .data$p.last_updated),
-  #               ~ as.POSIXct(as.integer(substr(.,1,10)),
-  #                            origin = '1970-01-01',
-  #                            tz = 'UTC')))
+  # Staging Equip
+  staging_equip <- prefix_column_names(
+    get_staging_equip(building_id, verbose), "e"
+  )
   
-  if (verbose) {
-    cat('Staging data created.\n')
+  # Staging Devices
+  staging_devices <- get_staging_devices(building_id, verbose)
+  if (length(staging_devices) == 0) {
+    staging_devices <- data.frame(d.device_id = NA)
+    if (verbose) cat("No device details found.\n")
+  } else {
+    staging_devices <- prefix_column_names(staging_devices, "d")
   }
+    
+  
+# Combine data
+staging_data <- full_join(staging_points,
+                            staging_equip,
+                            by = c("p.equip_ids" = "e.equip_id")) %>%
+    full_join(staging_devices, by = c("p.device_id" = "d.device_id")) %>%
+    select(sort(tidyselect::peek_vars())) %>%
+    distinct()
+  
+  if (verbose) cat("Staging data created.\n")
   
   return(staging_data)
-  
 }
 
 
