@@ -14,21 +14,29 @@
 #' 
 #' @export
 api.get <- function(endpoint) {
-  api_data <- api.access()
+  # Access API credentials from the local environment.
+  api_data <- api.access()  
   
-  # get endpoint
-  endpoint_url <- paste(api_data$url, endpoint, sep = '/')
+  # Construct the endpoint URL
+  endpoint_url <- file.path(api_data$url, endpoint)
   
-  request_endpoint <- GET(url = endpoint_url,
-                          content_type_json(),
-                          add_headers(`X-OB-Api` = api_data$key))
-      api_output <-
-        content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
-        fromJSON(flatten = TRUE)
- 
-   return(api_output)
- 
+  # Make GET request with headers
+  response <- GET(url = endpoint_url,
+                  add_headers(
+                    `Content-Type` = "application/json", 
+                    `X-OB-Api` = api_data$key))
+  
+  # Check for errors
+  if (http_status(response)$category != "Success") {
+    stop(paste("API call failed:", http_status(response)$message))
+  }
+  
+  # Parse JSON response
+  api_output <- content(response, as = "parsed", type = "application/json")
+  
+  return(api_output)
 }
+
 
 # POST --------------------------------------------------------------------
 
@@ -50,75 +58,84 @@ api.get <- function(endpoint) {
 #' 
 #' @export
 api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
+  # Access API credentials
   api_data <- api.access()
   
-  # post endpoint
-  endpoint_url <- paste(api_data$url, endpoint, sep = '/')
+  # Construct the endpoint URL
+  endpoint_url <- file.path(api_data$url, endpoint)
   
-  if(length(upload_path) == 0){
-  request_endpoint <- POST(
-    url = endpoint_url,
-    content_type_json(),
-    add_headers(`X-OB-Api` = api_data$key),
-    body = json_body
-  )
+  # Create the POST request
+  if (is.null(upload_path)) {
+    # Regular POST with JSON body
+    response <- POST(
+      url = endpoint_url,
+      add_headers(`Content-Type` = "application/json", `X-OB-Api` = api_data$key),
+      body = json_body,
+      encode = "json"
+    )
   } else {
-    request_endpoint <- POST(
+    # POST with file upload
+    response <- POST(
       url = endpoint_url,
       add_headers(`X-OB-Api` = api_data$key),
       body = list(file = upload_file(upload_path)),
-      encode= 'multipart'
+      encode = "multipart"
     )
   }
   
-    if (output == 'list') {
-      api_output <- content(request_endpoint)
+  # Check for errors
+  if (http_status(response)$category != "Success") {
+    stop(paste("API call failed:", http_status(response)$message))
+  }
+  
+  
+  # Parse the response based on the requested output format
+  api_output <- switch(
+    output,
+    list = content(response),
+    dataframe = {
+      response_text <- content(response, as = "text", encoding = "UTF-8")
+      parsed_json <- fromJSON(response_text, flatten = TRUE)
       
-    } else if (output == 'dataframe') {
-      api_output <-
-        content(request_endpoint, as = 'text',
-                encoding = 'UTF-8') %>%
-        fromJSON(flatten = T)
-      
-      if (inherits(api_output, 'list')) {
+      if (!is.list(parsed_json)) {
         stop("Cannot convert output to dataframe. Please use output = 'list'")
-        
       }
-      api_output <- as.data.frame(api_output)
-      
-    } else {
-      stop("'output' must be 'list' or 'dataframe'")
-      
-    }
-    return(api_output)
-
+      as.data.frame(parsed_json)
+    },
+    stop("'output' must be 'list' or 'dataframe'")
+  )
+  
+  return(api_output)
 }
-
-
 
 # DELETE ------------------------------------------------------------------
 
 api.delete <- function(endpoint, json_body = NULL){  
   
-api_data <- api.access()
+  # Access API credentials
+  api_data <- api.access() 
 
-# get endpoint
-endpoint_url <- paste(api_data$url, endpoint, sep = '/')
+  # Construct the endpoint URL
+  endpoint_url <- file.path(api_data$url, endpoint)
 
-if(is.null(json_body)){
-  request_endpoint <- DELETE(url = endpoint_url,
-                             content_type_json(),
-                             add_headers(`X-OB-Api` = api_data$key))
-} else {  
-request_endpoint <- DELETE(url = endpoint_url,
-                        content_type_json(),
-                        add_headers(`X-OB-Api` = api_data$key),
-                        body = json_body)
-}
+  # Make the DELETE request
+  response <- DELETE(
+    url = endpoint_url,
+    add_headers(`Content-Type` = "application/json", `X-OB-Api` = api_data$key),
+    body = json_body,
+    encode = if (!is.null(json_body))
+      "json"
+    else
+      NULL
+  )
+  
+  # Check for errors
+  if (http_status(response)$category != "Success") {
+    stop(paste("API call failed:", http_status(response)$message))
+  }
 
-  api_output <-
-    content(request_endpoint, as = 'text', encoding = 'UTF-8') %>% 
-    fromJSON(flatten = TRUE)
+  # Parse and return the response
+  api_output <- content(response, as = "parsed", type = "application/json")  
 
     return(api_output)
 
