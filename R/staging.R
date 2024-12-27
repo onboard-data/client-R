@@ -168,8 +168,16 @@ upload_staging <- function(building,
     stop("`staging_data` must include at least 'p.topic' or 'e.equip_id' as a column.")
   }
 
+  if('p.topic' %in% names(staging_data)){
+  # Group by p.topic and combine e.equip_id into a list of unique values
+  staging_data <- staging_data %>% 
+    group_by(p.topic) %>%
+    summarise(e.equip_id = list(unique(e.equip_id))) %>%
+    ungroup()
+  }
+  
   # Convert data to JSON
-  staging_data_json <- toJSON(staging_data, auto_unbox = TRUE)
+  staging_data_json <- toJSON(staging_data)
   
   # Confirm upload if `proceed` is NULL
   if (is.null(proceed)) {
@@ -211,15 +219,8 @@ upload_staging <- function(building,
   }
 
   # Return row errors if any
-  if (length(row_errors) > 0) {
+  if(length(row_errors)!=0){
     return(row_errors)
-  }
-  
-  # Return success message explicitly for consistency
-  return(message)
-  
-  if (length(output) != 0) {
-    return(output)
   }
 }
 
@@ -265,9 +266,6 @@ promote <- function(building,
     
   } else {
     
-    staging_data_to_promote <- staging_data_to_promote %>%
-      filter(.data$e.equip_id != '__SKIP__')
-    
     equip_count <- length(unique(staging_data_to_promote$e.equip_id))
     
     if (is.null(proceed)) {
@@ -292,13 +290,12 @@ promote <- function(building,
     
   }
   
-  errors <- api.promote(building_id = building_info$id,
-                        payload_json = promote_json,
-                        verbose = verbose)
+  # API call
+  endpoint <- paste0("staging/", building_info$id, "/apply")
+  result <- api.post(endpoint, json_body = promote_json)
   
-  if (!is.null(errors)) {
-    return(errors)
-  }
+  return(result)
+
 }
 
 # Demote ---------------------------------------------------------------
