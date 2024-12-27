@@ -494,6 +494,8 @@ promote <- function(building,
 #' @param equipment_ids NULL (default) or A vector of equipment_ids to demote. Provide atleast one of equipment_ids or point_ids
 #'
 #' @param point_ids NULL(default) A vector of equipment_ids to demoted. Provide atleast one of equipment_ids or point_ids
+#' 
+#' @param point_equipment_relationships NULL(default) A data.frame containing equipment_id and point_id relationships to demote
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #'
@@ -503,29 +505,36 @@ promote <- function(building,
 demote <- function(building,
                    equipment_ids = NULL,
                    point_ids = NULL,
+                   point_equipment_relationships = NULL,
                    proceed = NULL,
                    verbose = TRUE) {
   #Check arguments
-  if (is.null(equipment_ids) & is.null(point_ids)) {
-    stop('Please provide atleast one of the equipment_ids or point_ids to demote.')
+  if (is.null(equipment_ids) & 
+      is.null(point_ids) & 
+      is.null(point_equipment_relationships)) {
+    stop('Please provide atleast one of the equipment_ids or point_ids or point_equipment_relationships to demote.')
   }
   
   #Get building info & make equipment_point pairs
   building_info <- get_building_info(buildings = building, verbose = verbose)
   
-  metadata <- get_metadata(buildings = building_info$id)
-  
-  equipment_point_pairs <- metadata %>%
+  if(is.null(point_equipment_relationships)){
+  #Fetch all point_equipment_relationships from the promoted data
+    metadata <- get_metadata(buildings = building_info$id)
+    
+    point_equipment_relationships <- metadata %>%
     filter(e.equipment_id %in% equipment_ids |
              p.point_id %in% point_ids) %>%
     select(equipment_id = e.equipment_id,
            point_id = p.point_id)
   
+  }
   
   unpromote_message = sprintf(
-    "Do you want to proceed with demoting %s equipment & %s points from %s?",
+    "Do you want to proceed with demoting %s equipment, %s points & %s equipment-point relationships from %s?",
     length(equipment_ids),
     length(point_ids),
+    length(point_equipment_relationships),
     building_info$name
   )
   
@@ -545,7 +554,7 @@ demote <- function(building,
   unpromote_list <- list(
     equipment_ids = equipment_ids,
     point_ids = point_ids,
-    point_equipment_relationships = equipment_point_pairs
+    point_equipment_relationships = point_equipment_relationships
   )
   
   unpromote_json <- unpromote_list %>% toJSON()
