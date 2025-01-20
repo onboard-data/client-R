@@ -152,7 +152,7 @@ staging_data <- full_join(staging_points,
 #'@export
 upload_staging <- function(building,
                            staging_data,
-                           promoted_topics = FALSE,
+                           move_topics = FALSE,
                            proceed = NULL,
                            verbose = TRUE) {
     # Get building info
@@ -170,7 +170,8 @@ upload_staging <- function(building,
   }
 
   if('p.topic' %in% names(staging_data)){
-    if(promoted_topics==FALSE){
+    if(move_topics==TRUE){
+      #This moves topics to the new equip_id/s by enforcing a list of equip_ids
   # Group by p.topic and combine e.equip_id into a list of unique values
   staging_data <- staging_data %>% 
     group_by(p.topic) %>%
@@ -349,7 +350,7 @@ demote <- function(building,
     }
     
     # Fetch point-equipment relationships if not provided
-    metadata <- get_metadata(building_id = building_info$id)
+    metadata <- get_metadata(buildings = building_info$id)
     
     point_equipment_relationships <- metadata %>%
       filter(e.equipment_id %in% equipment_ids | p.point_id %in% point_ids) %>%

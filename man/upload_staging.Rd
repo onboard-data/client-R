@@ -4,7 +4,13 @@
 \alias{upload_staging}
 \title{Upload to Staging Area}
 \usage{
-upload_staging(building, staging_data, proceed = NULL, verbose = TRUE)
+upload_staging(
+  building,
+  staging_data,
+  promoted_topics = FALSE,
+  proceed = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
