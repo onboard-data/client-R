@@ -153,13 +153,13 @@ get_metadata <- function(buildings = NULL, selection = NULL, verbose = TRUE){
   #Create a metadata for the specified building ID
   metadata <- equip_data %>% 
     # Grab Equip Refs by joining with Equip DB again
-    mutate(e.parent_equip = as.integer(.data$e.parent_equip)) %>% 
-    left_join(
-      select(equip_data, .data$e.id, .data$e.equip_id),
-      by = c('e.parent_equip' = 'e.id'),
-      suffix = c('', '.y')
-    ) %>% 
-    rename(e.parent = .data$e.equip_id.y) %>%
+    # mutate(e.parent_equip = as.integer(.data$e.parent_equip)) %>% 
+    # left_join(
+    #   select(equip_data, .data$e.id, .data$e.equip_id),
+    #   by = c('e.parent_equip' = 'e.id'),
+    #   suffix = c('', '.y')
+    # ) %>% 
+    # rename(e.parent = .data$e.equip_id.y) %>%
     full_join(points_data,
                          by = c('e.id' = 'p.equip_id')) %>% 
     #Remove NA equipment rows
