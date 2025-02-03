@@ -4,12 +4,14 @@
 \alias{api.setup}
 \title{Set up Onboard API keys and URL in system environment}
 \usage{
-api.setup(api_type = "prod", api_key = NULL, verbose = TRUE)
+api.setup(type = "prod", key = NULL, token = NULL, verbose = TRUE)
 }
 \arguments{
-\item{api_type}{Provide the API client name.}
+\item{type}{Provide the API client name.}
 
-\item{api_key}{Option to include your API keys in the argument. It is NULL by default}
+\item{key}{Option to include your API keys in the argument. It is NULL by default}
+
+\item{token}{Option to include your Auth token in the argument. It is NULL by default}
 
 \item{verbose}{Logical. If TRUE, prints the API status.}
 }
