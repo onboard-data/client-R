@@ -7,7 +7,7 @@
 upload_staging(
   building,
   staging_data,
-  promoted_topics = FALSE,
+  move_topics = FALSE,
   proceed = NULL,
   verbose = TRUE
 )
