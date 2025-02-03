@@ -20,11 +20,12 @@ api.get <- function(endpoint) {
   # Construct the endpoint URL
   endpoint_url <- file.path(api_data$url, endpoint)
   
+  headers <- add_headers(`Content-Type` = "application/json",
+                         Authorization = paste("Bearer", api_data$token),
+                         `X-OB-Api` = api_data$key)
+  
   # Make GET request with headers
-  response <- GET(url = endpoint_url,
-                  add_headers(
-                    `Content-Type` = "application/json", 
-                    `X-OB-Api` = api_data$key))
+  response <- GET(url = endpoint_url,headers)
   
   # Check for errors
   if (http_status(response)$category != "Success") {
@@ -66,12 +67,16 @@ api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
   # Construct the endpoint URL
   endpoint_url <- file.path(api_data$url, endpoint)
   
+  headers <- add_headers(`Content-Type` = "application/json",
+                         Authorization = paste("Bearer", api_data$token),
+                         `X-OB-Api` = api_data$key)
+  
   # Create the POST request
   if (is.null(upload_path)) {
     # Regular POST with JSON body
     response <- POST(
       url = endpoint_url,
-      add_headers(`Content-Type` = "application/json", `X-OB-Api` = api_data$key),
+      headers,
       body = json_body,
       encode = "json"
     )
@@ -79,7 +84,7 @@ api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
     # POST with file upload
     response <- POST(
       url = endpoint_url,
-      add_headers(`X-OB-Api` = api_data$key),
+      headers,
       body = list(file = upload_file(upload_path)),
       encode = "multipart"
     )
@@ -119,11 +124,15 @@ api.delete <- function(endpoint, json_body = NULL){
 
   # Construct the endpoint URL
   endpoint_url <- file.path(api_data$url, endpoint)
+  
+  headers <- add_headers(`Content-Type` = "application/json",
+                         Authorization = paste("Bearer", api_data$token),
+                         `X-OB-Api` = api_data$key)
 
   # Make the DELETE request
   response <- DELETE(
     url = endpoint_url,
-    add_headers(`Content-Type` = "application/json", `X-OB-Api` = api_data$key),
+    headers,
     body = json_body,
     encode = if (!is.null(json_body))
       "json"

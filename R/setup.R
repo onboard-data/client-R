@@ -1,75 +1,4 @@
-#' Set up Onboard API keys and URL in system environment
-#' @description
-#' 
-#' Set the Onboard API URL and API keys in the system environment.
-#'  
-#' @param api_type Provide the API client name.
-#' 
-#' @param api_key Option to include your API keys in the argument. It is NULL by default
-#' 
-#' @param verbose Logical. If TRUE, prints the API status.
-#' 
-#' @return No return value, sets API url and API key in the system environment.
-#'   
-#' @export
-#' 
-api.setup <- function(api_type = 'prod', api_key = NULL, verbose = TRUE) {
-  
-  if(!(api_type %in% c('prod','dev','rtem'))){
-    stop("Please use 'prod', 'dev', or 'rtem' for api_type")
-  }
-  
-  api_url <- dplyr::case_when(
-    api_type == 'prod' ~ 'https://api.onboarddata.io',
-    api_type == 'dev' ~ 'https://devapi.onboarddata.io',
-    api_type == 'rtem' ~ 'https://api.ny-rtem.com'
-  )
-  
-  api_name <- paste0('api_key_', api_type)
-  
-  if(is.null(api_key)){
-  
-  if (Sys.getenv("RSTUDIO") == "1"){
-  
-    api_key <- rstudioapi::askForSecret(
-      name = api_name,
-      message = 'Enter your API key here',
-      title = "Onboard API Key")
-  } else {
-    api_key <- readline(prompt = "Enter your Onboard API key:")
-  }
-  } 
-  
-  Sys.setenv('api_url' = api_url)
-  Sys.setenv('api_key' = api_key)
-  
-  if(verbose){
-    cat(api.status())
-  }
-}
-
-#' Access API keys and URL from System Environment
-#' @description 
-#' 
-#' Returns the API url and API key.
-#' 
-#' @return A named list of API information, containing elements 'url' and 'key'.
-#' 
-api.access <- function(){
-  api_url <- Sys.getenv('api_url')
-  api_key <- Sys.getenv('api_key')
-  
-  if(api_url == '' | api_key == ''){
-    stop('API credentials not set correctly.')
-  } else {
-    return(list(
-      'url' = api_url,
-      'key' = api_key
-    ))
-  }
-}
-
-#' Check the status of your connection with the Onboard API
+#' Check the status of API connection
 #' 
 #' @description 
 #' Provides a status code and message for the API connection.
@@ -80,8 +9,89 @@ api.access <- function(){
 api.status <- function() {
   api_data <- api.access()
   
-  request <- GET(url = api_data$url,
-                 add_headers(`X-OB-Api` = api_data$key))
+  request <- GET(url = api_data$url)
   
   return(httr::http_status(request$status_code)$message)
+}
+
+#' Set up Onboard API keys and URL in system environment
+#' @description
+#' 
+#' Set the Onboard API URL and API keys in the system environment.
+#'  
+#' @param type Provide the API client name.
+#' 
+#' @param key Option to include your API keys in the argument. It is NULL by default
+#' 
+#' @param token Option to include your Auth token in the argument. It is NULL by default
+#' 
+#' @param verbose Logical. If TRUE, prints the API status.
+#' 
+#' @return No return value, sets API URL and API key in the system environment.
+#'   
+#' @export
+#' 
+api.setup <- function(type = 'prod', key = NULL, token = NULL,verbose = TRUE) {
+  
+  Sys.setenv("url" = "")
+  Sys.setenv("key" = "")
+  Sys.setenv('token' = "")
+  
+  
+  if(!(type %in% c('prod','dev','rtem','gcp'))){
+    stop("Please use 'prod', 'dev', 'gcp' or 'rtem' for api_type")
+  }
+  
+  url <- dplyr::case_when(
+    type == 'prod' ~ 'https://api.onboarddata.io',
+    type == 'dev' ~ 'https:/devapi.onboarddata.io',
+    type == 'rtem' ~ 'https://api.ny-rtem.com',
+    type == 'gcp' ~ 'https://rews.onboarddata.io/api'
+  )
+  
+  Sys.setenv('url' = url)
+  
+  if (!is.null(token)) {
+    Sys.setenv('token' = token)
+  } else {
+    if (is.null(key)) {
+      if (Sys.getenv("RSTUDIO") == "1") {
+        api_name <- paste0('api_key_', type)
+        
+        key <- rstudioapi::askForSecret(name = api_name,
+                                            message = 'Enter your API key here',
+                                            title = "Onboard API Key")
+      } else {
+        key <- readline(prompt = "Enter your Onboard API key:")
+      }
+      Sys.setenv('key' = key)
+    }
+  }
+    
+   if(verbose){
+     cat(api.status())
+   }
+}
+
+#' Access API keys and URL from System Environment
+#' @description 
+#' 
+#' Returns the API url and API key.
+#' 
+#' @return A named list of API information, containing elements 'url' and 'key'.
+#' 
+api.access <- function(){
+  url <- Sys.getenv('url')
+  key <- Sys.getenv('key')
+  token <- Sys.getenv('token')
+  
+  if(url == '' | (key == '' & token== '')){
+    stop('API credentials not set correctly.')
+  } else {
+    return(list(
+      'url' = url,
+      'key' = key,
+      'token' = token
+    ))
+  }
 }
