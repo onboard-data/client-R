@@ -132,7 +132,7 @@ get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
       timeseries <- timeseries_raw %>% 
         transmute(.data$time,
                   .data$display,
-                  unit = as.character(.data$raw))
+                  unit = as.character(.data$raw)) 
     }
     
     timeseries <- timeseries %>% 
