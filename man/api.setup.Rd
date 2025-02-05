@@ -16,7 +16,7 @@ api.setup(type = "prod", key = NULL, token = NULL, verbose = TRUE)
 \item{verbose}{Logical. If TRUE, prints the API status.}
 }
 \value{
-No return value, sets API url and API key in the system environment.
+No return value, sets API URL and API key in the system environment.
 }
 \description{
 Set the Onboard API URL and API keys in the system environment.

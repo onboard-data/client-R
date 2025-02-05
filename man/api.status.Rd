@@ -2,7 +2,7 @@
 % Please edit documentation in R/setup.R
 \name{api.status}
 \alias{api.status}
-\title{Check the status of your connection with the Onboard API}
+\title{Check the status of API connection}
 \usage{
 api.status()
 }
