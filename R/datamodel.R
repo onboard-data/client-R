@@ -1,24 +1,5 @@
 #datamodel
 
-# Equipment Types --------------------------------------------------------------
-
-#' Equipment Types
-#' 
-#' Query all equipment types from Onboard's Data Model.
-#' 
-#' @returns A data.frame containing all equipment types.
-#' @export
-get_equip_types <- function(){
-  
-  equiptype <- api.get('equiptype')
-  
-  equip_types <- equiptype %>%
-    filter(.data$active == T) %>%
-    select(-c(.data$sub_types, .data$flow_order, .data$active))
-  
-  return(equip_types)
-}
-
 # Point Types -------------------------------------------------------------
 
 #' Point Types
