@@ -23,8 +23,6 @@ demote(
 \item{point_equipment_relationships}{NULL(default) A data.frame containing equipment_id and point_id relationships to demote}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
-
-\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
 (Conditional) A named list containing errors that may have occurred during data promotion.

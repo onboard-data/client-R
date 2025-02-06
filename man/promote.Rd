@@ -17,8 +17,6 @@ promote(
 \item{staging_data_to_promote}{(Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
-
-\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
 (Conditional) A named list containing errors that may have occurred during data promotion.

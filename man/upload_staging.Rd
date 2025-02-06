@@ -18,8 +18,6 @@ upload_staging(
 \item{staging_data}{A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
-
-\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
 \value{
 A named list containing any errors that may have occured during data upload.
