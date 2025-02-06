@@ -16,6 +16,7 @@
 #' @importFrom rstudioapi askForSecret
 #' @importFrom stringr str_split
 #' @importFrom tibble rownames_to_column
+#' @importFrom tidyr pivot_longer
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr separate_rows
 #' @importFrom tidyr unite
