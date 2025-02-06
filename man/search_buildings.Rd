@@ -4,7 +4,7 @@
 \alias{search_buildings}
 \title{Search Buildings}
 \usage{
-search_buildings(buildings, verbose = TRUE)
+search_buildings(buildings = NULL, verbose = TRUE)
 }
 \arguments{
 \item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.}
