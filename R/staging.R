@@ -10,12 +10,13 @@
 #'
 #' @export
 get_staging_equip <- function(building_id, verbose = TRUE) {
-if (verbose) cat("Fetching staging equipment...\n")
-
-endpoint <- sprintf("staging/%d", building_id)
-
-api.get(endpoint)$equipment
-
+  if (verbose)
+    cat("Fetching staged equipment...\n")
+  
+  endpoint <- sprintf("staging/%d", building_id)
+  
+  api.get(endpoint)$equipment
+  
 }
 
 # Devices ------------------------------------------------------
@@ -30,7 +31,8 @@ api.get(endpoint)$equipment
 #'
 #' @export
 get_staging_devices <- function(building_id, verbose = TRUE) {
-  if (verbose) cat("Fetching staging devices...\n")
+  if (verbose)
+    cat("Fetching staged devices...\n")
   
   endpoint <- sprintf("staging/%d/devices", building_id)
   api.get(endpoint)
@@ -48,7 +50,8 @@ get_staging_devices <- function(building_id, verbose = TRUE) {
 #'
 #' @export
 get_staging_points <- function(building_id, verbose = TRUE) {
-  if (verbose) cat("Fetching staging points...\n")
+  if (verbose)
+    cat("Fetching staged points...\n")
   
   endpoint <- sprintf("staging/%d/points", building_id)
   api.get(endpoint)
@@ -61,71 +64,85 @@ get_staging_points <- function(building_id, verbose = TRUE) {
 #'
 #' Gets metadata from the staging area.
 #'
-#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
+#' @param buildings Enter building names or ids. You can enter multiple building ids or names as vectors 
 #'
 #' @param verbose Logical. If TRUE (default), prints status and progress messages.
 #'
 #' @return A data.frame of metadata from the staging area.
 #'
 #' @export
-get_staging_data <- function(building, verbose = TRUE) {
-  if (length(building) > 1) 
-    stop("Only one building ID or name is allowed.")
+get_staging_data <- function(buildings, verbose = TRUE) {
+  buildings <- search_buildings(buildings = buildings, verbose = verbose)
   
-  building_info <- get_building_info(building, verbose)
-  building_id <- building_info$id
+  #Fetch Staging Data for all buildings found
+  staging_points <- data.frame()
+  staging_devices <- data.frame()
+  staging_equip <- data.frame()
   
-  #Remove this in the future.
-  # #List of strings that filters non required columns from equip, point & device tables
-  # rem_col <- paste(
-  #   'polarity','reliability','event','covIncrement','presvalue',
-  #   'statusflags','outofservice',    'datasource',    'limit',
-  #   'deadband', '@prop','timedelay','instance_tagger',
-  #   'ob_predicted', 'notif', 'acked','resolution',    'state_text',
-  #   'relinquish', 'priority', 'p\\.data\\.e\\.', '_tagger',    'p\\.confidences\\.e\\.',
-  #   'check',    '\\.err','tags',    "type_id", "unit_id",    #Device fields "maxMaster",
-  #   "offset",    "objectList", "systemStatus", "maxInfo",    "protocolVersion",
-  #   "Revision",    "vendorId", "lastRestart", "Segment",    "apdu",
-  #   "binding",    "daylight", "d.objectInstance","covsubscription", "align",
-  #   "backup", "restore", "Sync",    
-  #   sep = '|'
-  # )
-  
-# Fetch Staging Sata
-  # Staging Points
-  staging_points <- get_staging_points(building_id, verbose)
-  if (nrow(staging_points) == 0) 
-    stop(sprintf("No points found for building %s.", building_info$name))
-  
-  staging_points <- prefix_column_names(staging_points, "p") %>%
-    mutate(across(p.equip_ids, ~ gsub('c\\(|\\)|"', "", .))) %>% # Remove "c()" if present
-    separate_rows(p.equip_ids, sep = ",\\s*") %>% # Split by comma and optional space
-    mutate(across(p.equip_ids, ~ gsub("character\\(0", "", .))) %>%
-    mutate(across(p.equip_ids, ~ as.character(.))) 
-  
-  # Staging Equip
-  staging_equip <- prefix_column_names(
-    get_staging_equip(building_id, verbose), "e"
-  )
-  
-  # Staging Devices
-  staging_devices <- get_staging_devices(building_id, verbose)
-  if (length(staging_devices) == 0) {
-    staging_devices <- data.frame(d.device_id = NA)
-    if (verbose) cat("No device details found.\n")
-  } else {
-    staging_devices <- prefix_column_names(staging_devices, "d")
+  for (i in 1:nrow(buildings)) {
+    building_id <- buildings$id[i]
+    
+    building_name <- buildings$name[i]
+    
+    if (verbose) {
+      cat(sprintf("Fecthing staging data for %s. \n", building_name))
+    }
+    
+    # Fetch Staging Points
+    staging_points_single <- get_staging_points(building_id, verbose)
+    if (nrow(staging_points_single) == 0) {
+      if (verbose) {
+        cat(sprintf("No points found for %s. \n", building_name))
+      }
+    } else {
+      staging_points_single <- prefix_column_names(staging_points_single, "p") %>%
+        mutate(across(p.equip_ids, ~ gsub('c\\(|\\)|"', "", .))) %>% # Remove "c()" if present
+        separate_rows(p.equip_ids, sep = ",\\s*") %>% # Split by comma and optional space
+        mutate(across(p.equip_ids, ~ gsub("character\\(0", "", .))) %>%
+        mutate(across(p.equip_ids, ~ as.character(.)))
+      
+      staging_points <- plyr::rbind.fill(staging_points, staging_points_single)
+    }
+    
+    #Fetch Staging Equip
+    staging_equip_single <- get_staging_equip(building_id, verbose)
+    if (nrow(staging_equip_single) == 0) {
+      if (verbose) {
+        cat(sprintf("No equipment found for %s. \n", building_name))
+      }
+    } else{
+      staging_equip_single <- prefix_column_names(staging_equip_single, "e")
+      staging_equip <- plyr::rbind.fill(staging_equip, staging_equip_single)
+    }
+    
+    #Fetch Staging Devices
+    staging_devices_single <- get_staging_devices(building_id, verbose)
+    if (length(staging_devices_single) == 0) {
+      if (verbose) {
+        cat(sprintf("No devices found for %s. \n", building_name))
+        staging_devices_single <- data.frame(d.device_id=NA)
+      }
+    } else {
+      staging_devices_single <- prefix_column_names(staging_devices_single, "d")
+      staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single)
+    }
   }
   
-# Combine data
-staging_data <- full_join(staging_points,
+  
+  # Combine data
+  staging_data <- full_join(staging_points,
                             staging_equip,
                             by = c("p.equip_ids" = "e.equip_id")) %>%
     full_join(staging_devices, by = c("p.device_id" = "d.device_id")) %>%
     select(sort(tidyselect::peek_vars())) %>%
     distinct()
   
-  if (verbose) cat("Staging data created.\n")
+  #Remove certain columns
+  staging_data <- select(staging_data,-contains(c("_tagger","state_text","@prop")))
+  
+  if (verbose) {
+    cat("Staging data created.\n")
+  }
   
   return(staging_data)
 }
@@ -141,7 +158,7 @@ staging_data <- full_join(staging_points,
 #'
 #' Uploads data to the staging area.
 #'
-#' @inheritParams get_staging_data
+#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
 #'
 #' @param staging_data A data.frame to upload to the staging area. Must contain e.equip_id and p.topic columns.
 #'
@@ -155,8 +172,11 @@ upload_staging <- function(building,
                            move_topics = FALSE,
                            proceed = NULL,
                            verbose = TRUE) {
-    # Get building info
-  building_info <- get_building_info(building, verbose = verbose)
+  if (length(building) > 1)
+    stop("Only one building ID or name is allowed.")
+  
+  # Get building info
+  building_info <- search_buildings(buildings = building, verbose = verbose)
   
   # Validate `staging_data`
   if (missing(staging_data) || nrow(staging_data) == 0) {
@@ -168,16 +188,16 @@ upload_staging <- function(building,
   if (!any(c("p.topic", "e.equip_id") %in% colnames(staging_data))) {
     stop("`staging_data` must include at least 'p.topic' or 'e.equip_id' as a column.")
   }
-
-  if('p.topic' %in% names(staging_data)){
-    if(move_topics==TRUE){
+  
+  if ('p.topic' %in% names(staging_data)) {
+    if (move_topics == TRUE) {
       #This moves topics to the new equip_id/s by enforcing a list of equip_ids
-  # Group by p.topic and combine e.equip_id into a list of unique values
-  staging_data <- staging_data %>% 
-    group_by(p.topic) %>%
-    summarise(e.equip_id = list(unique(e.equip_id))) %>%
-    ungroup()
-  }
+      # Group by p.topic and combine e.equip_id into a list of unique values
+      staging_data <- staging_data %>%
+        group_by(p.topic) %>%
+        summarise(e.equip_id = list(unique(e.equip_id))) %>%
+        ungroup()
+    }
   }
   
   # Convert data to JSON
@@ -221,9 +241,9 @@ upload_staging <- function(building,
   if (verbose) {
     cat(message)
   }
-
+  
   # Return row errors if any
-  if(length(row_errors)!=0){
+  if (length(row_errors) != 0) {
     return(row_errors)
   }
 }
@@ -234,7 +254,7 @@ upload_staging <- function(building,
 #'
 #' Promote valid data on the staging area to the live building.
 #'
-#' @inheritParams get_staging_data
+#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
 #'
 #' @param staging_data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
 #'
@@ -248,8 +268,10 @@ promote <- function(building,
                     staging_data_to_promote = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
+  if (length(building) > 1)
+    stop("Only one building ID or name is allowed.")
   
-  building_info <- get_building_info(building, verbose = verbose)
+  building_info <- search_buildings(buildings = building, verbose = verbose)
   
   if (is.null(staging_data_to_promote)) {
     proceed <- askYesNo(
@@ -269,7 +291,6 @@ promote <- function(building,
       gsub('"\\]', ']', .)
     
   } else {
-    
     equip_count <- length(unique(staging_data_to_promote$e.equip_id))
     
     if (is.null(proceed)) {
@@ -286,10 +307,8 @@ promote <- function(building,
       stop('Stopping Operation.')
     }
     
-    promote_json <- list(
-      equip_ids = staging_data_to_promote$e.equip_id,
-      topics = staging_data_to_promote$p.topic
-    ) %>%
+    promote_json <- list(equip_ids = staging_data_to_promote$e.equip_id,
+                         topics = staging_data_to_promote$p.topic) %>%
       toJSON()
     
   }
@@ -299,7 +318,7 @@ promote <- function(building,
   result <- api.post(endpoint, json_body = promote_json)
   
   return(result)
-
+  
 }
 
 # Demote ---------------------------------------------------------------
@@ -307,12 +326,12 @@ promote <- function(building,
 
 #' Demote Data from the live Building
 #'
-#' @inheritParams get_staging_data
+#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
 #'
 #' @param equipment_ids NULL (default) or A vector of equipment_ids to demote. Provide atleast one of equipment_ids or point_ids
 #'
 #' @param point_ids NULL(default) A vector of equipment_ids to demoted. Provide atleast one of equipment_ids or point_ids
-#' 
+#'
 #' @param point_equipment_relationships NULL(default) A data.frame containing equipment_id and point_id relationships to demote
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
@@ -326,6 +345,8 @@ demote <- function(building,
                    point_equipment_relationships = NULL,
                    proceed = NULL,
                    verbose = TRUE) {
+  if (length(building) > 1)
+    stop("Only one building ID or name is allowed.")
   
   # Check if at least one of the necessary parameters is provided
   if (is.null(equipment_ids) &&
@@ -336,16 +357,17 @@ demote <- function(building,
     )
   }
   
+  
   # Get building info and ensure relationships are available
-  building_info <- get_building_info(building, verbose = verbose)
+  building_info <- search_buildings(buildings = building, verbose = verbose)
   
   if (is.null(point_equipment_relationships)) {
-    
     confirm_metadata_pull <- askYesNo(
       "You have not provided explicit point-equipment relationships to demote. Metadata will be pulled, and all existing point-equipment relationships will be removed. Do you want to proceed?"
     )
     
-    if (is.na(confirm_metadata_pull) | confirm_metadata_pull != TRUE) {
+    if (is.na(confirm_metadata_pull) |
+        confirm_metadata_pull != TRUE) {
       stop('Stopping Operation.\n')
     }
     
@@ -353,7 +375,8 @@ demote <- function(building,
     metadata <- get_metadata(buildings = building_info$id)
     
     point_equipment_relationships <- metadata %>%
-      filter(e.equipment_id %in% equipment_ids | p.point_id %in% point_ids) %>%
+      filter(e.equipment_id %in% equipment_ids |
+               p.point_id %in% point_ids) %>%
       select(equipment_id = e.equipment_id, point_id = p.point_id)
   }
   
@@ -376,9 +399,13 @@ demote <- function(building,
   }
   
   # Default to empty lists if arguments are NULL
-  if(is.null(equipment_ids)){ equipment_ids = 0}
+  if (is.null(equipment_ids)) {
+    equipment_ids = 0
+  }
   
-  if(is.null(point_ids)){ point_ids = 0}
+  if (is.null(point_ids)) {
+    point_ids = 0
+  }
   
   # Create a list for the demotion payload
   unpromote_list <- list(

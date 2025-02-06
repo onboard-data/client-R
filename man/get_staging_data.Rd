@@ -4,10 +4,10 @@
 \alias{get_staging_data}
 \title{Get Staging Data}
 \usage{
-get_staging_data(building, verbose = TRUE)
+get_staging_data(buildings, verbose = TRUE)
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
+\item{buildings}{Enter building names or ids. You can enter multiple building ids or names as vectors}
 
 \item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
 }
