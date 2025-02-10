@@ -123,9 +123,10 @@ get_staging_data <- function(buildings, verbose = TRUE) {
         staging_devices_single <- data.frame(d.device_id=NA)
       }
     } else {
-      staging_devices_single <- prefix_column_names(staging_devices_single, "d")
-      staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single) %>%   
-          mutate(building_name = building_name)
+      staging_devices_single <- prefix_column_names(staging_devices_single, "d") %>% 
+        mutate(building_name = building_name)
+      staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single)    
+    
     }
   }
   
