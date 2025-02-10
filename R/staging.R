@@ -125,8 +125,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     } else {
       staging_devices_single <- prefix_column_names(staging_devices_single, "d")
       staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single) %>%   
-        dplyr::rename(building_id = d.building_id) %>% 
-        mutate(building_name = building_name)
+          mutate(building_name = building_name)
     }
   }
   
@@ -136,6 +135,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
                             staging_equip,
                             by = c("p.equip_ids" = "e.equip_id")) %>%
     full_join(staging_devices, by = c("p.device_id" = "d.device_id")) %>%
+    dplyr::rename(building_id = d.building_id) %>% 
     select(sort(tidyselect::peek_vars())) %>%
     distinct()
   
