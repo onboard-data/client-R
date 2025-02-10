@@ -124,7 +124,9 @@ get_staging_data <- function(buildings, verbose = TRUE) {
       }
     } else {
       staging_devices_single <- prefix_column_names(staging_devices_single, "d")
-      staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single)
+      staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single) %>%   
+        dplyr::rename(building_id = d.building_id) %>% 
+        mutate(building_name = building_name)
     }
   }
   
