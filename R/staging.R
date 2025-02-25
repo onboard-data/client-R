@@ -75,9 +75,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   buildings <- search_buildings(buildings = buildings, verbose = verbose)
   
   #Fetch Staging Data for all buildings found
-  staging_points <- data.frame()
-  staging_devices <- data.frame()
-  staging_equip <- data.frame()
+  staging_data <- data.frame()
   
   for (i in 1:nrow(buildings)) {
     building_id <- buildings$id[i]
@@ -100,8 +98,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
         separate_rows(p.equip_ids, sep = ",\\s*") %>% # Split by comma and optional space
         mutate(across(p.equip_ids, ~ gsub("character\\(0", "", .))) %>%
         mutate(across(p.equip_ids, ~ as.character(.)))
-      
-      staging_points <- plyr::rbind.fill(staging_points, staging_points_single)
+    
     }
     
     #Fetch Staging Equip
@@ -112,7 +109,6 @@ get_staging_data <- function(buildings, verbose = TRUE) {
       }
     } else{
       staging_equip_single <- prefix_column_names(staging_equip_single, "e")
-      staging_equip <- plyr::rbind.fill(staging_equip, staging_equip_single)
     }
     
     #Fetch Staging Devices
@@ -125,21 +121,21 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     } else {
       staging_devices_single <- prefix_column_names(staging_devices_single, "d") %>% 
         mutate(building_name = building_name)
-      staging_devices <- plyr::rbind.fill(staging_devices, staging_devices_single)    
-    
     }
-  }
   
   
   # Combine data
-  staging_data <- full_join(staging_points,
-                            staging_equip,
+  staging_data_single <- full_join(staging_points_single,
+                            staging_equip_single,
                             by = c("p.equip_ids" = "e.equip_id")) %>%
-    full_join(staging_devices, by = c("p.device_id" = "d.device_id")) %>%
+    left_join(staging_devices_single, by = c("p.staging_device_id" = "d.staging_id")) %>%
     dplyr::rename(building_id = d.building_id) %>% 
     select(sort(tidyselect::peek_vars())) %>%
     distinct()
+
+  }  
   
+  staging_data <- plyr::rbind.fill(staging_data,staging_data_single)
   #Remove certain columns
   staging_data <- select(staging_data,-contains(c("_tagger","state_text","@prop")))
   
