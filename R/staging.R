@@ -128,7 +128,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   staging_data_single <- full_join(staging_points_single,
                             staging_equip_single,
                             by = c("p.equip_ids" = "e.equip_id")) %>%
-    left_join(staging_devices_single, by = c("p.staging_device_id" = "d.staging_id")) %>%
+    full_join(staging_devices_single, by = c("p.staging_device_id" = "d.staging_id")) %>%
     dplyr::rename(building_id = d.building_id) %>% 
     select(sort(tidyselect::peek_vars())) %>%
     distinct()

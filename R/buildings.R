@@ -141,6 +141,7 @@ get_metadata <- function(buildings = NULL,
 
   
   #Handle source and target equipment
+  if("source_equip" %in% names(equip_data)){
   ## id to name mappings
   id_name_mapped <- equip_data %>%  select(id, name)
   
@@ -167,14 +168,15 @@ get_metadata <- function(buildings = NULL,
     group_by(id) %>% 
   summarise(target = paste(target, collapse = ", "))
     
-  
-  #MErge with equip_data
+
+  #Merge with equip_data
   
   equip_data <- equip_data %>% 
     select(-starts_with(c("source","target"))) %>% 
     left_join(source_equip, by = "id") %>% 
     left_join(target_equip, by = "id")
-    
+  }
+  
   equip_data_names <- names(equip_data)
   equip_data_names <- paste0('e.', equip_data_names)
   names(equip_data) <- equip_data_names  
@@ -190,8 +192,6 @@ get_metadata <- function(buildings = NULL,
     # ) %>%
     # rename(e.parent = .data$e.equip_id.y) %>%
     full_join(points_data, by = c('e.id' = 'p.equip_id')) %>%
-    #Remove NA equipment rows
-    filter(!is.na(e.equip_id)) %>%
     #Get tagged units if NA
     mutate(across(
       .data$p.tagged_units,
