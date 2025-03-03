@@ -83,7 +83,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     building_name <- buildings$name[i]
     
     if (verbose) {
-      cat(sprintf("Fecthing staging data for %s. \n", building_name))
+      cat(sprintf("Fetching staging data for %s. \n", building_name))
     }
     
     # Fetch Staging Points
@@ -132,10 +132,11 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     dplyr::rename(building_id = d.building_id) %>% 
     select(sort(tidyselect::peek_vars())) %>%
     distinct()
-
-  }  
   
   staging_data <- plyr::rbind.fill(staging_data,staging_data_single)
+
+  }  
+
   #Remove certain columns
   staging_data <- select(staging_data,-contains(c("_tagger","state_text","@prop")))
   
