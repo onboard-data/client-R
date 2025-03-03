@@ -60,7 +60,7 @@ api.get <- function(endpoint) {
 #' @return A list or data.frame of the API output.
 #' 
 #' @export
-api.post <- function(endpoint, json_body, upload_path = NULL, output = 'list') {
+api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'list') {
   # Access API credentials
   api_data <- api.access()
   
