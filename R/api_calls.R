@@ -1,9 +1,7 @@
 # GET ---------------------------------------------------------------------
 #' API GET call
 #'
-#' @description
-#'
-#' Uses http GET call to return an object from the API.
+#' @description Uses http GET call to return an object from the API.
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
 #' 
@@ -15,14 +13,12 @@
 #' @export
 api.get <- function(endpoint) {
   # Access API credentials from the local environment.
-  api_data <- api.access()  
+  api_data <- api.access()
   
   # Construct the endpoint URL
   endpoint_url <- file.path(api_data$url, endpoint)
   
-  headers <- add_headers(`Content-Type` = "application/json",
-                         Authorization = paste("Bearer", api_data$token),
-                         `X-OB-Api` = api_data$key)
+  headers = api_data$headers
   
   # Make GET request with headers
   response <- GET(url = endpoint_url,headers)
@@ -41,21 +37,61 @@ api.get <- function(endpoint) {
 }
 
 
-# POST --------------------------------------------------------------------
 
-#' API POST call
+# PATCH -------------------------------------------------------------------
+
+#' API PATCH call
 #' 
-#' @description 
+#' @description Uses http PATCH call to post objects to the API.
 #' 
-#' Uses http POST call to post objects to the API.
 #' @inheritParams  api.get
 #' 
 #' @param json_body A JSON payload to give to the POST call.
 #' 
+#' @return A list or data.frame of the API output.
+#' 
+#' @export
+api.patch <- function(endpoint,json_body=NULL){
+  
+  # Access API credentials
+  api_data <- api.access()
+  
+  # Construct the endpoint URL
+  endpoint_url <- file.path(api_data$url, endpoint)
+  headers = api_data$headers
+  
+  #PATCH Request
+  response <- PATCH(
+    url = endpoint_url,
+    headers,
+    body = json_body,
+    encode = "json"
+  )
+  
+  # Check for errors
+  if (http_status(response)$category != "Success") {
+    stop(paste("API call failed:", http_status(response)$message))
+  }
+  
+  # Parse the response and flatten
+  api_output <- content(response, as = "text", encoding = "UTF-8") %>% 
+    fromJSON(flatten = TRUE)
+  
+  return(api_output)
+}
+
+
+# POST --------------------------------------------------------------------
+
+#' API POST call
+#' 
+#' @description Uses http POST call to post objects to the API.
+#' 
+#' @inheritParams  api.patch
+#'
 #' @param upload_path (Optional) A character string containing the file path for the file to upload
 #' 
 #' @param output A character string, either "list" (default) or "dataframe", to specify the API output format.
-#' 
 #' 
 #' @return A list or data.frame of the API output.
 #' 
@@ -66,10 +102,7 @@ api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'l
   
   # Construct the endpoint URL
   endpoint_url <- file.path(api_data$url, endpoint)
-  
-  headers <- add_headers(`Content-Type` = "application/json",
-                         Authorization = paste("Bearer", api_data$token),
-                         `X-OB-Api` = api_data$key)
+  headers = api_data$headers
   
   # Create the POST request
   if (is.null(upload_path)) {
@@ -117,6 +150,13 @@ api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'l
 
 # DELETE ------------------------------------------------------------------
 
+#' API DELETE call
+#' 
+#' @description Uses http DELETE call to post objects to the API.
+#' 
+#' @inheritParams  api.patch
+#' 
+#' @export
 api.delete <- function(endpoint, json_body = NULL){  
   
   # Access API credentials
@@ -125,11 +165,9 @@ api.delete <- function(endpoint, json_body = NULL){
   # Construct the endpoint URL
   endpoint_url <- file.path(api_data$url, endpoint)
   
-  headers <- add_headers(`Content-Type` = "application/json",
-                         Authorization = paste("Bearer", api_data$token),
-                         `X-OB-Api` = api_data$key)
+  headers = api_data$headers
 
-  # Make the DELETE request
+  # DELETE request
   response <- DELETE(
     url = endpoint_url,
     headers,
