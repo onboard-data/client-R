@@ -19,7 +19,7 @@ api.status <- function() {
 #' 
 #' Set the Onboard API URL and API keys in the system environment.
 #'  
-#' @param type Provide the API client name.
+#' @param api_env Provide the API client name. Default is `prod`
 #' 
 #' @param key Option to include your API keys in the argument. It is NULL by default
 #' 
@@ -31,22 +31,23 @@ api.status <- function() {
 #'   
 #' @export
 #' 
-api.setup <- function(type = 'prod', key = NULL, token = NULL,verbose = TRUE) {
+api.setup <- function(api_env = 'prod', key = NULL, token = NULL,verbose = TRUE) {
   
+  Sys.setenv('api_env' = api_env)  
   Sys.setenv("url" = "")
   Sys.setenv("key" = "")
   Sys.setenv('token' = "")
+
   
-  
-  if(!(type %in% c('prod','dev','rtem','gcp'))){
-    stop("Please use 'prod', 'dev', 'gcp' or 'rtem' for api_type")
+  if(!(api_env %in% c('prod','dev','rtem','gcp'))){
+    stop("Please use 'prod', 'dev', 'gcp' or 'rtem' for api_env")
   }
   
   url <- dplyr::case_when(
-    type == 'prod' ~ 'https://api.onboarddata.io',
-    type == 'dev' ~ 'https:/devapi.onboarddata.io',
-    type == 'rtem' ~ 'https://api.ny-rtem.com',
-    type == 'gcp' ~ 'https://rews.onboarddata.io/api'
+    api_env == 'prod' ~ 'https://api.onboarddata.io',
+    api_env == 'dev' ~ 'https:/devapi.onboarddata.io',
+    api_env == 'rtem' ~ 'https://api.ny-rtem.com',
+    api_env == 'gcp' ~ 'https://rews.onboarddata.io/api'
   )
   
   Sys.setenv('url' = url)
@@ -56,7 +57,7 @@ api.setup <- function(type = 'prod', key = NULL, token = NULL,verbose = TRUE) {
   } else {
     if (is.null(key)) {
       if (Sys.getenv("RSTUDIO") == "1") {
-        api_name <- paste0('api_key_', type)
+        api_name <- paste0('api_key_', api_env)
         
         key <- rstudioapi::askForSecret(name = api_name,
                                             message = 'Enter your API key here',
@@ -81,17 +82,25 @@ api.setup <- function(type = 'prod', key = NULL, token = NULL,verbose = TRUE) {
 #' @return A named list of API information, containing elements 'url' and 'key'.
 #' 
 api.access <- function(){
+  api_env <- Sys.getenv('api_env')
   url <- Sys.getenv('url')
   key <- Sys.getenv('key')
   token <- Sys.getenv('token')
+ 
   
   if(url == '' | (key == '' & token== '')){
     stop('API credentials not set correctly.')
   } else {
     return(list(
+      'api_env' = api_env,
       'url' = url,
       'key' = key,
-      'token' = token
+      'token' = token,
+      headers = add_headers(`Content-Type` = "application/json",
+                             Authorization = paste("Bearer", token),
+                             `X-OB-Api` = key)
     ))
   }
+  
+
 }
