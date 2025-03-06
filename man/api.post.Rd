@@ -4,7 +4,7 @@
 \alias{api.post}
 \title{API POST call}
 \usage{
-api.post(endpoint, json_body, upload_path = NULL, output = "list")
+api.post(endpoint, json_body = NULL, upload_path = NULL, output = "list")
 }
 \arguments{
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}

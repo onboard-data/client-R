@@ -4,10 +4,10 @@
 \alias{api.setup}
 \title{Set up Onboard API keys and URL in system environment}
 \usage{
-api.setup(type = "prod", key = NULL, token = NULL, verbose = TRUE)
+api.setup(api_env = "prod", key = NULL, token = NULL, verbose = TRUE)
 }
 \arguments{
-\item{type}{Provide the API client name.}
+\item{api_env}{Provide the API client name. Default is `prod`}
 
 \item{key}{Option to include your API keys in the argument. It is NULL by default}
 
