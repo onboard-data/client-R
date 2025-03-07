@@ -21,6 +21,8 @@ api.status <- function() {
 #'  
 #' @param api_env Provide the API client name. Default is `prod`
 #' 
+#' @param url Provide the API URL
+#' 
 #' @param key Option to include your API keys in the argument. It is NULL by default
 #' 
 #' @param token Option to include your Auth token in the argument. It is NULL by default
@@ -31,31 +33,28 @@ api.status <- function() {
 #'   
 #' @export
 #' 
-api.setup <- function(api_env = 'prod', key = NULL, token = NULL,verbose = TRUE) {
-  
-  Sys.setenv('api_env' = api_env)  
-  Sys.setenv("url" = "")
-  Sys.setenv("key" = "")
-  Sys.setenv('token' = "")
-
+api.setup <- function(api_env = 'prod', url = '', key = '', token = '',verbose = TRUE) {
   
   if(!(api_env %in% c('prod','dev','rtem','gcp'))){
     stop("Please use 'prod', 'dev', 'gcp' or 'rtem' for api_env")
   }
-  
-  url <- dplyr::case_when(
-    api_env == 'prod' ~ 'https://api.onboarddata.io',
-    api_env == 'dev' ~ 'https:/devapi.onboarddata.io',
-    api_env == 'rtem' ~ 'https://api.ny-rtem.com',
-    api_env == 'gcp' ~ 'https://rews.onboarddata.io/api'
-  )
-  
-  Sys.setenv('url' = url)
-  
-  if (!is.null(token)) {
+  Sys.setenv('api_env' = api_env)  
+
+  if (url=="") {
+    #Pick url if url is not provided
+    url <- dplyr::case_when(
+      api_env == 'prod' ~ 'https://api.onboarddata.io',
+      api_env == 'dev' ~ 'https:/devapi.onboarddata.io',
+      api_env == 'rtem' ~ 'https://api.ny-rtem.com',
+      api_env == 'gcp' ~ 'https://rews.onboarddata.io/api'
+    )
+  }
+    Sys.setenv('url' = url)
+
     Sys.setenv('token' = token)
-  } else {
-    if (is.null(key)) {
+  
+  if(token == "" && key ==""){
+  #Get key saved with rstudioapi
       if (Sys.getenv("RSTUDIO") == "1") {
         api_name <- paste0('api_key_', api_env)
         
@@ -65,13 +64,14 @@ api.setup <- function(api_env = 'prod', key = NULL, token = NULL,verbose = TRUE)
       } else {
         key <- readline(prompt = "Enter your Onboard API key:")
       }
+  }
       Sys.setenv('key' = key)
-    }
+
+  if(verbose){
+    cat("Authenticating...\n")
+    cat(api.get("whoami")$result)
   }
     
-   if(verbose){
-     cat(api.status())
-   }
 }
 
 #' Access API keys and URL from System Environment
