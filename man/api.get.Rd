@@ -4,10 +4,12 @@
 \alias{api.get}
 \title{API GET call}
 \usage{
-api.get(endpoint)
+api.get(endpoint, verbose = TRUE)
 }
 \arguments{
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}
+
+\item{verbose}{Logical. If TRUE, prints response message from API}
 }
 \value{
 A list or data.frame of the API output.

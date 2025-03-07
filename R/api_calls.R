@@ -5,13 +5,15 @@
 #'
 #' @param endpoint A character string containing a valid Onboard API endpoint.
 #' 
+#' @param verbose Logical. If TRUE, prints response message from API
+#' 
 #' @return A list or data.frame of the API output.
 #' 
 #' @examples
 #' \dontrun{ whoami <- api.get('whoami') }
 #' 
 #' @export
-api.get <- function(endpoint) {
+api.get <- function(endpoint, verbose = TRUE) {
   # Access API credentials from the local environment.
   api_data <- api.access()
   
@@ -24,9 +26,7 @@ api.get <- function(endpoint) {
   response <- GET(url = endpoint_url,headers)
   
   # Check for errors
-  if (http_status(response)$category != "Success") {
-    stop(paste("API call failed:", http_status(response)$message))
-  }
+  check_errors(response)
   
 
   # Parse the response and flatten
@@ -69,9 +69,7 @@ api.patch <- function(endpoint,json_body=NULL){
   )
   
   # Check for errors
-  if (http_status(response)$category != "Success") {
-    stop(paste("API call failed:", http_status(response)$message))
-  }
+  check_errors(response)
   
   # Parse the response and flatten
   api_output <- content(response, as = "text", encoding = "UTF-8") %>% 
@@ -96,7 +94,7 @@ api.patch <- function(endpoint,json_body=NULL){
 #' @return A list or data.frame of the API output.
 #' 
 #' @export
-api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'list') {
+api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'list', verbose = TRUE) {
   # Access API credentials
   api_data <- api.access()
   
@@ -125,10 +123,7 @@ api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'l
   }
   
   # Check for errors
-  if (http_status(response)$category != "Success") {
-    stop(paste("API call failed:", http_status(response)$message))
-  }
-  
+  check_errors(response)
   
   # Parse the response based on the requested output format
   api_output <- switch(
@@ -180,9 +175,7 @@ api.delete <- function(endpoint, json_body = NULL){
   )
   
   # Check for errors
-  if (http_status(response)$category != "Success") {
-    stop(paste("API call failed:", http_status(response)$message))
-  }
+  check_errors(response)
 
   api_output <-
     content(response, as = 'text', encoding = 'UTF-8') %>% 
