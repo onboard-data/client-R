@@ -26,9 +26,8 @@ api.get <- function(endpoint, verbose = TRUE) {
   response <- GET(url = endpoint_url,headers)
   
   # Check for errors
-  check_errors(response)
+  check_errors(response,verbose = verbose)
   
-
   # Parse the response and flatten
   api_output <- content(response, as = "text", encoding = "UTF-8") %>% 
     fromJSON(flatten = TRUE)
@@ -69,7 +68,7 @@ api.patch <- function(endpoint,json_body=NULL){
   )
   
   # Check for errors
-  check_errors(response)
+  check_errors(response,verbose = verbose)
   
   # Parse the response and flatten
   api_output <- content(response, as = "text", encoding = "UTF-8") %>% 
@@ -123,7 +122,7 @@ api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'l
   }
   
   # Check for errors
-  check_errors(response)
+  check_errors(response,verbose = verbose)
   
   # Parse the response based on the requested output format
   api_output <- switch(
@@ -175,7 +174,7 @@ api.delete <- function(endpoint, json_body = NULL){
   )
   
   # Check for errors
-  check_errors(response)
+  check_errors(response,verbose = verbose)
 
   api_output <-
     content(response, as = 'text', encoding = 'UTF-8') %>% 

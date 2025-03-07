@@ -53,7 +53,7 @@ api.setup <- function(api_env = 'prod', url = '', key = '', token = '',verbose =
 
   if(verbose){
     cat("Authenticating...\n")
-    cat(api.get("whoami")$result)
+    check = api.get("whoami",verbose = verbose)
   }
     
 }
