@@ -65,3 +65,29 @@ prefix_column_names <- function(data, prefix) {
   names(data) <- paste0(prefix, ".", names(data))
   data
 }
+
+
+# Check API Call Errors ---------------------------------------------------
+
+#' Check Errors
+#' 
+#' Checks Errors from api calls
+#' 
+#' @param api_response Response from API Call
+#' 
+#' @param verbose Logical. If TRUE, prints response
+#' 
+check_errors <- function(api_response, verbose = TRUE){
+  
+  result = http_status(response)$category
+  message = http_status(response)$message
+  
+  # Check for errors
+  if (result != "Success") {
+    stop(paste("API call failed:", message))
+  } else{
+    if(verbose){
+      cat(message," \n")
+    }
+  }
+}
