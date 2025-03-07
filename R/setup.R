@@ -1,19 +1,3 @@
-#' Check the status of API connection
-#' 
-#' @description 
-#' Provides a status code and message for the API connection.
-#' 
-#' @return A character string of the API server status and message.
-#'
-#' @export
-api.status <- function() {
-  api_data <- api.access()
-  
-  request <- GET(url = api_data$url)
-  
-  return(httr::http_status(request$status_code)$message)
-}
-
 #' Set up Onboard API keys and URL in system environment
 #' @description
 #' 
