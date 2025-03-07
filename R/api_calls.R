@@ -119,7 +119,8 @@ api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'l
       url = endpoint_url,
       headers,
       body = list(file = upload_file(upload_path)),
-      encode = "multipart"
+      encode = "multipart",
+      httr::add_headers(`Content-Type` = "multipart/form-data")
     )
   }
   
