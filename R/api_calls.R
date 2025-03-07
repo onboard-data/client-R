@@ -23,10 +23,10 @@ api.get <- function(endpoint, verbose = TRUE) {
   headers = api_data$headers
   
   # Make GET request with headers
-  response <- GET(url = endpoint_url,headers)
+  response = GET(url = endpoint_url,headers)
   
   # Check for errors
-  check_errors(response,verbose = verbose)
+  check_errors(api_response = response,verbose = verbose)
   
   # Parse the response and flatten
   api_output <- content(response, as = "text", encoding = "UTF-8") %>% 

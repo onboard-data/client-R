@@ -79,8 +79,8 @@ prefix_column_names <- function(data, prefix) {
 #' 
 check_errors <- function(api_response, verbose = TRUE){
   
-  result = http_status(response)$category
-  message = http_status(response)$message
+  result = http_status(api_response)$category
+  message = http_status(api_response)$message
   
   # Check for errors
   if (result != "Success") {
