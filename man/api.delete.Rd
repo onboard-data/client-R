@@ -4,7 +4,7 @@
 \alias{api.delete}
 \title{API DELETE call}
 \usage{
-api.delete(endpoint, json_body = NULL)
+api.delete(endpoint, json_body = NULL, verbose = TRUE)
 }
 \arguments{
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}

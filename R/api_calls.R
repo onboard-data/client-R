@@ -152,7 +152,7 @@ api.post <- function(endpoint, json_body = NULL, upload_path = NULL, output = 'l
 #' @inheritParams  api.patch
 #' 
 #' @export
-api.delete <- function(endpoint, json_body = NULL){  
+api.delete <- function(endpoint, json_body = NULL, verbose = TRUE){  
   
   # Access API credentials
   api_data <- api.access() 
