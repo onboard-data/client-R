@@ -51,7 +51,7 @@ search_by_org <- function(data, org = NULL) {
   }
   
   if(!("org_name" %in% names(data))){
-    orgs <- api.get('organizations')$data %>% 
+    orgs <- api.get('organizations', verbose = FALSE)$data %>% 
       select(org_id = id,
              org_name = name)
     
@@ -141,7 +141,7 @@ get_users <- function(org){
 #' @export
 get_deployments <- function(org= NULL){
 
-  deployments <- api.get('deployment')
+  deployments <- api.get('deployment',verbose = FALSE)
   
   deployments <- deployments %>%
     mutate(across(.data$last_heartbeat,
