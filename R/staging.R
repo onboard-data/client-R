@@ -395,7 +395,7 @@ promote <- function(building,
   
   equip_ids <- equip_ids_list$equip_ids
     
-  if(proceed != TRUE){
+  if(is.null(proceed)){
   proceed <- askYesNo(
     sprintf(
       "Do you want to proceed promoting the following %s equip_ids at building %s: \n %s \n",
