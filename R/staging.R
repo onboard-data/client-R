@@ -179,7 +179,7 @@ update_staging_points <- function(building,
   
   staging_update_cols <- names(staging_update)
   
-  if(!any(required_cols %in% staging_update_cols)){
+  if(!all(required_cols %in% staging_update_cols)){
     stop(sprintf(
       "staging_update is missing cols %s",
       paste(required_cols, collapse = " or ")
@@ -398,10 +398,9 @@ promote <- function(building,
   if(is.null(proceed)){
   proceed <- askYesNo(
     sprintf(
-      "Do you want to proceed promoting the following %s equip_ids at building %s: \n %s \n",
+      "Do you want to proceed promoting %s equip_ids at building %s:\n",
       length(equip_ids),
-      building_info$name,
-      paste(equip_ids, collapse = ", ")
+      building_info$name
     )
   )
   }  
@@ -412,13 +411,13 @@ promote <- function(building,
     }
   
 equip_ids_list$topics = list()  
-  
-equip_ids_json <- equip_ids_list %>% jsonlite::toJSON()
-  
-  
+
+promote_json <- equip_ids_list %>% jsonlite::toJSON()
+
   # API call
   endpoint <- paste0("staging/", building_info$id, "/apply")
-  result <- api.post(endpoint, json_body = equip_ids_json)
+
+  result <- api.post(endpoint, json_body = promote_json)
   
   return(result)
   
