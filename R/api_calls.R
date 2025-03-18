@@ -50,7 +50,7 @@ api.get <- function(endpoint, verbose = TRUE) {
 #' @return A list or data.frame of the API output.
 #' 
 #' @export
-api.patch <- function(endpoint,json_body=NULL){
+api.patch <- function(endpoint,json_body=NULL, verbose = TRUE){
   
   # Access API credentials
   api_data <- api.access()
