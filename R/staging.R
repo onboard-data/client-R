@@ -405,11 +405,13 @@ promote <- function(building,
     )
   )
   }  
-    if (is.na(proceed) | proceed != TRUE) {
+    if (proceed == TRUE) {
+      print("Promoting...")
+    } else {
       stop('Stopping Operation.')
     }
   
-  equip_ids_list$topics = list()  
+equip_ids_list$topics = list()  
   
 equip_ids_json <- equip_ids_list %>% jsonlite::toJSON()
   
