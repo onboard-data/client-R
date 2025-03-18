@@ -31,7 +31,7 @@ search_buildings <- function(buildings = NULL,
     stop('buildings parameter is missing.')
   }
   
-  all_buildings <- api.get("buildings")
+  all_buildings <- api.get("buildings",verbose = FALSE)
 
   if (is.numeric(buildings)) {
     result <- all_buildings %>%
