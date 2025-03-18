@@ -17,3 +17,16 @@ A dataframe with the building info results
 \description{
 Search any buildings in your org
 }
+\examples{
+\dontrun{
+
+Integer values will search by building ids only
+buildings = c(427, 428)
+
+Combination of integer and characters will search ids and names of buildings
+buildings=c(427,"Laboratory")
+
+search_building(buildings = buildings)
+}
+
+}

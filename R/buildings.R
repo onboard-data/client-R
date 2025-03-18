@@ -11,10 +11,8 @@
 #' @param verbose Logical. If TRUE (default), print status messages.
 #'
 #' @returns A dataframe with the building info results
-#'
-#' @export
 #' 
-#' #' @examples
+#' @examples
 #' \dontrun{
 #' 
 #' Integer values will search by building ids only
@@ -25,6 +23,8 @@
 #'
 #' search_building(buildings = buildings)
 #' }
+#' 
+#' @export
 search_buildings <- function(buildings = NULL,
                              verbose = TRUE) {
   if (is.null(buildings)) {
@@ -91,7 +91,8 @@ get_metadata <- function(buildings = NULL,
   if (is.null(selection) & is.null(buildings)) {
     stop('Provide either building names/ids or selection list')
   } else if (is.null(selection)) {
-    building_info <- search_buildings(buildings = buildings)
+
+    building_info <- search_buildings(buildings = buildings, verbose = verbose)
     
     building_ids <- building_info$id
     
@@ -114,10 +115,10 @@ get_metadata <- function(buildings = NULL,
         )
       }
       
-      equip_data_bid <- api.get(paste0("buildings/", bid, "/equipment"))
+      equip_data_bid <- api.get(paste0("buildings/", bid, "/equipment"), verbose = verbose)
       equip_data <- plyr::rbind.fill(equip_data, equip_data_bid)
       
-      points_data_bid <- api.get(paste0("buildings/", bid, "/points"))
+      points_data_bid <- api.get(paste0("buildings/", bid, "/points"), verbose = verbose)
       points_data <- plyr::rbind.fill(points_data, points_data_bid)
       
     }
