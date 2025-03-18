@@ -148,15 +148,14 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 }
 
 
-# Upload -------------------------------------------------------
+# Update -------------------------------------------------------
 
 
-##Upload data to the staging area or assign __SKIP__ equip_id to topics on the staging area
-##skip_topics is optional (T or F)(Use with Caution)
+##Update data on the staging area
 
-#' Upload to Staging Area
+#' Update Staging
 #'
-#' Uploads data to the staging area.
+#' Update data on the staging area.
 #'
 #' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
 #'
@@ -254,18 +253,18 @@ upload_staging <- function(building,
 #'
 #' Promote valid data on the staging area to the live building.
 #'
-#' @param building Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.
+#' @param building Character vector or integer corresponding to the building name or id.
 #'
-#' @param staging_data_to_promote (Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.
+#' @param equip_ids_list  A list of all equip_ids to promote from staging to the live building
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #'
-#' @return (Conditional) A named list containing errors that may have occurred during data promotion.
+#' @return (Conditional) A named list with result output of promotion.
 #'
 #' @export
 
 promote <- function(building,
-                    staging_data_to_promote = NULL,
+                    equip_ids_list = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
   if (length(building) > 1)
@@ -273,49 +272,36 @@ promote <- function(building,
   
   building_info <- search_buildings(buildings = building, verbose = verbose)
   
-  if (is.null(staging_data_to_promote)) {
-    proceed <- askYesNo(
-      sprintf(
-        'Do you want to proceed with promoting all valid topics for %s?',
-        building_info$name
-      )
-    )
-    
-    if (is.na(proceed) | proceed != TRUE) {
-      stop('Stopping Operation.')
-    }
-    
-    promote_json <- list(equip_ids = character(0), topics = character(0)) %>%
-      toJSON() %>%
-      gsub('\\["', '[', .) %>%
-      gsub('"\\]', ']', .)
-    
-  } else {
-    equip_count <- length(unique(staging_data_to_promote$e.equip_id))
-    
-    if (is.null(proceed)) {
-      proceed <- askYesNo(
-        sprintf(
-          'Do you want to proceed with promoting %s equipment and their valid topics to %s?',
-          equip_count,
-          building_info$name
-        )
-      )
-    }
-    
-    if (is.na(proceed) | proceed != TRUE) {
-      stop('Stopping Operation.')
-    }
-    
-    promote_json <- list(equip_ids = staging_data_to_promote$e.equip_id,
-                         topics = staging_data_to_promote$p.topic) %>%
-      toJSON()
-    
+  if (is.null(equip_ids_list)) {
+    stop(sprintf(
+      'Please provide a list of equip_ids to promote at %s?',
+      building_info$name
+    ))
   }
+  
+  equip_ids <- equip_ids_list$equip_ids
+    
+  proceed <- askYesNo(
+    sprintf(
+      "Do you want to proceed promoting the following %s equip_ids at building %s: \n %s \n",
+      length(equip_ids),
+      building_info$name,
+      paste(equip_ids, collapse = ", ")
+    )
+  )
+    
+    if (is.na(proceed) | proceed != TRUE) {
+      stop('Stopping Operation.')
+    }
+  
+  equip_ids_list$topics = list()  
+  
+equip_ids_json <- equip_ids_list %>% jsonlite::toJSON()
+  
   
   # API call
   endpoint <- paste0("staging/", building_info$id, "/apply")
-  result <- api.post(endpoint, json_body = promote_json)
+  result <- api.post(endpoint, json_body = equip_ids_json)
   
   return(result)
   
