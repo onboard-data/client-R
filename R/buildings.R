@@ -6,13 +6,25 @@
 #'
 #' Search any buildings in your org
 #'
-#' @param buildings Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.
+#' @param buildings Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once. Only provide integers if you want to search by building_id
 #'
 #' @param verbose Logical. If TRUE (default), print status messages.
 #'
 #' @returns A dataframe with the building info results
 #'
 #' @export
+#' 
+#' #' @examples
+#' \dontrun{
+#' 
+#' Integer values will search by building ids only
+#' buildings = c(427, 428)
+#' 
+#' Combination of integer and characters will search ids and names of buildings
+#' buildings=c(427,"Laboratory")
+#'
+#' search_building(buildings = buildings)
+#' }
 search_buildings <- function(buildings = NULL,
                              verbose = TRUE) {
   if (is.null(buildings)) {
@@ -20,12 +32,18 @@ search_buildings <- function(buildings = NULL,
   }
   
   all_buildings <- api.get("buildings")
-  
-  search_text <- paste(buildings, collapse = "|")
-  
-  result <- all_buildings %>% filter(id %in% buildings |
-                                       grepl(search_text, name, ignore.case = TRUE))
-  
+
+  if (is.numeric(buildings)) {
+    result <- all_buildings %>%
+      filter(id %in% buildings)
+    
+  } else {
+    search_text <- paste(buildings, collapse = "|")
+    
+    result <- all_buildings %>% filter(id %in% buildings |
+                                         grepl(search_text, name, ignore.case = TRUE))
+    
+  }
   if (nrow(result) == 0) {
     stop("No buildings found. Try again.")
   }

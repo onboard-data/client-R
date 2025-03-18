@@ -7,7 +7,7 @@
 get_metadata(buildings = NULL, selection = NULL, verbose = TRUE)
 }
 \arguments{
-\item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once.}
+\item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once. Only provide integers if you want to search by building_id}
 
 \item{selection}{Selection list from point selector.}
 
