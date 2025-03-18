@@ -150,6 +150,120 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 
 # Update -------------------------------------------------------
 
+##Update data on the staging area
+
+#' Update Staging Points
+#'
+#' Update points on the staging area.
+#'
+#' @param building Character vector or integer corresponding to the building name or id.
+#'
+#' @param staging_update A data.frame to upload to the staging area. Must contain equip_names and topic columns.
+#'
+#' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
+#'
+#' @return Result output of the update
+#'
+#'@export
+update_staging_points <- function(building, 
+                                  staging_update, 
+                                  proceed = NULL, verbose = TRUE){
+  
+  if (length(building) > 1)
+    stop("Only one building ID or name is allowed.")
+  
+  # Get building info
+  building_info <- search_buildings(buildings = building, verbose = verbose)
+  
+  required_cols <- c("equip_names", "topic")
+  
+  staging_update_cols <- names(staging_update)
+  
+  if(!any(required_cols %in% staging_update_cols)){
+    stop(sprintf(
+      "staging_update is missing cols %s",
+      paste(required_cols, collapse = " or ")
+    ))
+  }
+  
+  if('point_type' %in% staging_update_cols){
+    #Getting Point-Types to match with ids
+    point_types <- api.get("pointtypes",verbose = FALSE) %>% 
+      select(point_type = tag_name,point_type_id = id)
+    
+    staging_update <- left_join(staging_update,point_types,by=c("point_type")) 
+  }
+  
+  if('raw_unit' %in% staging_update_cols){
+    #Getting units to match with ids
+    units <- api.get("unit",verbose = FALSE) %>% 
+      select(raw_unit = name_abbr,raw_unit_id = id)
+    
+    staging_update <- left_join(staging_update,units, by =c("raw_unit"))
+  }
+  
+  
+  staging_update <- staging_update %>%
+    select(any_of(c(required_cols, 'point_type_id', 'raw_unit_id'))) %>%
+    mutate(point_type_confidence = 100,
+           raw_unit_confidence = 100)  
+  
+  if(is.null(proceed)){
+    proceed = askYesNo(msg = sprintf(
+      "Do you want to proceed updating %s points for building %s",
+                       nrow(staging_update),
+                       building_info$name))
+  }
+  
+  # Stop if not confirmed
+  if (is.na(proceed) || !proceed) {
+    stop("Operation canceled by user.")
+  }
+  
+  staging_json <- staging_update %>% 
+    #group points assigned to multiple equipment together
+    group_by(across(-equip_names)) %>% 
+    reframe(equip_names=list(equip_names))  %>%  
+    #Convert points with multiple equip_names into a list
+    mutate(across(equip_names, ~ (map(., function(x) (str_split(x, ", ")))))) %>% 
+    #Convert NULL characters into NA
+    mutate(across(everything(.), ~ ifelse(. == "NULL", NA, .))) %>% 
+    split(1:nrow(.)) %>% 
+    purrr::map(~ {
+      row_list = as.list(.)
+      
+      topic = row_list$topic
+      
+      point_type = row_list[grepl("^point_type_", names(row_list))]
+      names(point_type) = sub("point_type_","",names(point_type))
+      
+      raw_unit = row_list[grepl("^raw_unit_", names(row_list))]
+      names(raw_unit) = sub("raw_unit_","",names(raw_unit))
+      
+      equip_names = unlist(row_list$equip_names, recursive = FALSE)
+      
+      # Build final structure dynamically and remove empty elements
+      result <- list(
+        topic = topic,
+        point_type = if (is.null(point_type$id) || is.na(point_type$id)) NULL else point_type,
+        raw_unit = if (is.null(raw_unit$id) || is.na(raw_unit$id)) NULL else raw_unit,
+        equip_names = if(all(is.na(equip_names))) NA else equip_names
+      )
+      purrr::compact(result)  # Remove NULL elements
+    }) %>%  
+    unname()   %>% 
+    toJSON(auto_unbox = TRUE, pretty = TRUE) 
+  
+  staging_json <- gsub("null","[]",staging_json)
+  
+  
+  patch_output = api.patch(endpoint = paste0("staging/",building_info$id,"/points"),
+                           json_body = staging_json)
+  
+  return(patch_output)
+  
+}
+
 
 ##Update data on the staging area
 
@@ -350,7 +464,7 @@ demote <- function(building,
   
   if (is.null(point_equipment_relationships)) {
     confirm_metadata_pull <- askYesNo(
-      "You have not provided explicit point-equipment relationships to demote. Metadata will be pulled, and all existing point-equipment relationships will be removed. Do you want to proceed?"
+      "You have not provided explicit point-equipment relationships to demote. \nDo you want to remove all existing point-equipment relationships for the given points? \n"
     )
     
     if (is.na(confirm_metadata_pull) |
@@ -359,7 +473,7 @@ demote <- function(building,
     }
     
     # Fetch point-equipment relationships if not provided
-    metadata <- get_metadata(buildings = building_info$id)
+    metadata <- get_metadata(buildings = building_info$id,verbose = FALSE)
     
     point_equipment_relationships <- metadata %>%
       filter(e.equipment_id %in% equipment_ids |
