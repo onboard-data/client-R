@@ -80,14 +80,15 @@ prefix_column_names <- function(data, prefix) {
 check_errors <- function(api_response, verbose = TRUE){
   
   result = http_status(api_response)$category
-  message = http_status(api_response)$message
+  message = content(api_response)
+  message = jsonlite::prettify(jsonlite::toJSON(message,auto_unbox = TRUE))
   
   # Check for errors
   if (result != "Success") {
     stop(paste("API call failed:", message))
   } else{
     if(verbose){
-      cat(message," \n")
+      cat(message)
     }
   }
 }
