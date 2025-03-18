@@ -4,12 +4,14 @@
 \alias{api.patch}
 \title{API PATCH call}
 \usage{
-api.patch(endpoint, json_body = NULL)
+api.patch(endpoint, json_body = NULL, verbose = TRUE)
 }
 \arguments{
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}
 
 \item{json_body}{A JSON payload to give to the POST call.}
+
+\item{verbose}{Logical. If TRUE, prints response message from API}
 }
 \value{
 A list or data.frame of the API output.

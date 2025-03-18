@@ -4,22 +4,17 @@
 \alias{promote}
 \title{Promote data on Staging Area}
 \usage{
-promote(
-  building,
-  staging_data_to_promote = NULL,
-  proceed = NULL,
-  verbose = TRUE
-)
+promote(building, equip_ids_list = NULL, proceed = NULL, verbose = TRUE)
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
+\item{building}{Character vector or integer corresponding to the building name or id.}
 
-\item{staging_data_to_promote}{(Optional) If missing, all valid topics are promoted. A data.frame containing columns 'e.equip_id' & 'p.topic'.}
+\item{equip_ids_list}{A list of all equip_ids to promote from staging to the live building}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 }
 \value{
-(Conditional) A named list containing errors that may have occurred during data promotion.
+(Conditional) A named list with result output of promotion.
 }
 \description{
 Promote valid data on the staging area to the live building.

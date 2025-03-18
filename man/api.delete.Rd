@@ -10,6 +10,8 @@ api.delete(endpoint, json_body = NULL, verbose = TRUE)
 \item{endpoint}{A character string containing a valid Onboard API endpoint.}
 
 \item{json_body}{A JSON payload to give to the POST call.}
+
+\item{verbose}{Logical. If TRUE, prints response message from API}
 }
 \description{
 Uses http DELETE call to post objects to the API.

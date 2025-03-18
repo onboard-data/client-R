@@ -2,7 +2,7 @@
 % Please edit documentation in R/staging.R
 \name{upload_staging}
 \alias{upload_staging}
-\title{Upload to Staging Area}
+\title{Update Staging}
 \usage{
 upload_staging(
   building,
@@ -23,5 +23,5 @@ upload_staging(
 A named list containing any errors that may have occured during data upload.
 }
 \description{
-Uploads data to the staging area.
+Update data on the staging area.
 }

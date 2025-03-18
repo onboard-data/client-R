@@ -20,6 +20,8 @@ api.post(
 \item{upload_path}{(Optional) A character string containing the file path for the file to upload}
 
 \item{output}{A character string, either "list" (default) or "dataframe", to specify the API output format.}
+
+\item{verbose}{Logical. If TRUE, prints response message from API}
 }
 \value{
 A list or data.frame of the API output.
