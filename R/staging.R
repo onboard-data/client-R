@@ -281,6 +281,7 @@ promote <- function(building,
   
   equip_ids <- equip_ids_list$equip_ids
     
+  if(proceed != TRUE){
   proceed <- askYesNo(
     sprintf(
       "Do you want to proceed promoting the following %s equip_ids at building %s: \n %s \n",
@@ -289,7 +290,7 @@ promote <- function(building,
       paste(equip_ids, collapse = ", ")
     )
   )
-    
+  }  
     if (is.na(proceed) | proceed != TRUE) {
       stop('Stopping Operation.')
     }
