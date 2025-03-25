@@ -15,7 +15,7 @@ get_staging_equip <- function(building_id, verbose = TRUE) {
   
   endpoint <- sprintf("staging/%d", building_id)
   
-  api.get(endpoint)$equipment
+  api.get(endpoint, verbose = verbose)$equipment
   
 }
 
@@ -35,7 +35,7 @@ get_staging_devices <- function(building_id, verbose = TRUE) {
     cat("Fetching staged devices...\n")
   
   endpoint <- sprintf("staging/%d/devices", building_id)
-  api.get(endpoint)
+  api.get(endpoint, verbose = verbose)
 }
 
 # Points -------------------------------------------------------
@@ -54,7 +54,7 @@ get_staging_points <- function(building_id, verbose = TRUE) {
     cat("Fetching staged points...\n")
   
   endpoint <- sprintf("staging/%d/points", building_id)
-  api.get(endpoint)
+  api.get(endpoint, verbose = verbose)
 }
 
 
@@ -87,7 +87,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
     
     # Fetch Staging Points
-    staging_points_single <- get_staging_points(building_id, verbose)
+    staging_points_single <- get_staging_points(building_id, verbose = verbose)
     if (nrow(staging_points_single) == 0) {
       if (verbose) {
         cat(sprintf("No points found for %s. \n", building_name))
@@ -102,7 +102,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
     
     #Fetch Staging Equip
-    staging_equip_single <- get_staging_equip(building_id, verbose)
+    staging_equip_single <- get_staging_equip(building_id, verbose = verbose)
     if (nrow(staging_equip_single) == 0) {
       if (verbose) {
         cat(sprintf("No equipment found for %s. \n", building_name))
@@ -112,7 +112,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
     
     #Fetch Staging Devices
-    staging_devices_single <- get_staging_devices(building_id, verbose)
+    staging_devices_single <- get_staging_devices(building_id, verbose = verbose)
     if (length(staging_devices_single) == 0) {
       if (verbose) {
         cat(sprintf("No devices found for %s. \n", building_name))
