@@ -115,10 +115,10 @@ get_metadata <- function(buildings = NULL,
         )
       }
       
-      equip_data_bid <- api.get(paste0("buildings/", bid, "/equipment"), verbose = verbose)
+      equip_data_bid <- api.get(paste0("buildings/", bid, "/equipment"), verbose = FALSE)
       equip_data <- plyr::rbind.fill(equip_data, equip_data_bid)
       
-      points_data_bid <- api.get(paste0("buildings/", bid, "/points"), verbose = verbose)
+      points_data_bid <- api.get(paste0("buildings/", bid, "/points"), verbose = FALSE)
       points_data <- plyr::rbind.fill(points_data, points_data_bid)
       
     }

@@ -88,7 +88,7 @@ check_errors <- function(api_response, verbose = TRUE){
     stop(paste("API call failed:", message))
   } else{
     if(verbose){
-      cat(result)
+      cat(result,"\n")
     }
   }
 }
