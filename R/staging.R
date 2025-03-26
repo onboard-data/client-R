@@ -55,6 +55,7 @@ get_staging_points <- function(building_id, verbose = TRUE) {
   
   endpoint <- sprintf("staging/%d/points", building_id)
   api.get(endpoint, verbose = verbose)
+
 }
 
 
@@ -184,7 +185,7 @@ update_staging_points <- function(building,
     ))
   }
   
-  if('raw_unit' %in% staging_update_cols){
+  if(!('raw_unit_id' %in% staging_update_cols)){
     #Getting units to match with ids
     units <- api.get("unit",verbose = FALSE) %>% 
       select(raw_unit = name_abbr,raw_unit_id = id)
