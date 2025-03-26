@@ -308,7 +308,7 @@ update_staging_equipment <- function(building,
   
   staging_update <- staging_update %>%
     select(any_of(c(required_cols, optional_cols))) %>%
-    mutate(equipment_type_tag_confidence = 100)  
+    mutate(equipment_type_confidence = 100)  
   
   #Convert to JSON
   staging_json <- staging_update %>% 
