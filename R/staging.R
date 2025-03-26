@@ -335,7 +335,7 @@ update_staging_equipment <- function(building,
         equipment_type =
           if (is.null(equipment_type$tag_name) || is.na(equipment_type$tag_name))
             NULL else equipment_type,
-        new_name = if(is.na(new_name)) NULL else new_name
+        new_name = if(is.null(new_name) || is.na(new_name)) NULL else new_name
       )
       purrr::compact(result)  # Remove NULL elements
     }) %>% 
