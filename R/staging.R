@@ -293,7 +293,7 @@ update_staging_equipment <- function(building,
   
   if(is.null(proceed)){
     proceed = askYesNo(msg = sprintf(
-      "Do you want to proceed updating %s points for building %s",
+      "Do you want to proceed updating %s equipment for building %s",
       nrow(staging_update),
       building_info$name))
   }
