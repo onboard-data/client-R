@@ -148,9 +148,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 }
 
 
-# Update -------------------------------------------------------
-
-##Update data on the staging area
+# Update Staging -------------------------------------------------------
 
 #' Update Staging Points
 #'
@@ -158,7 +156,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 #'
 #' @param building Character vector or integer corresponding to the building name or id.
 #'
-#' @param staging_update A data.frame to upload to the staging area. Must contain equip_names and topic columns.
+#' @param staging_update A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name and raw_unit are optional columns
 #'
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
 #'
@@ -186,14 +184,6 @@ update_staging_points <- function(building,
     ))
   }
   
-  if('point_type' %in% staging_update_cols){
-    #Getting Point-Types to match with ids
-    point_types <- api.get("pointtypes",verbose = FALSE) %>% 
-      select(point_type = tag_name,point_type_id = id)
-    
-    staging_update <- left_join(staging_update,point_types,by=c("point_type")) 
-  }
-  
   if('raw_unit' %in% staging_update_cols){
     #Getting units to match with ids
     units <- api.get("unit",verbose = FALSE) %>% 
@@ -202,9 +192,11 @@ update_staging_points <- function(building,
     staging_update <- left_join(staging_update,units, by =c("raw_unit"))
   }
   
+  #Select columns
+  optional_cols <- c("point_type_tag_name","raw_unit_id")
   
   staging_update <- staging_update %>%
-    select(any_of(c(required_cols, 'point_type_id', 'raw_unit_id'))) %>%
+    select(any_of(c(required_cols, optional_cols))) %>%
     mutate(point_type_confidence = 100,
            raw_unit_confidence = 100)  
   
@@ -220,6 +212,7 @@ update_staging_points <- function(building,
     stop("Operation canceled by user.")
   }
   
+  #Convert to json
   staging_json <- staging_update %>% 
     #group points assigned to multiple equipment together
     group_by(across(-equip_names)) %>% 
@@ -245,7 +238,7 @@ update_staging_points <- function(building,
       # Build final structure dynamically and remove empty elements
       result <- list(
         topic = topic,
-        point_type = if (is.null(point_type$id) || is.na(point_type$id)) NULL else point_type,
+        point_type = if (is.null(point_type$tag_name) || is.na(point_type$tag_name)) NULL else point_type,
         raw_unit = if (is.null(raw_unit$id) || is.na(raw_unit$id)) NULL else raw_unit,
         equip_names = if(all(is.na(equip_names))) NA else equip_names
       )
@@ -262,6 +255,98 @@ update_staging_points <- function(building,
   
   return(patch_output)
   
+}
+
+#' Update Staging Equipment
+#'
+#' Update equipment on the staging area.
+#'
+#' @param building Character vector or integer corresponding to the building name or id.
+#'
+#' @param staging_update A data.frame to upload to the staging area. Must contain name (equip_name) column. equipment_type_tag_name & new_name are optional columns
+#'
+#' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
+#'
+#' @return Result output of the update
+#'
+#'@export
+update_staging_equipment <- function(building,
+                                 staging_update, 
+                                 proceed = NULL, verbose = TRUE){
+  
+  if (length(building) > 1)
+    stop("Only one building ID or name is allowed.")
+  
+  # Get building info
+  building_info <- search_buildings(buildings = building, verbose = verbose)
+  
+  required_cols <- c("name")
+  
+  staging_update_cols <- names(staging_update)
+  
+  if(!all(required_cols %in% staging_update_cols)){
+    stop(sprintf(
+      "staging_update is missing cols %s",
+      paste(required_cols, collapse = " or ")
+    ))
+  }
+  
+  if(is.null(proceed)){
+    proceed = askYesNo(msg = sprintf(
+      "Do you want to proceed updating %s points for building %s",
+      nrow(staging_update),
+      building_info$name))
+  }
+  
+  # Stop if not confirmed
+  if (is.na(proceed) || !proceed) {
+    stop("Operation canceled by user.")
+  }
+  
+  #Select Columns
+  optional_cols <- c("equipment_type_tag_name","new_name")
+  
+  staging_update <- staging_update %>%
+    select(any_of(c(required_cols, optional_cols))) %>%
+    mutate(equipment_type_tag_confidence = 100)  
+  
+  #Convert to JSON
+  staging_json <- staging_update %>% 
+    #Convert NULL characters into NA
+    mutate(across(everything(.), ~ ifelse(. == "NULL", NA, .))) %>% 
+    split(1:nrow(.))  %>% 
+    purrr::map(~{
+      row_list = as.list(.)
+      
+      #  row_list = staging_json[[1]]
+      
+      name = row_list$name
+      
+      equipment_type = row_list[grepl("^equipment_type_",names(row_list))]
+      names(equipment_type) = sub("equipment_type_","",names(equipment_type))
+      
+      new_name = row_list$new_name
+      
+      result = list(name = name,equipment_type = equipment_type, new_name = new_name)
+      
+      # Build final structure dynamically and remove empty elements
+      result <- list(
+        name = name,
+        equipment_type =
+          if (is.null(equipment_type$tag_name) || is.na(equipment_type$tag_name))
+            NULL else equipment_type,
+        new_name = if(is.na(new_name)) NULL else new_name
+      )
+      purrr::compact(result)  # Remove NULL elements
+    }) %>% 
+    unname() %>%
+    toJSON(auto_unbox = TRUE, pretty = TRUE) 
+  
+  
+  patch_output = api.patch(endpoint = paste0("staging/",building_info$id,"/equipment"),
+                           json_body = staging_json)
+  
+  return(patch_output)
 }
 
 
