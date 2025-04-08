@@ -49,24 +49,15 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
         
       } else {
         
-        timeseries_query <- append(timeseries_query,
-                                   list(units=units)) 
+        timeseries_query$units <- as.list(units)
       }
     }
   
-  timeseries_query <- jsonlite::toJSON(timeseries_query)
-  
-  # Format JSON query
-  . <- NULL
-  timeseries_query <- timeseries_query %>% 
-    gsub('start":\\[', 'start":', .) %>% 
-    gsub('\\],"end":\\[', ',"end":', .) %>% 
-    gsub('\\],"point', ',"point', .) %>% 
-    gsub('units":\\[', 'units":', .) %>% 
-    gsub('}\\]}', '}}', .)
+  timeseries_query_json <- jsonlite::toJSON(timeseries_query,auto_unbox = TRUE)
+
   
   timeseries_output <- api.post(endpoint = 'timeseries',
-                                json_body = timeseries_query)
+                                json_body = timeseries_query_json)
   
   
   if (is.null(timeseries_output$status)) {
@@ -91,7 +82,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 #' 
 #' @inheritParams get_timeseries_raw
 #' 
-#' @param unit_type Provide the unit type: "default" or "raw"
+#' @param unit_type Provide the unit type: "default" (default) or "raw"
 #' 
 #' @return A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 #' 
@@ -126,26 +117,26 @@ get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
     timeseries <- timeseries_raw %>% 
       transmute(.data$time,
                 .data$display,
-                unit = as.character(.data$unit))
+                values = as.character(.data$unit))
     
     } else if (unit_type == 'raw'){
       timeseries <- timeseries_raw %>% 
         transmute(.data$time,
                   .data$display,
-                  unit = as.character(.data$raw)) 
+                  values = as.character(.data$raw)) 
     }
     
     timeseries <- timeseries %>% 
-      mutate(across(.data$time,
-                    ~gsub('[.].*','',.))) %>% 
-      type.convert(as.is = T) %>% 
-      mutate(time = as_datetime(.data$time)) %>% 
-      distinct() %>% 
-      pivot_wider(id_cols = .data$time,
-                  names_from = .data$display,
-                  values_from = .data$unit,
+      mutate(across(time, ~ format(as.POSIXct(as.character(.), 
+                                                    format = "%Y-%m-%dT%H:%M:%OSZ", 
+                                                    tz = "UTC"), 
+                                         "%Y-%m-%d %H:%M:%S"))) %>% 
+      distinct(time, display, .keep_all = TRUE) %>% 
+      pivot_wider(id_cols = time,
+                  names_from = display,
+                  values_from = values,
                   values_fill = NA) 
 }
 
     return(timeseries)
-  } 
+} 

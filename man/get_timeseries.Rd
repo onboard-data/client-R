@@ -21,7 +21,7 @@ get_timeseries(
 
 \item{units}{(Optional) A data.frame consisting of preferred units for given measurements}
 
-\item{unit_type}{Provide the unit type: "default" or "raw"}
+\item{unit_type}{Provide the unit type: "default" (default) or "raw"}
 }
 \value{
 A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
