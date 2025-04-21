@@ -2,18 +2,20 @@
 % Please edit documentation in R/staging.R
 \name{get_staging_data}
 \alias{get_staging_data}
-\title{Get Staging Data}
+\title{Get Staging Data
+Retrieve metadata (points, equipment, devices) from the staging area for one or more buildings.}
 \usage{
 get_staging_data(buildings, verbose = TRUE)
 }
 \arguments{
-\item{buildings}{Enter building names or ids. You can enter multiple building ids or names as vectors}
+\item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
-\item{verbose}{Logical. If TRUE (default), prints status and progress messages.}
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
-A data.frame of metadata from the staging area.
+A data.frame containing combined metadata from the staging area.
 }
 \description{
-Gets metadata from the staging area.
+Get Staging Data
+Retrieve metadata (points, equipment, devices) from the staging area for one or more buildings.
 }

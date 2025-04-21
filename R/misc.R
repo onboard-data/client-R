@@ -11,14 +11,13 @@
 #' @export
 get_point_types <- function(){
   
-  pointtypes <- api.get('pointtypes')
+  pointtypes <- api.request(endpoint = 'pointtypes', verbose = FALSE) #Query point_types
+  measurements <- api.request(endpoint = 'measurements', verbose = FALSE) #Query measurements
   
-  measurements <- api.get('measurements')
+  colnames(measurements) <- paste0('measurement_', colnames(measurements))
   
-  colnames(measurements) = paste0('measurement_',colnames(measurements))
-  
-  #Extract units for each measurement
-  measurements <- measurements %>% tidyr::unnest(measurement_units,names_sep = "_")
+  measurements <- measurements %>%
+    tidyr::unnest(measurement_units, names_sep = "_")   #Extract units for each measurement
   
   #Unite data frames
   point_types <- left_join(pointtypes,measurements,
@@ -36,28 +35,30 @@ get_point_types <- function(){
   
 }
 
+
 # Search by Org --------------------------------------------------------
 
 #' Search by Org
 #' 
-#' @param data A dataframe to filter
+#' @param data A data frame containing an `org_id` column. If `org_name` is missing, it will be added via API.
+#' @inheritParams org 
 #' 
-#' @param org An id (integer) or name (text) of the organization 
-#' 
+#' @return Filtered data frame with `org_name` included.
 search_by_org <- function(data, org = NULL) {
   
   if(missing(data)){
     stop("data missing.")
   }
   
-  if(!("org_name" %in% names(data))){
-    orgs <- api.get('organizations', verbose = FALSE)$data %>% 
-      select(org_id = id,
-             org_name = name)
+  # Join with org names if missing
+  if (!"org_name" %in% names(data)) {
+    orgs <- api.request('organizations', verbose = FALSE)$data %>% 
+      select(org_id = id, org_name = name)
     
-    data <- left_join(data, orgs,by ="org_id") %>% 
-      relocate(org_name,.after = org_id)
+    data <- left_join(data, orgs, by = "org_id") %>%
+      relocate(org_name, .after = org_id)
   }
+  
   
   if (!is.null(org)) {
     if (is.numeric(org)) {
@@ -68,7 +69,7 @@ search_by_org <- function(data, org = NULL) {
       # If the input is text, search by Name
       data <- data %>% filter(grepl(org, org_name, ignore.case = TRUE))
     } else {
-      stop("Invalid input. Please provide either an integer (id) or text (name).")
+      stop("Invalid input. Please provide either numeric (id) or character (name).")
     }
     
   }
@@ -81,23 +82,23 @@ search_by_org <- function(data, org = NULL) {
 #' Users
 #' 
 #' Retrieve all user info in your organization.
-#' 
-#' @param org Enter org_id (integer) or org_name (text)
+#'
+#' @inheritParams org
 #' 
 #' @return A data.frame of all user information.
 #' 
 #' @export
 
-get_users <- function(org){
+get_users <- function(org = NULL){
   
   #Get roles db
-  roles <- api.get('roles')
+  roles <- api.request('roles',verbose = FALSE)
   
   roles <- roles$data %>%
     select(roles = .data$id, role_name = .data$name)
   
   #Get user db
-  users <- api.get('users')
+  users <- api.request('users', verbose = FALSE)
   
   #Format users
   users <- users$data %>% 
@@ -119,8 +120,7 @@ get_users <- function(org){
    relocate(role_name,.after=name) %>% 
     mutate(across(c(.data$password_reset, 
                     .data$last_login, .data$created),
-                  ~ as_datetime(as.numeric(substr(., 1, 10)),
-                                tz = 'UTC'))) 
+                  ~ convert_to_datetime(.))) 
   
   users <- search_by_org(data = users,org = org)
   
@@ -134,21 +134,20 @@ get_users <- function(org){
 #' 
 #' Get all deployments in your organization.
 #' 
-#' @inheritParams get_users
+#' @inheritParams org
 #' 
 #' @return A data.frame of all deployments.
 #' 
 #' @export
-get_deployments <- function(org= NULL){
+get_deployments <- function(org = NULL){
 
-  deployments <- api.get('deployment',verbose = FALSE)
+  deployments <- api.request('deployment',verbose = FALSE)
   
   deployments <- deployments %>%
     mutate(across(.data$last_heartbeat,
-                  ~ as_datetime(as.numeric(substr(., 1, 10)),
-                                tz = 'UTC'))) 
+                  ~ convert_to_datetime(.))) 
   
-deployments <- search_by_org(data = deployments,org = org)
+deployments <- search_by_org(data = deployments, org = org)
   
   return(deployments)
 }

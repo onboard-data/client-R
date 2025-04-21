@@ -4,12 +4,12 @@
 \alias{update_staging_points}
 \title{Update Staging Points}
 \usage{
-update_staging_points(building, staging_update, proceed = NULL, verbose = TRUE)
+update_staging_points(building, staging_points, proceed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id.}
 
-\item{staging_update}{A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name and raw_unit are optional columns}
+\item{staging_points}{A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name and raw_unit are optional columns}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 }

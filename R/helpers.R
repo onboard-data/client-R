@@ -1,4 +1,17 @@
 
+# UNIX to POSIXct ---------------------------------------------------------
+
+#' Convert UNIX timestamp to POSIXct
+#' 
+#' Converts a UNIX timestamp string (with or without milliseconds) to a POSIXct datetime object.
+#' 
+#' @param x A character or numeric vector of UNIX timestamps.
+#' 
+#' @return A POSIXct vector.
+convert_to_datetime <- function(x) {
+  x <- as.integer(substr(x, 1, 10))
+  as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
+}
 
 # Nested List to DF -------------------------------------------------------
 
@@ -51,44 +64,4 @@ nested_list_to_df <- function(nested_list) {
   df_combined <- purrr::list_rbind(df_list)
   
   return(df_combined)
-}
-
-
-# Prefix Column Names ---------------------
-
-#' Prefix Column Names
-#' 
-#' Helper function to add prefixes to column names for Staging Data
-#' 
-# 
-prefix_column_names <- function(data, prefix) {
-  names(data) <- paste0(prefix, ".", names(data))
-  data
-}
-
-
-# Check API Call Errors ---------------------------------------------------
-
-#' Check Errors
-#' 
-#' Checks Errors from api calls
-#' 
-#' @param api_response Response from API Call
-#' 
-#' @param verbose Logical. If TRUE, prints response
-#' 
-check_errors <- function(api_response, verbose = TRUE){
-  
-  result = http_status(api_response)$category
-  message = content(api_response)
-  message = jsonlite::prettify(jsonlite::toJSON(message,auto_unbox = TRUE))
-  
-  # Check for errors
-  if (result != "Success") {
-    stop(paste("API call failed:", message))
-  } else{
-    if(verbose){
-      cat(result,"\n")
-    }
-  }
 }

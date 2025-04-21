@@ -2,38 +2,35 @@
 % Please edit documentation in R/buildings.R
 \name{get_metadata}
 \alias{get_metadata}
-\title{Metadata}
+\title{GET Metadata}
 \usage{
 get_metadata(buildings = NULL, selection = NULL, verbose = TRUE)
 }
 \arguments{
-\item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once. Only provide integers if you want to search by building_id}
+\item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
 \item{selection}{Selection list from point selector.}
 
-\item{verbose}{Logical. If TRUE (default), print status messages.}
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
 A data.frame of clean metadata for the requested points.
 }
 \description{
-Retrieves points and equipment for a given building or selection and outputs a clean metadata data.frame.
+Retrieves live points and equipment for a given building or selection and outputs a clean metadata data.frame.
 }
 \examples{
 \dontrun{
-metadata <- get_metadata(buildings=c(427,"Laboratory"))
+metadata <- get_metadata(buildings = c(427, "Laboratory"))
 
 OR
 
 query <- PointSelector()
-
 query$buildings <- 427
-query$equipment_types <- 'ahu'
-query$point_types <- c('Supply Air Temperature','Supply Air Static Pressure')
+query$equipment_types <- 'HVAC/AHU'
+query$point_types <- c('supply_air_temperature_sensor','supply_air_static_pressure_sensor')
 
 selection <- select_points(query)
-
 metadata <- get_metadata(selection)
 }
-
 }

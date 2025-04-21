@@ -14,7 +14,7 @@ demote(
 )
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id. If you enter multiple building ids or names, only the first entry will be considered.}
+\item{building}{Character vector or integer corresponding to the building name or id.}
 
 \item{equipment_ids}{NULL (default) or A vector of equipment_ids to demote. Provide atleast one of equipment_ids or point_ids}
 

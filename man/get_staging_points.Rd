@@ -2,16 +2,20 @@
 % Please edit documentation in R/staging.R
 \name{get_staging_points}
 \alias{get_staging_points}
-\title{Get Staging Points}
+\title{Get Staging Points
+Retrieve all points from the staging area for a building.}
 \usage{
 get_staging_points(building_id, verbose = TRUE)
 }
 \arguments{
-\item{building_id}{Integer corresponding to the building id}
+\item{building_id}{Integer. ID of the building.}
+
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
-A data.frame of staging points
+A data.frame of staging points.
 }
 \description{
-Get unfiltered staging details on the building points
+Get Staging Points
+Retrieve all points from the staging area for a building.
 }

@@ -7,9 +7,12 @@
 search_by_org(data, org = NULL)
 }
 \arguments{
-\item{data}{A dataframe to filter}
+\item{data}{A data frame containing an `org_id` column. If `org_name` is missing, it will be added via API.}
 
-\item{org}{An id (integer) or name (text) of the organization}
+\item{org}{Organization ID (numeric) or name (character)}
+}
+\value{
+Filtered data frame with `org_name` included.
 }
 \description{
 Search by Org

@@ -4,12 +4,12 @@
 \alias{promote}
 \title{Promote data on Staging Area}
 \usage{
-promote(building, equip_ids_list = NULL, proceed = NULL, verbose = TRUE)
+promote(building, equipment = NULL, proceed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id.}
 
-\item{equip_ids_list}{A list of all equip_ids to promote from staging to the live building}
+\item{equipment}{A vector containing all equip_ids to promote from staging to the live building}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 }

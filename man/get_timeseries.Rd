@@ -2,32 +2,37 @@
 % Please edit documentation in R/timeseries.R
 \name{get_timeseries}
 \alias{get_timeseries}
-\title{Time-Series Data}
+\title{Time-Series Data
+Returns cleaned, wide-format time-series data with one column per point ID.}
 \usage{
 get_timeseries(
   start_time,
   end_time,
   point_ids,
   units = NULL,
-  unit_type = "default"
+  unit_type = "default",
+  verbose = TRUE
 )
 }
 \arguments{
-\item{start_time}{Start Time in UTC.}
+\item{start_time}{Start time in UTC.}
 
-\item{end_time}{End Time in UTC.}
+\item{end_time}{End time in UTC.}
 
-\item{point_ids}{Point IDs for which timeseries data needs to be queried.}
+\item{point_ids}{Numeric. Vector of point IDs to query.}
 
-\item{units}{(Optional) A data.frame consisting of preferred units for given measurements}
+\item{units}{Optional data.frame. Preferred units for measurements.}
 
-\item{unit_type}{Provide the unit type: "default" (default) or "raw"}
+\item{unit_type}{Character. Use "default" (default) or "raw" values.}
+
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
 A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 }
 \description{
-Provides clean time-series
+Time-Series Data
+Returns cleaned, wide-format time-series data with one column per point ID.
 }
 \examples{
 \dontrun{

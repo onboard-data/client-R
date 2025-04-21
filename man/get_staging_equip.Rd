@@ -2,16 +2,20 @@
 % Please edit documentation in R/staging.R
 \name{get_staging_equip}
 \alias{get_staging_equip}
-\title{Get Staging Equip}
+\title{Get Staging Equipment
+Retrieve all equipment from the staging area for a building.}
 \usage{
 get_staging_equip(building_id, verbose = TRUE)
 }
 \arguments{
-\item{building_id}{Integer corresponding to the building id}
+\item{building_id}{Integer. ID of the building.}
+
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
-A data.frame of staging equipment
+A data.frame of staging equipment.
 }
 \description{
-Get unfiltered staging details on the building equipment
+Get Staging Equipment
+Retrieve all equipment from the staging area for a building.
 }

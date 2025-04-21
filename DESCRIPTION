@@ -19,18 +19,17 @@ License: Apache License (>= 2)
 Imports: 
     data.table (>= 1.14.2),
     dplyr (>= 1.0.10),
-    httr (>= 1.4.4),
     jsonlite (>= 1.8.0),
     lubridate (>= 1.8.0),
     plyr (>= 1.8.7),
-    rrapply (>= 1.2.5),
     rstudioapi (>= 0.14),
     tibble (>= 3.1.8),
     tidyr,
     tidyselect (>= 1.1.2),
     stringr (>= 1.4.1),
     rlist,
-    purrr
+    purrr,
+    httr2
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2

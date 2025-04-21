@@ -2,31 +2,31 @@
 % Please edit documentation in R/buildings.R
 \name{search_buildings}
 \alias{search_buildings}
-\title{Search Buildings}
+\title{Search Buildings in Your Organization}
 \usage{
 search_buildings(buildings = NULL, verbose = TRUE)
 }
 \arguments{
-\item{buildings}{Integer, character, or vectors of those types, providing building id(s) or name(s). You can provide multiple buildings at once. Only provide integers if you want to search by building_id}
+\item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
-\item{verbose}{Logical. If TRUE (default), print status messages.}
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
-A dataframe with the building info results
+A dataframe containing the matched building(s).
 }
 \description{
-Search any buildings in your org
+Search buildings in your organization by ID or name.
 }
 \examples{
 \dontrun{
+# Search by building IDs
+search_buildings(buildings = c(427, 428))
 
-Integer values will search by building ids only
-buildings = c(427, 428)
+# Search by name
+search_buildings(buildings = "Laboratory")
 
-Combination of integer and characters will search ids and names of buildings
-buildings=c(427,"Laboratory")
-
-search_building(buildings = buildings)
+# Mixed search
+search_buildings(buildings = c(427, "Laboratory"))
 }
 
 }

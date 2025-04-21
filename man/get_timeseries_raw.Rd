@@ -2,7 +2,8 @@
 % Please edit documentation in R/timeseries.R
 \name{get_timeseries_raw}
 \alias{get_timeseries_raw}
-\title{Raw Time-Series Data}
+\title{GET Raw Time-Series Data
+Retrieves raw-format time series data for specified point IDs and time range.}
 \usage{
 get_timeseries_raw(
   start_time,
@@ -13,24 +14,27 @@ get_timeseries_raw(
 )
 }
 \arguments{
-\item{start_time}{Start Time in UTC.}
+\item{start_time}{Start time in UTC.}
 
-\item{end_time}{End Time in UTC.}
+\item{end_time}{End time in UTC.}
 
-\item{point_ids}{Point IDs for which timeseries data needs to be queried.}
+\item{point_ids}{Numeric. Vector of point IDs to query.}
 
-\item{units}{(Optional) A data.frame consisting of preferred units for given measurements}
+\item{units}{Optional data.frame. Preferred units for measurements.}
+
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
-A long data.frame of time series data, with point id, timestamp, and raw point values as columns.
+A long-format data.frame with point ID, timestamp, and raw values.
 }
 \description{
-Retrieves timeseries data in raw format.
+GET Raw Time-Series Data
+Retrieves raw-format time series data for specified point IDs and time range.
 }
 \examples{
 \dontrun{
 
-end_time <- as.POSIXlt(Sys.time(), tz = 'UTC')
+end_time <- as.POSIXct(Sys.time(), tz = 'UTC')
 
 start_time <- end_time - lubridate::hours(6)
 

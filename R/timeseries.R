@@ -1,20 +1,17 @@
 # Raw Timeseries Data ------------------------------------------------
 
-#' Raw Time-Series Data
-#' 
-#' Retrieves timeseries data in raw format.
-#' 
-#' @param start_time Start Time in UTC.
-#' @param end_time End Time in UTC.
-#' @param point_ids Point IDs for which timeseries data needs to be queried.
-#' @param units (Optional) A data.frame consisting of preferred units for given measurements
-#' 
-#' @return A long data.frame of time series data, with point id, timestamp, and raw point values as columns.
-#' 
+#' GET Raw Time-Series Data
+#' Retrieves raw-format time series data for specified point IDs and time range.
+#' @param start_time Start time in UTC.
+#' @param end_time End time in UTC.
+#' @param point_ids Numeric. Vector of point IDs to query.
+#' @param units Optional data.frame. Preferred units for measurements.
+#' @inheritParams verbose
+#' @return A long-format data.frame with point ID, timestamp, and raw values.
 #' @examples
 #' \dontrun{
 #' 
-#' end_time <- as.POSIXlt(Sys.time(), tz = 'UTC')
+#' end_time <- as.POSIXct(Sys.time(), tz = 'UTC')
 #' 
 #' start_time <- end_time - lubridate::hours(6)
 #' 
@@ -33,42 +30,32 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
   if(verbose){
   cat(sprintf("Querying time-series data from %s to %s for %s points...\n",
                 start_time, end_time, length(point_ids)))
-}
-  start_time <- as.numeric(as.POSIXlt(start_time, tz = 'UTC'))
+  }
   
-  end_time <- as.numeric(as.POSIXlt(end_time, tz = 'UTC'))
-  
-  timeseries_query <- list(start = start_time,
-                           end = end_time,
-                           point_ids = point_ids)
+  timeseries_query <- list(
+    start = as.numeric(as.POSIXlt(start_time, tz = "UTC")),
+    end = as.numeric(as.POSIXlt(end_time, tz = "UTC")),
+    point_ids = point_ids
+  )
     
-    if(!is.null(units)){
-    
-      if(class(units) != "data.frame"){
-         stop("units must be a dataframe.")
-        
-      } else {
-        
-        timeseries_query$units <- as.list(units)
-      }
-    }
+  if (!is.null(units)) {
+    if (!is.data.frame(units)) stop("units must be a data.frame.")
+    timeseries_query$units <- as.list(units)
+  }
   
-  timeseries_query_json <- jsonlite::toJSON(timeseries_query,auto_unbox = TRUE)
-
+  result <- api.request(
+    endpoint = "timeseries",
+    method = "POST",
+    request_body = timeseries_query,
+    response_body = "json",
+    verbose = verbose
+  )
   
-  timeseries_output <- api.post(endpoint = 'timeseries',
-                                json_body = timeseries_query_json)
-  
-  
-  if (is.null(timeseries_output$status)) {
-
-    timeseries_output <-  nested_list_to_df(timeseries_output)
-    
-    return(timeseries_output)
+  if (is.null(result$status)) {
+    nested_list_to_df(result)
   } else {
-    if(verbose){
-      print(timeseries_output)
-    }
+    if (verbose) print(result)
+    invisible(NULL)
   }
 
 }
@@ -77,12 +64,9 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 # Clean timeseries --------------------------------------------------------
 
 #' Time-Series Data
-#' 
-#' Provides clean time-series
-#' 
+#' Returns cleaned, wide-format time-series data with one column per point ID.
 #' @inheritParams get_timeseries_raw
-#' 
-#' @param unit_type Provide the unit type: "default" (default) or "raw"
+#' @param unit_type Character. Use "default" (default) or "raw" values.
 #' 
 #' @return A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 #' 
@@ -103,12 +87,13 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 #' 
 #' @export
 get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
-                           unit_type = 'default'){
+                           unit_type = 'default', verbose = TRUE){
 
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
                                        point_ids = point_ids,
-                                       units = units)
+                                       units = units,
+                                       verbose = verbose)
     
   if(nrow(timeseries_raw)==0){
     timeseries <- timeseries_raw

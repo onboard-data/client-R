@@ -4,10 +4,10 @@
 \alias{get_users}
 \title{Users}
 \usage{
-get_users(org)
+get_users(org = NULL)
 }
 \arguments{
-\item{org}{Enter org_id (integer) or org_name (text)}
+\item{org}{Organization ID (numeric) or name (character)}
 }
 \value{
 A data.frame of all user information.
