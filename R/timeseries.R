@@ -5,7 +5,7 @@
 #' @param start_time Start time in UTC.
 #' @param end_time End time in UTC.
 #' @param point_ids Numeric. Vector of point IDs to query.
-#' @param units Optional data.frame. Preferred units for measurements.
+#' @param units Optional list of preferred units for measurements.
 #' @inheritParams verbose
 #' @return A long-format data.frame with point ID, timestamp, and raw values.
 #' @examples
@@ -17,7 +17,7 @@
 #' 
 #' point_ids <- c(290631, 290643) 
 #' 
-#' units <- data.frame("temperature" = "k")
+#' units <- list("temperature" = "k")
 #' 
 #' timeseries <- get_timeseries_raw(start_time, end_time, point_ids, units)
 #' 
@@ -35,12 +35,12 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
   timeseries_query <- list(
     start = as.numeric(as.POSIXlt(start_time, tz = "UTC")),
     end = as.numeric(as.POSIXlt(end_time, tz = "UTC")),
-    point_ids = point_ids
+    point_ids = list(point_ids)
   )
     
   if (!is.null(units)) {
-    if (!is.data.frame(units)) stop("units must be a data.frame.")
-    timeseries_query$units <- as.list(units)
+    if (!is.list(units)) stop("units must be a list.")
+    timeseries_query$units <- units
   }
   
   result <- api.request(

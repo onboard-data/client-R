@@ -21,7 +21,7 @@ get_timeseries(
 
 \item{point_ids}{Numeric. Vector of point IDs to query.}
 
-\item{units}{Optional data.frame. Preferred units for measurements.}
+\item{units}{Optional list of preferred units for measurements.}
 
 \item{unit_type}{Character. Use "default" (default) or "raw" values.}
 

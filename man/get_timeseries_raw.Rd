@@ -20,7 +20,7 @@ get_timeseries_raw(
 
 \item{point_ids}{Numeric. Vector of point IDs to query.}
 
-\item{units}{Optional data.frame. Preferred units for measurements.}
+\item{units}{Optional list of preferred units for measurements.}
 
 \item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
@@ -40,7 +40,7 @@ start_time <- end_time - lubridate::hours(6)
 
 point_ids <- c(290631, 290643) 
 
-units <- data.frame("temperature" = "k")
+units <- list("temperature" = "k")
 
 timeseries <- get_timeseries_raw(start_time, end_time, point_ids, units)
 
