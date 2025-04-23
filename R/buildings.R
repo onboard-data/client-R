@@ -118,7 +118,9 @@ select_points <- function(query, verbose = TRUE){
   query <- query[query != ""]
   
   # Wrap each non-empty field in a list
-  query <- lapply(query, list)
+  query <- lapply(query, as.list)
+  
+  query %>%  toJSON(pretty = TRUE,auto_unbox = TRUE)
   
   # POST the query to the endpoint
   endpoint <- "points/select"
