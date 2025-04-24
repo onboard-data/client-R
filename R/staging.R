@@ -347,13 +347,13 @@ promote <- function(building,
     ))
   }
   promote_list <- list()
-  promote_list$equip_ids= list(equipment)
+  promote_list$equip_ids= (equipment)
     
   if(is.null(proceed)){
   proceed <- askYesNo(
     sprintf(
       "Do you want to proceed promoting %s equip_ids at building %s:\n",
-      length(equip_ids),
+      length(equipment),
       building_info$name
     )
   )
@@ -365,8 +365,6 @@ promote <- function(building,
     }
 
 promote_list$topics = list()
-
-promote_list %>% toJSON(pretty = TRUE,auto_unbox = TRUE)
 
   # API call
   endpoint <- paste0("staging/", building_info$id, "/apply")
