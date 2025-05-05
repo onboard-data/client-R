@@ -79,7 +79,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 #' 
 #' point_ids <- c(290631, 290643) 
 #' 
-#' units <- data.frame("temperature" = "k")
+#' units <- list("temperature" = "k")
 #' 
 #' timeseries <- get_timeseries(start_time, end_time, point_ids, units)
 #' 
