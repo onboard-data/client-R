@@ -35,9 +35,11 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
   timeseries_query <- list(
     start = as.numeric(as.POSIXlt(start_time, tz = "UTC")),
     end = as.numeric(as.POSIXlt(end_time, tz = "UTC")),
-    point_ids = list(point_ids)
+    point_ids = point_ids
   )
-    
+  
+  timeseries_query %>% toJSON(auto_unbox = TRUE)  
+  
   if (!is.null(units)) {
     if (!is.list(units)) stop("units must be a list.")
     timeseries_query$units <- units
@@ -66,7 +68,6 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 #' Time-Series Data
 #' Returns cleaned, wide-format time-series data with one column per point ID.
 #' @inheritParams get_timeseries_raw
-#' @param unit_type Character. Use "default" (default) or "raw" values.
 #' 
 #' @return A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.
 #' 
@@ -86,8 +87,7 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 #' }
 #' 
 #' @export
-get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
-                           unit_type = 'default', verbose = TRUE){
+get_timeseries <- function(start_time, end_time, point_ids, units = NULL, verbose = TRUE){
 
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
@@ -98,18 +98,11 @@ get_timeseries <- function(start_time, end_time, point_ids, units = NULL,
   if(nrow(timeseries_raw)==0){
     timeseries <- timeseries_raw
   } else {
-    if(unit_type == 'default'){
+   
     timeseries <- timeseries_raw %>% 
       transmute(.data$time,
                 .data$display,
                 values = as.character(.data$unit))
-    
-    } else if (unit_type == 'raw'){
-      timeseries <- timeseries_raw %>% 
-        transmute(.data$time,
-                  .data$display,
-                  values = as.character(.data$raw)) 
-    }
     
     timeseries <- timeseries %>% 
       mutate(across(time, ~ format(as.POSIXct(as.character(.), 

@@ -5,14 +5,7 @@
 \title{Time-Series Data
 Returns cleaned, wide-format time-series data with one column per point ID.}
 \usage{
-get_timeseries(
-  start_time,
-  end_time,
-  point_ids,
-  units = NULL,
-  unit_type = "default",
-  verbose = TRUE
-)
+get_timeseries(start_time, end_time, point_ids, units = NULL, verbose = TRUE)
 }
 \arguments{
 \item{start_time}{Start time in UTC.}
@@ -22,8 +15,6 @@ get_timeseries(
 \item{point_ids}{Numeric. Vector of point IDs to query.}
 
 \item{units}{Optional list of preferred units for measurements.}
-
-\item{unit_type}{Character. Use "default" (default) or "raw" values.}
 
 \item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
