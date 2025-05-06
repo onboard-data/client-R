@@ -26,7 +26,7 @@ api.setup <- function(api_env = 'prod',
   #Set url based on api_env
     url <- dplyr::case_when(
       api_env == 'prod' ~ "https://api.onboarddata.io/",
-      api_env == 'dev' ~ 'https:/devapi.onboarddata.io/',
+      api_env == 'dev' ~ 'https://devapi.onboarddata.io/',
       api_env == 'rtem' ~ 'https://api.ny-rtem.com/',
       api_env == 'gcp' ~ 'https://rews.onboarddata.io/api/'
     )
@@ -176,7 +176,7 @@ api.request <- function(endpoint,
   
   if (!is.null(file)) {
     # POST with file upload
-    req <- req %>% req_body_multipart(path = file)
+    req <- req %>% req_body_multipart(file = curl::form_file(file))
   }
   
   if (!is.null(request_body)) {
@@ -191,9 +191,7 @@ api.request <- function(endpoint,
   api_response <- req %>%  
     req_perform()
   
-  
   # Parse the response
-  
   if(response_body == "string"){
     api_output <- api_response %>%
       resp_body_string()  %>% 

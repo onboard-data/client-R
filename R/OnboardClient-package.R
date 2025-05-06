@@ -5,6 +5,7 @@
 ## usethis namespace: start
 #' @import dplyr
 #' @import httr2
+#' @importFrom curl form_file
 #' @importFrom data.table rbindlist
 #' @importFrom jsonlite fromJSON
 #' @importFrom jsonlite toJSON
