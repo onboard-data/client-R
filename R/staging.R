@@ -120,7 +120,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   #Get equipment_types
   equipment_types <- api.request("equiptype",verbose = FALSE)
   
-  #Combined Point_types & units within staging_data
+  #Combined equipment_types, point_types & units within staging_data
   staging_data <- staging_data %>% 
     left_join(select(equipment_types, id, e.equipment_type_tag_name = tag_name),
               by =c("e.equipment_type_id" = "id")) %>% 
@@ -128,6 +128,12 @@ get_staging_data <- function(buildings, verbose = TRUE) {
               by=c("p.point_type_id" = "id")) %>% 
     left_join(select(units,id,p.raw_unit = name_abbr), 
               by = c("p.raw_unit_id" = "id")) %>% 
+    #Convert last_updated & last_promoted to POSIXct
+    mutate(across(c(p.last_updated, p.last_promoted), ~ gsub('\\..*', '', .)))  %>%
+    mutate(across(
+      c(p.last_updated, p.last_promoted),
+      ~ as.POSIXct(., format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+    )) %>% 
     select(order(colnames(.)))
   
   if (verbose) cat("Staging data created.\n")
