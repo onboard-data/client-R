@@ -213,7 +213,7 @@ update_staging_points <- function(building,
     mutate(across(equip_names, ~ (map(., function(x) (str_split(x, ", ")))))) %>% 
     #Convert NULL characters into NA
     mutate(across(everything(.), ~ ifelse(. == "NULL", NA, .))) %>% 
-    split(1:nrow(.)) %>% 
+    split(1:nrow(.)) %>%  
     purrr::map(~ {
       row_list = as.list(.)
       
@@ -232,13 +232,21 @@ update_staging_points <- function(building,
         topic = topic,
         point_type = if (is.null(point_type$tag_name) || is.na(point_type$tag_name)) NULL else point_type,
         raw_unit = if (is.null(raw_unit$id) || is.na(raw_unit$id)) NULL else raw_unit,
-        equip_names = if(all(is.na(equip_names))) NA else equip_names
+        equip_names = if(all(is.na(equip_names) || equip_names =="")) NA 
+        else equip_names
       )
       purrr::compact(result)  # Remove NULL elements
-    }) %>%  
+    })  %>%  
     unname()  
-#  staging_json <- gsub("null","[]",staging_json)
   
+  #COnvert na equip_names to empty list
+  staging_body <- lapply(staging_body, function(x) {
+    if (is.na(x$equip_names)) x$equip_names <- list()
+    x
+  })
+
+  #Check json body (for debugging)
+  #staging_body %>% toJSON(auto_unbox = TRUE)
   
   api_output = api.request(endpoint = paste0("staging/",building_info$id,"/points"),
                            method = "PATCH",
