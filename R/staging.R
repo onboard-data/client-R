@@ -7,33 +7,36 @@
 #' @inheritParams verbose 
 #' @return A data.frame of staging equipment.
 #' @export
-get_staging_equip <- function(building_id, verbose = TRUE) {
+get_staging_equipment <- function(building_id, verbose = TRUE) {
   if (verbose) cat("Fetching staged equipment...\n")
-  api.request(sprintf("staging/%d", building_id), verbose = verbose)$equipment
+  api.request(endpoint = paste0("staging/", building_id,"/equipment"), 
+              verbose = verbose)
 }
 
 # Devices ------------------------------------------------------
 
 #' Get Staging Devices
 #' Retrieve all devices from the staging area for a building.
-#' @inheritParams get_staging_equip
+#' @inheritParams get_staging_equipment
 #' @return A data.frame of staging devices.
 #' @export
 get_staging_devices <- function(building_id, verbose = TRUE) {
   if (verbose) cat("Fetching staged devices...\n")
-  api.request(sprintf("staging/%d/devices", building_id), verbose = verbose)
+  api.request(endpoint = paste0("staging/", building_id,"/devices"), 
+              verbose = verbose)
 }
 
 # Points -------------------------------------------------------
 
 #' Get Staging Points
 #' Retrieve all points from the staging area for a building.
-#' @inheritParams get_staging_equip
+#' @inheritParams get_staging_equipment
 #' @return A data.frame of staging points.
 #' @export
 get_staging_points <- function(building_id, verbose = TRUE) {
   if (verbose) cat("Fetching staged points...\n")
-  api.request(sprintf("staging/%d/points", building_id), verbose = verbose)
+  api.request(endpoint = paste0("staging/", building_id,"/points"), 
+              verbose = verbose)
 }
 
 
@@ -58,7 +61,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     if (verbose) cat(sprintf("Fetching staging data for %s...\n", bldg_name))
     
     # Points
-    points <- get_staging_points(bldg_id, verbose = FALSE)
+    points <- get_staging_points(building_id = bldg_id, verbose = FALSE)
     if (nrow(points) > 0) {
       names(points) <- paste0("p.", names(points))
       points <- points %>%
@@ -71,7 +74,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
   
     # Equipment
-    equip <- get_staging_equip(bldg_id, verbose = FALSE)
+    equip <- get_staging_equipment(building_id = bldg_id, verbose = FALSE)
     if (nrow(equip) > 0) {
       names(equip) <- paste0("e.",names(equip))
     } else if (verbose) {
@@ -79,7 +82,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
     
     # Devices
-    devices <- get_staging_devices(bldg_id, verbose = FALSE)
+    devices <- get_staging_devices(building_id = bldg_id, verbose = FALSE)
     if (length(devices) > 0) {
       names(devices) <- paste0("d.",names(devices))
       devices <- devices %>%  
