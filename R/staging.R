@@ -235,7 +235,7 @@ update_staging_points <- function(building,
         topic = topic,
         point_type = if (is.null(point_type$tag_name) || is.na(point_type$tag_name)) NULL else point_type,
         raw_unit = if (is.null(raw_unit$id) || is.na(raw_unit$id)) NULL else raw_unit,
-        equip_names = if(all(is.na(equip_names) || equip_names =="")) NA 
+        equip_names = if(all(is.na(equip_names)) || all(equip_names =="")) NA 
         else equip_names
       )
       purrr::compact(result)  # Remove NULL elements
