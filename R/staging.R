@@ -244,7 +244,7 @@ update_staging_points <- function(building,
   
   #COnvert na equip_names to empty list
   staging_body <- lapply(staging_body, function(x) {
-    if (is.na(x$equip_names)) x$equip_names <- list()
+    if (all(is.na(x$equip_names))) x$equip_names <- list()
     x
   })
 
