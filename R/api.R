@@ -5,7 +5,7 @@
 #'
 #' Sets authentication and environment variables for making API requests using `httr2`.
 #'
-#' @param api_env Character. Environment to use. One of `"prod"`, `"dev"`, `"rtem"`, or `"gcp"`. Defaults to `"prod"`.
+#' @param api_env Character. Environment to use. One of `"prod"`, `"dev"`, or `"gcp"`. Defaults to `"prod"`.
 #' @param key Character. API key. If not provided, the function prompts for it (via RStudio or console).
 #' @param token Character. Optional bearer token.
 #' @param verbose Logical. If `TRUE`, prints a confirmation message using a test request.
@@ -18,7 +18,7 @@ api.setup <- function(api_env = 'prod',
                       verbose = TRUE) {
   
   # Validate environment
-  valid_envs <- c("prod", "dev", "rtem", "gcp")
+  valid_envs <- c("prod", "dev", "gcp")
   if (!api_env %in% valid_envs) {
     stop(sprintf("Invalid api_env. Must be one of: %s", paste(valid_envs, collapse = ", ")))
   }
@@ -27,7 +27,6 @@ api.setup <- function(api_env = 'prod',
     url <- dplyr::case_when(
       api_env == 'prod' ~ "https://api.onboarddata.io/",
       api_env == 'dev' ~ 'https://devapi.onboarddata.io/',
-      api_env == 'rtem' ~ 'https://api.ny-rtem.com/',
       api_env == 'gcp' ~ 'https://rews.onboarddata.io/api/'
     )
   
