@@ -192,9 +192,22 @@ api.request <- function(endpoint,
   
   # Parse the response
   if(response_body == "string"){
-    api_output <- api_response %>%
-      resp_body_string()  %>% 
-      fromJSON(flatten = TRUE)
+    
+    api_output <- api_response %>% 
+      resp_body_string()
+    
+    is_json <- grepl("^\\s*\\{", api_output) ||
+      grepl("^\\s*\\[", api_output)
+    
+    is_csv <- grepl(",", api_output) &&
+      grepl("\n", api_output)
+    
+    if (is_json) {
+      api_output <- jsonlite::fromJSON(api_output)
+    } else if (is_csv) {
+      api_output <- read.csv(text = api_output, stringsAsFactors = FALSE)
+    }
+      
   } else if (response_body == "json"){
     api_output <- api_response %>% 
       resp_body_json()
