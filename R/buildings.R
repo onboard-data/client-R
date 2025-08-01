@@ -280,8 +280,20 @@ get_metadata <- function(buildings = NULL,
     
     if (verbose) cat(sprintf("Querying equipment & points for building: %s (id:%s)...\n", bname, bid))
     
+    #Fetch equipment data
     equip_data <- plyr::rbind.fill(equip_data, api.request(paste0("buildings/", bid, "/equipment"), verbose = FALSE))
-    points_data <- plyr::rbind.fill(points_data, api.request(paste0("buildings/", bid, "/points"), verbose = FALSE))
+    
+    #Fetch points data
+    points_data_bldg <- api.request(paste0("buildings/", bid, "/points"), verbose = FALSE) 
+    #Handle state_text columns if they exist
+    if ("state_text" %in% names(points_data_bldg)) {
+      points_data_bldg <- points_data_bldg %>% 
+        rowwise() %>%
+        mutate(state_text = paste(na.omit(unlist(state_text)), collapse = ", ")) %>%
+        ungroup()
+    }
+    
+    points_data <- plyr::rbind.fill(points_data, points_data_bldg)
       
     }
   } else {
@@ -363,13 +375,7 @@ get_metadata <- function(buildings = NULL,
       select(-matches(drop_cols)) %>%
       select(sort(tidyselect::peek_vars()))
 
-    # Consolidate state_text fields
-    state_text_fields <- grep("state_text", names(metadata), value = TRUE)
-    if (length(state_text_fields) > 0) {
-      if (verbose) cat("Handling state_text fields...\n")
-      metadata <- metadata %>%
-        unite("p.state_text", all_of(state_text_fields), sep = ", ", na.rm = TRUE)
-    }
+    
     
     if (verbose) cat("Metadata generated.\n")
     return(metadata)
