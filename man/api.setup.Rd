@@ -7,7 +7,7 @@
 api.setup(api_env = "prod", key = NULL, token = NULL, verbose = TRUE)
 }
 \arguments{
-\item{api_env}{Character. Environment to use. One of `"prod"`, `"dev"`, `"rtem"`, or `"gcp"`. Defaults to `"prod"`.}
+\item{api_env}{Character. Environment to use. One of `"prod"`, `"dev"`, or `"gcp"`. Defaults to `"prod"`.}
 
 \item{key}{Character. API key. If not provided, the function prompts for it (via RStudio or console).}
 
