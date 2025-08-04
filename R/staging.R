@@ -8,9 +8,13 @@
 #' @return A data.frame of staging equipment.
 #' @export
 get_staging_equipment <- function(building_id, verbose = TRUE) {
-  if (verbose) cat("Fetching staged equipment...\n")
-  api.request(endpoint = paste0("staging/", building_id,"/equipment"), 
+
+  equipment <- api.request(endpoint = paste0("staging/", building_id,"/equipment"), 
               verbose = verbose)
+  
+  equipment <- jsonlite::fromJSON(jsonlite::toJSON(equipment), flatten = TRUE)
+  
+  return(equipment)
 }
 
 # Devices ------------------------------------------------------
@@ -21,9 +25,13 @@ get_staging_equipment <- function(building_id, verbose = TRUE) {
 #' @return A data.frame of staging devices.
 #' @export
 get_staging_devices <- function(building_id, verbose = TRUE) {
-  if (verbose) cat("Fetching staged devices...\n")
-  api.request(endpoint = paste0("staging/", building_id,"/devices"), 
+
+  devices <- api.request(endpoint = paste0("staging/", building_id,"/devices"), 
               verbose = verbose)
+  
+  devices <- jsonlite::fromJSON(jsonlite::toJSON(devices), flatten = TRUE)
+  
+  return(devices)
 }
 
 # Points -------------------------------------------------------
@@ -34,9 +42,13 @@ get_staging_devices <- function(building_id, verbose = TRUE) {
 #' @return A data.frame of staging points.
 #' @export
 get_staging_points <- function(building_id, verbose = TRUE) {
-  if (verbose) cat("Fetching staged points...\n")
-  api.request(endpoint = paste0("staging/", building_id,"/points"), 
-              verbose = verbose)
+
+  points <- api.request(endpoint = paste0("staging/", building_id,"/points"), 
+              verbose = verbose,response_body = "json") 
+  
+  points <- jsonlite::fromJSON(jsonlite::toJSON(points), flatten = TRUE)
+  
+  return(points)
 }
 
 
@@ -61,11 +73,13 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     if (verbose) cat(sprintf("Fetching staging data for %s...\n", bldg_name))
     
     # Points
+    if (verbose) cat("Fetching staged points...\n")
     points <- get_staging_points(building_id = bldg_id, verbose = FALSE)
+    
     if (nrow(points) > 0) {
       names(points) <- paste0("p.", names(points))
       points <- points %>%
-        mutate(across(p.equip_ids, ~ gsub('c\\(|\\)|"', "", .))) %>% # Remove "c()" if present
+        mutate(across(where(is.list), ~sapply(., toString))) %>% # Convert list elements into character
         separate_rows(p.equip_ids, sep = ",\\s*") %>% # Split by comma and optional space
         mutate(p.equip_ids = as.character(p.equip_ids))
     
@@ -74,6 +88,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
   
     # Equipment
+    if (verbose) cat("Fetching staged equipment...\n")
     equip <- get_staging_equipment(building_id = bldg_id, verbose = FALSE)
     if (nrow(equip) > 0) {
       names(equip) <- paste0("e.",names(equip))
@@ -82,6 +97,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     }
     
     # Devices
+    if (verbose) cat("Fetching staged devices...\n")
     devices <- get_staging_devices(building_id = bldg_id, verbose = FALSE)
     if (length(devices) > 0) {
       names(devices) <- paste0("d.",names(devices))
@@ -96,9 +112,10 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   
     # Combine
     combined <- full_join(points, equip, by = c("p.equip_ids" = "e.equip_id")) %>%
+      mutate(across(ends_with("_id"),~as.integer(.))) %>% 
       full_join(devices, by = c("p.staging_device_id" = "d.staging_id")) %>%
       rename(building_id = d.building_id) %>%
-      distinct()
+      distinct() 
 
     staging_data <- plyr::rbind.fill(staging_data,combined)
 
