@@ -180,6 +180,14 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
     
     points_chunk <- api.request(endpoint = endpoint, verbose = verbose)
     
+    #Handle state_text columns if they exist
+    if ("state_text" %in% names(points_chunk)) {
+      points_chunk <- points_chunk %>% 
+        rowwise() %>%
+        mutate(state_text = paste(na.omit(unlist(state_text)), collapse = ", ")) %>%
+        ungroup()
+    }
+    
     all_points <- plyr::rbind.fill(all_points, points_chunk)
   }
   
@@ -284,14 +292,7 @@ get_metadata <- function(buildings = NULL,
     equip_data <- plyr::rbind.fill(equip_data, api.request(paste0("buildings/", bid, "/equipment"), verbose = FALSE))
     
     #Fetch points data
-    points_data_bldg <- api.request(paste0("buildings/", bid, "/points"), verbose = FALSE) 
-    #Handle state_text columns if they exist
-    if ("state_text" %in% names(points_data_bldg)) {
-      points_data_bldg <- points_data_bldg %>% 
-        rowwise() %>%
-        mutate(state_text = paste(na.omit(unlist(state_text)), collapse = ", ")) %>%
-        ungroup()
-    }
+    points_data_bldg <- api.request(paste0("buildings/", bid, "/points"), verbose = FALSE)
     
     points_data <- plyr::rbind.fill(points_data, points_data_bldg)
       
