@@ -273,31 +273,17 @@ get_metadata <- function(buildings = NULL,
   if (is.null(selection) && is.null(buildings)) {
     stop("Provide either building names/IDs or a selection list.")
   }
-  
-  equip_data <- data.frame()
-  points_data <- data.frame()
-  
+
     if (!is.null(buildings)) {
 
     building_info <- search_buildings(buildings = buildings, verbose = verbose)
     
-    for (i in seq_along(building_info$id)){
-    
-    bid <- building_info$id[i]
-    bname <- building_info$name[i]
-    
-    if (verbose) cat(sprintf("Querying equipment & points for building: %s (id:%s)...\n", bname, bid))
-    
-    #Fetch equipment data
-    equip_data <- plyr::rbind.fill(equip_data, api.request(paste0("buildings/", bid, "/equipment"), verbose = FALSE))
-    
-    #Fetch points data
-    points_data_bldg <- api.request(paste0("buildings/", bid, "/points"), verbose = FALSE)
-    
-    points_data <- plyr::rbind.fill(points_data, points_data_bldg)
-      
-    }
-  } else {
+    query <- PointSelector()
+    query$buildings <- building_info$id
+
+    selection <- select_points(query,verbose = FALSE)
+}
+
     if (!is.list(selection) || is.atomic(selection)) {
       stop("Selection must be a non-atomic named list with fields like: equipment, points, etc.")
     }
@@ -309,7 +295,6 @@ get_metadata <- function(buildings = NULL,
     
     if (verbose) cat(sprintf("Querying %s equipment...\n", length(selection$equipment)))
     equip_data <- get_equipment_by_ids(selection$equipment, verbose = FALSE)
-  }
   
   # Normalize and separate rows by equip_id
     points_data <- points_data %>%
