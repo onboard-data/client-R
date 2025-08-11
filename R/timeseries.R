@@ -6,6 +6,8 @@
 #' @param end_time End time in UTC.
 #' @param point_ids Numeric. Vector of point IDs to query.
 #' @param units Optional list of preferred units for measurements.
+#' @param aggregations Optional list of preferred aggregations. Accepted values: max, min, mean(default), sum 
+#' @param resample_mins Optional numeric value of minutes for re-sampling data 
 #' @inheritParams verbose
 #' @return A long-format data.frame with point ID, timestamp, and raw values.
 #' @examples
@@ -19,12 +21,20 @@
 #' 
 #' units <- list("temperature" = "k")
 #' 
+#' aggregations <- list("energy"="max")
+#' 
+#' resample_mins = 120
+#' 
 #' timeseries <- get_timeseries_raw(start_time, end_time, point_ids, units)
 #' 
 #' }
 #' 
 #' @export
-get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL, 
+get_timeseries_raw <- function(start_time, end_time, 
+                               point_ids, 
+                               units = NULL,
+                               aggregations = NULL,
+                               resample_mins = NULL,
                                verbose = TRUE){
   
   if(verbose){
@@ -48,8 +58,18 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
     timeseries_query$units <- units
   }
   
+  if(!is.null(aggregations)){
+    timeseries_query$aggregations <- aggregations
+  }
+  
+  if(!is.null(resample_mins)){
+    endpoint = paste0("timeseries?resample_mins=",resample_mins)
+  } else {
+    endpoint = "timeseries"
+  }
+  
   result <- api.request(
-    endpoint = "timeseries",
+    endpoint = endpoint,
     method = "POST",
     request_body = timeseries_query,
     response_body = "json",
@@ -85,17 +105,27 @@ get_timeseries_raw <- function(start_time, end_time, point_ids, units = NULL,
 #' 
 #' units <- list("temperature" = "k")
 #' 
+#' aggregations <- list("energy"="max")
+#' 
+#' resample_mins = 120
+#' 
 #' timeseries <- get_timeseries(start_time, end_time, point_ids, units)
 #' 
 #' }
 #' 
 #' @export
-get_timeseries <- function(start_time, end_time, point_ids, units = NULL, verbose = TRUE){
+get_timeseries <- function(start_time, end_time, point_ids,
+                           units = NULL, 
+                           aggregations = NULL,
+                           resample_mins = NULL,
+                           verbose = TRUE){
 
   timeseries_raw <- get_timeseries_raw(start_time = start_time,
                                        end_time = end_time,
                                        point_ids = point_ids,
                                        units = units,
+                                       aggregations = aggregations,
+                                       resample_mins = resample_mins,
                                        verbose = verbose)
     
   if(nrow(timeseries_raw)==0){

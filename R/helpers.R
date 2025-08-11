@@ -24,6 +24,9 @@ convert_to_datetime <- function(x) {
 #' @return Clean dataframe
 
 nested_list_to_df <- function(nested_list) {
+  
+  item <- nested_list[[1]]
+  
   # Use map to iterate over each list element and process
   df_list <- purrr::map(nested_list, function(item) {
     # Extract data
@@ -42,8 +45,13 @@ nested_list_to_df <- function(nested_list) {
     values <- lapply(values,function(x) x[-clean_index])
     }
     
-    #Convert 3rd name in columns to "unit"
+    #If "raw" attribute exists in column, convert 3rd name in columns to "unit" else convert 2nd name in columns to "unit"
+
+    if("raw" %in% columns){
     columns[[3]] <- "unit"
+    } else{
+      columns[[2]] <- "unit"
+    }
     
     # Convert the values list into a data frame
     values_df <- as.data.frame(do.call(rbind, values))

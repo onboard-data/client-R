@@ -10,6 +10,8 @@ get_timeseries_raw(
   end_time,
   point_ids,
   units = NULL,
+  aggregations = NULL,
+  resample_mins = NULL,
   verbose = TRUE
 )
 }
@@ -21,6 +23,10 @@ get_timeseries_raw(
 \item{point_ids}{Numeric. Vector of point IDs to query.}
 
 \item{units}{Optional list of preferred units for measurements.}
+
+\item{aggregations}{Optional list of preferred aggregations. Accepted values: max, min, mean(default), sum}
+
+\item{resample_mins}{Optional numeric value of minutes for re-sampling data}
 
 \item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
@@ -41,6 +47,10 @@ start_time <- end_time - lubridate::hours(6)
 point_ids <- c(290631, 290643) 
 
 units <- list("temperature" = "k")
+
+aggregations <- list("energy"="max")
+
+resample_mins = 120
 
 timeseries <- get_timeseries_raw(start_time, end_time, point_ids, units)
 
