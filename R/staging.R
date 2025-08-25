@@ -111,7 +111,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   
   
     # Combine
-    combined <- full_join(points, equip, by = c("p.equip_ids" = "e.equip_id")) %>%
+    combined <- full_join(points, equip, by = c("p.equip_ids" = "e.equip_id")) %>% 
       mutate(across(ends_with("_id"),~as.integer(.))) %>% 
       full_join(devices, by = c("p.staging_device_id" = "d.staging_id")) %>%
       rename(building_id = d.building_id) %>%
@@ -141,7 +141,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   equipment_types <- api.request("equiptype",verbose = FALSE)
   
   #Combined equipment_types, point_types & units within staging_data
-  staging_data <- staging_data %>% 
+  staging_data_final <- staging_data %>% 
     left_join(select(equipment_types, id, e.equipment_type_tag_name = tag_name),
               by =c("e.equipment_type_id" = "id")) %>% 
     left_join(select(point_types,id,p.point_type_tag_name=tag_name),
@@ -149,15 +149,20 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     left_join(select(units,id,p.raw_unit = name_abbr), 
               by = c("p.raw_unit_id" = "id")) %>% 
     #Convert last_updated & last_promoted to POSIXct
-    mutate(across(c(p.last_updated, p.last_promoted), ~ gsub('\\..*', '', .)))  %>%
-    mutate(across(
-      c(p.last_updated, p.last_promoted),
-      ~ as.POSIXct(., format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-    )) %>% 
+    { 
+      cols <- intersect(c("p.last_updated", "p.last_promoted"), colnames(.))
+      if (length(cols) > 0) {
+        mutate(., across(
+          all_of(cols),
+          ~ gsub('\\..*', '', .) %>% 
+            as.POSIXct(format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
+        ))
+      } else . 
+    } %>% 
     select(order(colnames(.)))
   
   if (verbose) cat("Staging data created.\n")
-  staging_data
+  staging_data_final
 }
 
 
