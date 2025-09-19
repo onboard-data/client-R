@@ -473,26 +473,6 @@ demote <- function(building,
   # Get building info and ensure relationships are available
   building_info <- search_buildings(buildings = building, verbose = verbose)
   
-  if (is.null(point_equipment_relationships)) {
-    confirm_metadata_pull <- askYesNo(
-      "You have not provided explicit point-equipment relationships to demote. \nDo you want to remove all existing point-equipment relationships for the given points? \n"
-    )
-    
-    if (is.na(confirm_metadata_pull) |
-        confirm_metadata_pull != TRUE) {
-      stop('Stopping Operation.\n')
-    }
-    
-    # Fetch point-equipment relationships if not provided
-    metadata <- get_metadata(buildings = building_info$id,verbose = FALSE)
-    
-    point_equipment_relationships <- metadata %>%
-      filter(e.equipment_id %in% equipment_ids |
-               p.point_id %in% point_ids) %>%
-      select(equipment_id = e.equipment_id, point_id = p.point_id) %>% 
-      filter(!is.na(point_id))
-  }
-  
   # Prepare the demotion message
   unpromote_message <- sprintf(
     "Proceed with demotion on %s:\n%s equipment \n%s points \n%s equipment-point relationships",
@@ -513,18 +493,18 @@ demote <- function(building,
   
   # Default to empty lists if arguments are NULL
   if (is.null(equipment_ids)) {
-    equipment_ids = 0
+    equipment_ids = list(0)
   }
   
   if (is.null(point_ids)) {
-    point_ids = 0
+    point_ids = list(0)
   }
   
 
   # Create a list for the demotion payload
   unpromote_list <- list(
-    equipment_ids = list(equipment_ids),
-    point_ids = list(point_ids),
+    equipment_ids = (equipment_ids),
+    point_ids = (point_ids),
     point_equipment_relationships = point_equipment_relationships
   )
   
