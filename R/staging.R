@@ -125,7 +125,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   staging_data <- select(staging_data,-contains(c("_tagger","state_text","@prop")))
   
   #Convert timestamp columns (TBD)
-  #time_cols = paste0(c("modified","last_discovery","created","last_promoted","last_updated"),collapse = "|")
+  #time_cols = paste0(c("modified","last_discovery","created","last_Publishd","last_updated"),collapse = "|")
   #staging_data_time_cols <- names(staging_data)[grepl(time_cols,names(staging_data))] 
 
   # Cleanup
@@ -148,9 +148,9 @@ get_staging_data <- function(buildings, verbose = TRUE) {
               by=c("p.point_type_id" = "id")) %>% 
     left_join(select(units,id,p.raw_unit = name_abbr), 
               by = c("p.raw_unit_id" = "id")) %>% 
-    #Convert last_updated & last_promoted to POSIXct
+    #Convert last_updated & last_Publishd to POSIXct
     { 
-      cols <- intersect(c("p.last_updated", "p.last_promoted"), colnames(.))
+      cols <- intersect(c("p.last_updated", "p.last_Publishd"), colnames(.))
       if (length(cols) > 0) {
         mutate(., across(
           all_of(cols),
@@ -373,22 +373,22 @@ update_staging_equip <- function(building,
   return(api_output)
 }
 
-# Promote -----------------------------------------------------
+# Publish -----------------------------------------------------
 
-#' Promote data on Staging Area
+#' Publish data on Staging Area
 #'
-#' Promote valid data on the staging area to the live building.
+#' Publish valid data on the staging area to the live building.
 #'
 #' @inheritParams building
 #'
-#' @param equipment  A vector containing all equip_ids to promote from staging to the live building
+#' @param equipment  A vector containing all equip_ids to Publish from staging to the live building
 #'
 #' @inheritParams proceed
 #'
 #' @return (Conditional) A named list with result output of promotion.
 #'
 #' @export
-promote <- function(building,
+publish <- function(building,
                     equipment = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
@@ -399,60 +399,59 @@ promote <- function(building,
   
   if (is.null(equipment)) {
     stop(sprintf(
-      'Please provide a list of equip_ids to promote at %s?',
+      'Please provide a list of equip_ids to Publish at %s?',
       building_info$name
     ))
   }
-  promote_list <- list()
-  promote_list$equip_ids= (equipment)
+  publish_list <- list()
+  publish_list$equip_ids= equipment
     
   if(is.null(proceed)){
   proceed <- askYesNo(
     sprintf(
-      "Do you want to proceed promoting %s equip_ids at building %s:\n",
+      "Do you want to proceed publishing %s equip_ids at building %s:\n",
       length(equipment),
       building_info$name
     )
   )
   }  
-    if (proceed == TRUE) {
-      print("Promoting...")
-    } else {
+    if (is.na(proceed)| proceed != TRUE) {
+
       stop('Stopping Operation.')
     }
 
-promote_list$topics = list()
+publish_list$topics = list()
 
   # API call
   endpoint <- paste0("staging/", building_info$id, "/apply")
 
   api_output <- api.request(endpoint, 
                             method =  "POST",
-                            request_body = promote_list)
+                            request_body = publish_list)
   
   return(api_output)
   
 }
 
-# Demote ---------------------------------------------------------------
+# Unpublish ---------------------------------------------------------------
 
 
-#' Demote Data from the live Building
+#' Unpublish Data from the live Building
 #'
 #' @inheritParams building
 #'
-#' @param equipment_ids NULL (default) or A vector of equipment_ids to demote. Provide atleast one of equipment_ids or point_ids
+#' @param equipment_ids NULL (default) or A vector of equipment_ids to unpublish. Provide atleast one of equipment_ids or point_ids
 #'
-#' @param point_ids NULL(default) A vector of equipment_ids to demoted. Provide atleast one of equipment_ids or point_ids
+#' @param point_ids NULL(default) A vector of equipment_ids to unpublishd. Provide atleast one of equipment_ids or point_ids
 #'
-#' @param point_equipment_relationships NULL(default) A data.frame containing equipment_id and point_id relationships to demote
+#' @param point_equipment_relationships NULL(default) A data.frame containing equipment_id and point_id relationships to unpublish
 #'
 #' @inheritParams proceed
 #'
 #' @return (Conditional) A named list containing errors that may have occurred during data promotion.
 #'
 #' @export
-demote <- function(building,
+unpublish <- function(building,
                    equipment_ids = NULL,
                    point_ids = NULL,
                    point_equipment_relationships = NULL,
@@ -466,7 +465,7 @@ demote <- function(building,
       is.null(point_ids) &&
       is.null(point_equipment_relationships)) {
     stop(
-      'Please provide at least one of the equipment_ids, point_ids, or point_equipment_relationships to demote.'
+      'Please provide at least one of the equipment_ids, point_ids, or point_equipment_relationships to unpublish.'
     )
   }
   
@@ -474,8 +473,8 @@ demote <- function(building,
   building_info <- search_buildings(buildings = building, verbose = verbose)
   
   # Prepare the demotion message
-  unpromote_message <- sprintf(
-    "Proceed with demotion on %s:\n%s equipment \n%s points \n%s equipment-point relationships",
+  unpublish_message <- sprintf(
+    "Proceed with unplishing on %s:\n%s equipment \n%s points \n%s equipment-point relationships",
     building_info$name,
     length(equipment_ids),
     length(point_ids),
@@ -484,7 +483,7 @@ demote <- function(building,
   
   # Prompt for confirmation
   if (is.null(proceed)) {
-    proceed <- askYesNo(unpromote_message)
+    proceed <- askYesNo(unPublish_message)
   }
   
   if (is.na(proceed) | proceed != TRUE) {
@@ -501,19 +500,20 @@ demote <- function(building,
   }
   
 
-  # Create a list for the demotion payload
-  unpromote_list <- list(
+  # Create a list for the unpublish payload
+  unpublish_list <- list(
     equipment_ids = (equipment_ids),
     point_ids = (point_ids),
     point_equipment_relationships = point_equipment_relationships
   )
   
-  unpromote_list %>% toJSON(pretty = T,auto_unbox = T)
+  #check
+  #unpublish_list %>% toJSON(pretty = T,auto_unbox = T)
 
   # Send the delete request
   api.request(endpoint = paste0('staging/', building_info$id, '/apply'), 
               method = "DELETE",
-              request_body = unpromote_list)
+              request_body = unpublish_list)
   
   }
 
