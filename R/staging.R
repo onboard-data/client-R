@@ -382,6 +382,8 @@ update_staging_equip <- function(building,
 #' @inheritParams building
 #'
 #' @param equipment  A vector containing all equip_ids to Publish from staging to the live building
+#' 
+#' @param topics (Optional) A vector containing all topics to publish for the corresponding equip_ids
 #'
 #' @inheritParams proceed
 #'
@@ -390,6 +392,7 @@ update_staging_equip <- function(building,
 #' @export
 publish <- function(building,
                     equipment = NULL,
+                    topics = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
   if (length(building) > 1)
@@ -399,12 +402,32 @@ publish <- function(building,
   
   if (is.null(equipment)) {
     stop(sprintf(
-      'Please provide a list of equip_ids to Publish at %s?',
+      'Please provide equip_ids to publish at %s?',
       building_info$name
     ))
   }
+  
   publish_list <- list()
-  publish_list$equip_ids= equipment
+  
+  #Set Equip IDs
+  if (length(equipment) == 1) {
+    publish_list$equip_ids = list(equipment)
+  } else {
+    publish_list$equip_ids = equipment
+  }
+  
+  #Set Topics
+  if (is.null(topics)) {
+    publish_list$topics = list()
+  } else {
+    if (length(topics) == 1) {
+      publlish_list$topics = list(topics)
+    } else {
+      publish_list$topics = topics
+    }
+  }
+  
+  publish_list %>% toJSON(auto_unbox = TRUE,pretty = TRUE)
     
   if(is.null(proceed)){
   proceed <- askYesNo(
@@ -419,8 +442,6 @@ publish <- function(building,
 
       stop('Stopping Operation.')
     }
-
-publish_list$topics = list()
 
   # API call
   endpoint <- paste0("staging/", building_info$id, "/apply")
