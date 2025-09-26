@@ -345,7 +345,7 @@ get_metadata <- function(buildings = NULL,
         p.point_id = p.id,
         p.point_type = p.type,
         e.equip_type = e.equip_type_tag,
-        building_id = e.building_id) %>% 
+        building_id = e.building_id)  %>% 
       mutate(across(c(p.first_updated, p.last_updated), 
                     ~ convert_to_datetime(.))) %>%
       select(where(~ !all(is.na(.))))

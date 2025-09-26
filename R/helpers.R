@@ -9,8 +9,15 @@
 #' 
 #' @return A POSIXct vector.
 convert_to_datetime <- function(x) {
-  x <- as.integer(substr(x, 1, 10))
-  as.POSIXct(x, origin = "1970-01-01", tz = "UTC",na.rm=TRUE)
+  ifelse(
+    is.na(x) | x == "",
+    NA,  # leave NAs or empty strings unchanged
+    as.POSIXct(
+      as.integer(substr(x, 1, 10)),
+      origin = "1970-01-01",
+      tz = "UTC"
+    )
+  ) |> as.POSIXct(origin = "1970-01-01", tz = "UTC")
 }
 
 # Nested List to DF -------------------------------------------------------
