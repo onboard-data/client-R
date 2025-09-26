@@ -497,7 +497,7 @@ unpublish <- function(building,
   unpublish_message <- sprintf(
     "Proceed with unplishing on %s:\n%s equipment \n%s points \n%s equipment-point relationships",
     building_info$name,
-    length(equipment_ids),
+    ifelse(equipment_ids == 0,0,length(equipment_ids)),
     length(point_ids),
     nrow(point_equipment_relationships)
   )
@@ -520,16 +520,23 @@ unpublish <- function(building,
     point_ids = list(0)
   }
   
+  if(length(equipment_ids) == 1){
+    equipment_ids = list(equipment_ids)
+  }
+  
+  if(length(point_ids) == 1){
+    point_ids = list(point_ids)
+  }
 
   # Create a list for the unpublish payload
   unpublish_list <- list(
-    equipment_ids = (equipment_ids),
-    point_ids = (point_ids),
+    equipment_ids = equipment_ids,
+    point_ids = point_ids,
     point_equipment_relationships = point_equipment_relationships
   )
   
   #check
-  #unpublish_list %>% toJSON(pretty = T,auto_unbox = T)
+  unpublish_list %>% toJSON(pretty = T,auto_unbox = T)
 
   # Send the delete request
   api.request(endpoint = paste0('staging/', building_info$id, '/apply'), 
