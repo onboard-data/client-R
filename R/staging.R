@@ -421,13 +421,13 @@ publish <- function(building,
     publish_list$topics = list()
   } else {
     if (length(topics) == 1) {
-      publlish_list$topics = list(topics)
+      publish_list$topics = list(topics)
     } else {
       publish_list$topics = topics
     }
   }
   
-  publish_list %>% toJSON(auto_unbox = TRUE,pretty = TRUE)
+  #publish_list %>% toJSON(auto_unbox = TRUE,pretty = TRUE)
     
   if(is.null(proceed)){
   proceed <- askYesNo(
