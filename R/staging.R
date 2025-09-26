@@ -504,7 +504,7 @@ unpublish <- function(building,
   
   # Prompt for confirmation
   if (is.null(proceed)) {
-    proceed <- askYesNo(unPublish_message)
+    proceed <- askYesNo(unpublish_message)
   }
   
   if (is.na(proceed) | proceed != TRUE) {
