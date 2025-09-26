@@ -17,7 +17,7 @@ convert_to_datetime <- function(x) {
       origin = "1970-01-01",
       tz = "UTC"
     )
-  ) |> as.POSIXct(origin = "1970-01-01", tz = "UTC")
+  ) 
 }
 
 # Nested List to DF -------------------------------------------------------
