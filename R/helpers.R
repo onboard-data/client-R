@@ -10,7 +10,7 @@
 #' @return A POSIXct vector.
 convert_to_datetime <- function(x) {
   x <- as.integer(substr(x, 1, 10))
-  as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
+  as.POSIXct(x, origin = "1970-01-01", tz = "UTC",na.rm=TRUE)
 }
 
 # Nested List to DF -------------------------------------------------------
