@@ -202,8 +202,8 @@ update_staging_points <- function(building,
   }
   
   if(('raw_unit' %in% staging_points_cols)){
-    #Getting units to match with ids
-    units <- api.get("unit",verbose = FALSE) %>% 
+    #Getting unit ids to match
+    units <- api.request(endpoint = "unit",verbose = FALSE) %>% 
       select(raw_unit = name_abbr,raw_unit_id = id)
     
     staging_points <- left_join(staging_points,units, by =c("raw_unit"))
