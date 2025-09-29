@@ -227,6 +227,10 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
     return(data.frame())
   }
   
+  if(length(equipment_ids)==1){
+    equipment_ids = list(equipment_ids)
+  }
+  
   request_body <- list(equipment_ids = equipment_ids)
 
   equipment <- api.request(
