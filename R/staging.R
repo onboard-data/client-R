@@ -174,7 +174,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 #'
 #' @inheritParams building
 #'
-#' @param staging_points A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name and raw_unit are optional columns
+#' @param staging_points A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name, point_type_confidence and raw_unit are optional columns
 #'
 #' @inheritParams proceed
 #' @return Result output of the update
@@ -210,12 +210,17 @@ update_staging_points <- function(building,
   }
   
   #Select columns
-  optional_cols <- c("point_type_tag_name","raw_unit_id")
+  optional_cols <- c("point_type_tag_name","point_type_confidence","raw_unit_id")
   
   staging_points <- staging_points %>%
     select(any_of(c(required_cols, optional_cols))) %>%
-    mutate(point_type_confidence = 100,
-           raw_unit_confidence = 100)  
+    {
+      if (!"point_type_confidence" %in% names(.))
+        mutate(., point_type_confidence = 100)
+      else
+        .
+    } %>%
+    mutate(raw_unit_confidence = 100)  
   
   if(is.null(proceed)){
     proceed = askYesNo(msg = sprintf(
@@ -287,7 +292,7 @@ update_staging_points <- function(building,
 #'
 #' @inheritParams building
 #'
-#' @param staging_equip A data.frame to upload to the staging area. Must contain name (equip_name) column. equipment_type_tag_name & new_name are optional columns
+#' @param staging_equip A data.frame to upload to the staging area. Must contain name (equip_name) column. equipment_type_tag_name, equipment_type_confidence & new_name are optional columns
 #'
 #' @inheritParams proceed
 #'
@@ -328,11 +333,16 @@ update_staging_equip <- function(building,
   }
   
   #Select Columns
-  optional_cols <- c("equipment_type_tag_name","new_name")
+  optional_cols <- c("equipment_type_tag_name","equipment_type_confidence","new_name")
   
   staging_equip <- staging_equip %>%
     select(any_of(c(required_cols, optional_cols))) %>%
-    mutate(equipment_type_confidence = 100)  
+    {
+      if (!"equipment_type_confidence" %in% names(.))
+        mutate(., equipment_type_confidence = 100)
+      else
+        .
+    }
   
   #Convert body
   staging_body <- staging_equip %>% 

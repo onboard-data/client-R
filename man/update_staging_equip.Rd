@@ -9,7 +9,7 @@ update_staging_equip(building, staging_equip, proceed = NULL, verbose = TRUE)
 \arguments{
 \item{building}{Character vector or integer corresponding to the building name or id.}
 
-\item{staging_equip}{A data.frame to upload to the staging area. Must contain name (equip_name) column. equipment_type_tag_name & new_name are optional columns}
+\item{staging_equip}{A data.frame to upload to the staging area. Must contain name (equip_name) column. equipment_type_tag_name, equipment_type_confidence & new_name are optional columns}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 }
