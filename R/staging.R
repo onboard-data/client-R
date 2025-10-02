@@ -129,7 +129,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   #staging_data_time_cols <- names(staging_data)[grepl(time_cols,names(staging_data))] 
 
   # Cleanup
-  staging_data <- staging_data %>% select(-contains(c("_tagger", "state_text", "@prop","ob_predicted")))
+  staging_data <- staging_data %>% select(-contains(c("state_text", "@prop","ob_predicted")))
   
   #Get_point_types
   point_types <- api.request("pointtypes",verbose = FALSE)
