@@ -108,11 +108,10 @@ get_staging_data <- function(buildings, verbose = TRUE) {
       devices <- data.frame(d.device_id = NA)
     }
     
-  
-  
     # Combine
-    combined <- full_join(points, equip, by = c("p.equip_ids" = "e.equip_id")) %>% 
-      mutate(across(ends_with("_id"),~as.integer(.))) %>% 
+    combined <- full_join(points, equip, by = c("p.equip_ids" = "e.equip_id")) %>%
+      mutate(across(c("p.staging_device_id", ends_with("type_id"),ends_with("unit_id")),
+                    ~ as.integer(.))) %>%
       full_join(devices, by = c("p.staging_device_id" = "d.staging_id")) %>%
       rename(building_id = d.building_id) %>%
       distinct() 
@@ -120,16 +119,13 @@ get_staging_data <- function(buildings, verbose = TRUE) {
     staging_data <- plyr::rbind.fill(staging_data,combined)
 
   }  
-
-  #Remove certain columns
-  staging_data <- select(staging_data,-contains(c("_tagger","state_text","@prop")))
   
   #Convert timestamp columns (TBD)
   #time_cols = paste0(c("modified","last_discovery","created","last_Publishd","last_updated"),collapse = "|")
   #staging_data_time_cols <- names(staging_data)[grepl(time_cols,names(staging_data))] 
 
   # Cleanup
-  staging_data <- staging_data %>% select(-contains(c("state_text", "@prop","ob_predicted")))
+  staging_data <- staging_data %>% select(-contains(c("state_text", "@prop")))
   
   #Get_point_types
   point_types <- api.request("pointtypes",verbose = FALSE)
