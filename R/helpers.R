@@ -9,14 +9,13 @@
 #' 
 #' @return A POSIXct vector.
 convert_to_datetime <- function(x) {
-  ifelse(
+  as.POSIXct(ifelse(
     is.na(x) | x == "",
     NA,  # leave NAs or empty strings unchanged
-    as.POSIXct(
-      as.integer(substr(x, 1, 10)),
-      origin = "1970-01-01",
-      tz = "UTC"
-    )
+      as.integer(substr(x, 1, 10))
+    ),
+    origin = "1970-01-01",
+    tz = "UTC"
   ) 
 }
 
