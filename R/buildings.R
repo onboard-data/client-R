@@ -191,6 +191,9 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
     all_points <- plyr::rbind.fill(all_points, points_chunk)
   }
   
+  all_points <- all_points %>% 
+    mutate(across(c(id,ends_with("_id")), ~ as.numeric(.)))
+  
   return(all_points)
   
 }
@@ -243,6 +246,51 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
   return(equipment)
 }
 
+
+# Get Devices --------------------------------------------------
+
+#' Get Published Devices
+#'
+#' Queries published devices by building IDs.
+#'
+#' @inheritParams building_ids
+#' @inheritParams verbose
+#'
+#' @return A `data.frame` containing metadata of the published devices for the requested building IDs. Returns an empty list if no matches are found.
+#'
+#' @examples
+#' \dontrun{
+#' devices <- get_published_devices(building_ids = c(427, 428))
+#' }
+#'
+#' @export
+get_published_devices <- function(building_ids, verbose = TRUE){
+  
+  published_devices <- building_ids %>%
+    lapply(function(id) {
+      api.request(endpoint = paste0("buildings/", id, "/devices"),
+                  verbose = verbose, response_body = "json") %>% 
+      jsonlite::toJSON() %>% 
+        jsonlite::fromJSON(flatten = TRUE)
+    }) %>%
+    bind_rows() 
+  
+  
+  if(nrow(published_devices)==0){
+    cat(sprintf("No Published devices found."))
+    published_devices <- data.frame(id=NULL)
+  } else{
+    published_devices <- published_devices %>% 
+      select(building_id,id,name,device_id,deployment_site,subdeployment_type,
+             properties.modelName,properties.vendorName,
+             properties.address,properties.location) %>% 
+      mutate(across(c(id,device_id), ~ as.numeric(.)))
+  }
+  
+  return(published_devices)
+}
+
+
 # Metadata ----------------------------------------------------------------
 
 #' GET Metadata
@@ -250,7 +298,7 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
 #' Retrieves live points and equipment for a given building or selection and outputs a clean metadata data.frame.
 #'
 #' @inheritParams buildings
-#' @param selection Selection list from point selector.
+#' @param query Building parameters query from the point selector.
 #' @inheritParams verbose
 #'  
 #' @return A data.frame of clean metadata for the requested points.
@@ -266,16 +314,15 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
 #' query$equipment_types <- 'HVAC/AHU'
 #' query$point_types <- c('supply_air_temperature_sensor','supply_air_static_pressure_sensor')
 #'
-#' selection <- select_points(query)
-#' metadata <- get_metadata(selection)
+#' metadata <- get_metadata(query = query)
 #' }
 #' @export
 get_metadata <- function(buildings = NULL,
-                         selection = NULL,
+                         query = NULL,
                          verbose = TRUE) {
   
-  if (is.null(selection) && is.null(buildings)) {
-    stop("Provide either building names/IDs or a selection list.")
+  if (is.null(query) && is.null(buildings)) {
+    stop("Provide either building names/IDs or query parameters")
   }
 
     if (!is.null(buildings)) {
@@ -284,21 +331,25 @@ get_metadata <- function(buildings = NULL,
     
     query <- PointSelector()
     query$buildings <- building_info$id
-
-    selection <- select_points(query,verbose = FALSE)
 }
 
-    if (!is.list(selection) || is.atomic(selection)) {
+    if (!is.list(query) || is.atomic(query)) {
       stop("Selection must be a non-atomic named list with fields like: equipment, points, etc.")
     }
+  
+  #Run query to get selection
+  selection <- select_points(query,verbose = FALSE)
     
     if (length(selection$points) == 0) stop("No metadata found.")
     
     if (verbose) cat(sprintf("Querying %s points...\n", length(selection$points)))
-    points_data <- get_points_by_ids(selection$points, verbose = FALSE)
+    points_data <- get_points_by_ids(point_ids = selection$points, verbose = FALSE)
     
     if (verbose) cat(sprintf("Querying %s equipment...\n", length(selection$equipment)))
-    equip_data <- get_equipment_by_ids(selection$equipment, verbose = FALSE)
+    equip_data <- get_equipment_by_ids(equipment_ids = selection$equipment, verbose = FALSE)
+    
+    if(verbose) cat("Querying devices...\n")
+    devices_data <- get_published_devices(building_ids = selection$buildings,verbose=FALSE)
   
   # Normalize and separate rows by equip_id
     points_data <- points_data %>%
@@ -308,6 +359,7 @@ get_metadata <- function(buildings = NULL,
   
     names(points_data) <- paste0("p.", names(points_data))
     names(equip_data) <- paste0("e.", names(equip_data))
+    names(devices_data) <- paste0("d.",names(devices_data))
 
   # Handle equipment relationships
 
@@ -339,10 +391,11 @@ get_metadata <- function(buildings = NULL,
 
   }
   
-    # Join points and equipment metadata
-    metadata <- full_join(equip_data, points_data, by = c("e.id" = "p.equip_id")) %>%
+    # Join points, equipment & devices metadata
+    metadata <- full_join(equip_data, points_data, by = c("e.id" = "p.equip_id")) %>% 
       mutate(
-        p.tagged_units = ifelse(is.na(p.tagged_units), p.units, as.character(p.tagged_units))) %>% 
+        p.tagged_units = ifelse(is.na(p.tagged_units), p.units, as.character(p.tagged_units)))  %>% 
+      left_join(devices_data,by=c("p.device_id"="d.device_id")) %>% 
       #Rename some fields
       rename(
         e.equipment_id = e.id,
@@ -356,7 +409,7 @@ get_metadata <- function(buildings = NULL,
     
     # Drop irrelevant columns
     drop_cols <- paste(c(
-      "p.building_id", "_type_name", "_type_abbr", "_subtype",
+      "p.building_id","d.building_id", "_type_name", "_type_abbr", "_subtype",
       "flow", "\\.y", "child", "parent_equip", "measurement",
       "raw_unit_id", "hash", "e.points", "e.tags"
     ), collapse = "|")
@@ -365,8 +418,6 @@ get_metadata <- function(buildings = NULL,
       select(-matches(drop_cols)) %>%
       select(sort(tidyselect::peek_vars()))
 
-    
-    
     if (verbose) cat("Metadata generated.\n")
     return(metadata)
 }  
