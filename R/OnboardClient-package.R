@@ -38,8 +38,15 @@ options(scipen = 999)
 ## building ----------------------------------------------------------------
 #' building
 #' @name building
-#' @param building Character vector or integer corresponding to the building name or id.
+#' @param building Character vector or integer corresponding to a building name or id.
 NULL
+
+## building_ids ----------------------------------------------------------------
+#' building_ids
+#' @name building_ids
+#' @param building_ids Character vector or integer corresponding to building ids.
+NULL
+
 
 ## buildings ---------------------------------------------------------------
 #' buildings
