@@ -14,7 +14,7 @@ unpublish(
 )
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id.}
+\item{building}{Character vector or integer corresponding to a building name or id.}
 
 \item{equipment_ids}{NULL (default) or A vector of equipment_ids to unpublish. Provide atleast one of equipment_ids or point_ids}
 

@@ -7,7 +7,7 @@
 update_staging_points(building, staging_points, proceed = NULL, verbose = TRUE)
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id.}
+\item{building}{Character vector or integer corresponding to a building name or id.}
 
 \item{staging_points}{A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name, point_type_confidence and raw_unit are optional columns}
 

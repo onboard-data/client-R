@@ -4,12 +4,12 @@
 \alias{get_metadata}
 \title{GET Metadata}
 \usage{
-get_metadata(buildings = NULL, selection = NULL, verbose = TRUE)
+get_metadata(buildings = NULL, query = NULL, verbose = TRUE)
 }
 \arguments{
 \item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
-\item{selection}{Selection list from point selector.}
+\item{query}{Building parameters query from the point selector.}
 
 \item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
@@ -30,7 +30,6 @@ query$buildings <- 427
 query$equipment_types <- 'HVAC/AHU'
 query$point_types <- c('supply_air_temperature_sensor','supply_air_static_pressure_sensor')
 
-selection <- select_points(query)
-metadata <- get_metadata(selection)
+metadata <- get_metadata(query = query)
 }
 }

@@ -4,7 +4,7 @@
 \alias{building}
 \title{building}
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id.}
+\item{building}{Character vector or integer corresponding to a building name or id.}
 }
 \description{
 building

@@ -13,7 +13,7 @@ publish(
 )
 }
 \arguments{
-\item{building}{Character vector or integer corresponding to the building name or id.}
+\item{building}{Character vector or integer corresponding to a building name or id.}
 
 \item{equipment}{A vector containing all equip_ids to Publish from staging to the live building}
 
