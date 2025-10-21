@@ -192,6 +192,10 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
   }
   
   all_points <- all_points %>% 
+    # Normalize and separate rows by equip_id
+    mutate(across(equip_id, ~ gsub("c\\(|\\)", "", .))) %>% # Remove "c()" if present
+    separate_rows(equip_id, sep = ",\\s*") %>%      # Split by comma and optional space
+    mutate(across(equip_id, ~ suppressWarnings(as.numeric(.)))) %>% 
     mutate(across(c(id,ends_with("_id")), ~ as.numeric(.)))
   
   return(all_points)
@@ -350,12 +354,6 @@ get_metadata <- function(buildings = NULL,
     
     if(verbose) cat("Querying devices...\n")
     devices_data <- get_published_devices(building_ids = selection$buildings,verbose=FALSE)
-  
-  # Normalize and separate rows by equip_id
-    points_data <- points_data %>%
-    mutate(across(equip_id, ~ gsub("c\\(|\\)", "", .))) %>% # Remove "c()" if present
-    separate_rows(equip_id, sep = ",\\s*") %>%      # Split by comma and optional space
-    mutate(across(equip_id, ~ suppressWarnings(as.numeric(.))))
   
     names(points_data) <- paste0("p.", names(points_data))
     names(equip_data) <- paste0("e.", names(equip_data))
