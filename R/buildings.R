@@ -196,7 +196,7 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
     mutate(across(equip_id, ~ gsub("c\\(|\\)", "", .))) %>% # Remove "c()" if present
     separate_rows(equip_id, sep = ",\\s*") %>%      # Split by comma and optional space
     mutate(across(equip_id, ~ suppressWarnings(as.numeric(.)))) %>% 
-    mutate(across(c(id,ends_with("_id")), ~ as.numeric(.)))
+    mutate(across(id, ~as.numeric(.)))
   
   return(all_points)
   
@@ -288,7 +288,7 @@ get_published_devices <- function(building_ids, verbose = TRUE){
       select(building_id,id,name,device_id,deployment_site,subdeployment_type,
              properties.modelName,properties.vendorName,
              properties.address,properties.location) %>% 
-      mutate(across(c(id,device_id), ~ as.numeric(.)))
+      mutate(across(id, ~ as.numeric(.)))
   }
   
   return(published_devices)
@@ -392,8 +392,8 @@ get_metadata <- function(buildings = NULL,
     # Join points, equipment & devices metadata
     metadata <- full_join(equip_data, points_data, by = c("e.id" = "p.equip_id")) %>% 
       mutate(
-        p.tagged_units = ifelse(is.na(p.tagged_units), p.units, as.character(p.tagged_units)))  %>% 
-      left_join(devices_data,by=c("p.device_id"="d.device_id")) %>% 
+        p.tagged_units = ifelse(is.na(p.tagged_units), p.units, as.character(p.tagged_units)))  %>%  
+      left_join(devices_data,by=c("p.published_device_id"="d.id")) %>% 
       #Rename some fields
       rename(
         e.equipment_id = e.id,
