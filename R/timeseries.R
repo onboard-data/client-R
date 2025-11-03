@@ -76,7 +76,7 @@ get_timeseries_raw <- function(start_time, end_time,
     verbose = verbose
   )
   
-  if (is.null(result$status)) {
+  if (length(result)!=0) {
     nested_list_to_df(result)
   } else {
     if (verbose) print(result)
