@@ -285,9 +285,10 @@ get_published_devices <- function(building_ids, verbose = TRUE){
     published_devices <- data.frame(id=NULL)
   } else{
     published_devices <- published_devices %>% 
-      select(building_id,id,name,device_id,deployment_site,subdeployment_type,
-             properties.modelName,properties.vendorName,
-             properties.address,properties.location) %>% 
+      select_if(names(.) %in% c(
+        "building_id","id","name","device_id","deployment_site","subdeployment_type",
+             "properties.modelName","properties.vendorName",
+             "properties.address","properties.location")) %>% 
       mutate(across(id, ~ as.numeric(.)))
   }
   
