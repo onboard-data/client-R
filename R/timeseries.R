@@ -128,7 +128,7 @@ get_timeseries <- function(start_time, end_time, point_ids,
                                        resample_mins = resample_mins,
                                        verbose = verbose)
     
-  if(nrow(timeseries_raw)==0){
+  if(is.null(timeseries_raw)){
     timeseries <- timeseries_raw
   } else {
    
