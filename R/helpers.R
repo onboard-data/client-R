@@ -11,7 +11,7 @@
 convert_to_datetime <- function(x) {
   x %>%
     mutate(across(
-      ends_with(
+      any_of(
         c("created","modified","last_discovery","last_published",
           "last_updated","first_updated","last_heartbeat","password_reset","last_login")),
       ~ {
