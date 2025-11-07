@@ -101,7 +101,7 @@ get_users <- function(org = NULL){
   users <- api.request('users', verbose = FALSE)
   
   #Format users
-  users <- users$data %>% 
+  users <- users$data %>%  
     mutate(across(.data$roles,
                   ~gsub('c\\(|\\)|\\"|','',.))) %>% 
     mutate(across(.data$roles,
@@ -118,10 +118,8 @@ get_users <- function(org = NULL){
       group_by(across(-.data$role_name)) %>%
       summarise(role_name = paste(role_name, collapse = ", "), .groups = "drop") %>%   # Recombine multiple roles
    relocate(role_name,.after=name) %>% 
-    mutate(across(c(.data$password_reset, 
-                    .data$last_login, .data$created),
-                  ~ convert_to_datetime(.))) 
-  
+  convert_to_datetime()  
+    
   users <- search_by_org(data = users,org = org)
   
   return(users)
@@ -141,13 +139,9 @@ get_users <- function(org = NULL){
 #' @export
 get_deployments <- function(org = NULL){
 
-  deployments <- api.request('deployment',verbose = FALSE)
-  
-  deployments <- deployments %>%
-    mutate(across(.data$last_heartbeat,
-                  ~ convert_to_datetime(.))) 
-  
-deployments <- search_by_org(data = deployments, org = org)
+  deployments <- api.request('deployment', verbose = FALSE)  %>%
+    convert_to_datetime() %>%
+    search_by_org(org = org)
   
   return(deployments)
 }

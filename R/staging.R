@@ -12,7 +12,8 @@ get_staging_equipment <- function(building_id, verbose = TRUE) {
   equipment <- api.request(endpoint = paste0("staging/", building_id,"/equipment"), 
               verbose = verbose)
   
-  equipment <- jsonlite::fromJSON(jsonlite::toJSON(equipment), flatten = TRUE)
+  equipment <- jsonlite::fromJSON(jsonlite::toJSON(equipment), flatten = TRUE) %>% 
+    convert_to_datetime()
   
   return(equipment)
 }
@@ -29,7 +30,10 @@ get_staging_devices <- function(building_id, verbose = TRUE) {
   devices <- api.request(endpoint = paste0("staging/", building_id,"/devices"), 
               verbose = verbose)
   
-  devices <- jsonlite::fromJSON(jsonlite::toJSON(devices), flatten = TRUE)
+  devices <- jsonlite::fromJSON(jsonlite::toJSON(devices), flatten = TRUE) %>% 
+    convert_to_datetime()
+
+                    
   
   return(devices)
 }
@@ -46,7 +50,8 @@ get_staging_points <- function(building_id, verbose = TRUE) {
   points <- api.request(endpoint = paste0("staging/", building_id,"/points"), 
               verbose = verbose,response_body = "json") 
   
-  points <- jsonlite::fromJSON(jsonlite::toJSON(points), flatten = TRUE)
+  points <- jsonlite::fromJSON(jsonlite::toJSON(points), flatten = TRUE) %>% 
+    convert_to_datetime()
   
   return(points)
 }
@@ -144,17 +149,6 @@ get_staging_data <- function(buildings, verbose = TRUE) {
               by=c("p.point_type_id" = "id")) %>% 
     left_join(select(units,id,p.raw_unit = name_abbr), 
               by = c("p.raw_unit_id" = "id")) %>% 
-    #Convert last_updated & last_Publishd to POSIXct
-    { 
-      cols <- intersect(c("p.last_updated", "p.last_Publishd"), colnames(.))
-      if (length(cols) > 0) {
-        mutate(., across(
-          all_of(cols),
-          ~ gsub('\\..*', '', .) %>% 
-            as.POSIXct(format = "%Y-%m-%dT%H:%M:%S", tz = "UTC")
-        ))
-      } else . 
-    } %>% 
     select(order(colnames(.)))
   
   if (verbose) cat("Staging data created.\n")

@@ -9,14 +9,26 @@
 #' 
 #' @return A POSIXct vector.
 convert_to_datetime <- function(x) {
-  as.POSIXct(ifelse(
-    is.na(x) | x == "",
-    NA,  # leave NAs or empty strings unchanged
-      as.integer(substr(x, 1, 10))
-    ),
-    origin = "1970-01-01",
-    tz = "UTC"
-  ) 
+  x %>%
+    mutate(across(
+      ends_with(
+        c("created","modified","last_discovery","last_published",
+          "last_updated","first_updated","last_heartbeat","password_reset","last_login")),
+      ~ {
+        suppressWarnings(
+          dplyr::case_when(
+          # Detect epoch timestamps
+          grepl("^\\d{10,16}", .) ~ 
+            as_datetime(as.numeric(.) / ifelse(nchar(.) > 10, 1000, 1), 
+                        tz = Sys.timezone()),
+          
+          is.na(.) | . == "" ~ NA,
+          
+          # Otherwise try parsing standard datetime strings
+          TRUE ~ lubridate::ymd_hms(., quiet = TRUE, tz = Sys.timezone())))
+      }
+      ))
+  
 }
 
 # Nested List to DF -------------------------------------------------------

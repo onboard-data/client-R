@@ -196,8 +196,9 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
     mutate(across(equip_id, ~ gsub("c\\(|\\)", "", .))) %>% # Remove "c()" if present
     separate_rows(equip_id, sep = ",\\s*") %>%      # Split by comma and optional space
     mutate(across(equip_id, ~ suppressWarnings(as.numeric(.)))) %>% 
-    mutate(across(id, ~as.numeric(.)))
-  
+    mutate(across(id, ~as.numeric(.))) %>% 
+    convert_to_datetime()
+    
   return(all_points)
   
 }
@@ -245,8 +246,7 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
     method = "POST",
     request_body = request_body,
     verbose = verbose
-  )
-  
+  )  
   return(equipment)
 }
 
@@ -288,7 +288,8 @@ get_published_devices <- function(building_ids, verbose = TRUE){
       select_if(names(.) %in% c(
         "building_id","id","name","device_id","deployment_site","subdeployment_type",
              "properties.modelName","properties.vendorName",
-             "properties.address","properties.location")) %>% 
+             "properties.address","properties.location","properties.last_discovery")) %>% 
+      convert_to_datetime() %>% 
       mutate(across(id, ~ as.numeric(.)))
   }
   
@@ -402,8 +403,6 @@ get_metadata <- function(buildings = NULL,
         p.point_type = p.type,
         e.equip_type = e.equip_type_tag,
         building_id = e.building_id) %>%   
-      mutate(across(c(p.first_updated, p.last_updated), 
-                    ~ convert_to_datetime(.))) %>%
       select(where(~ !all(is.na(.))))
     
     # Drop irrelevant columns
