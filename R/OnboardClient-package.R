@@ -61,10 +61,16 @@ NULL
 #' @param equipment_ids Integer or vector of integers. One or more equipment IDs.
 NULL
 
-## org ---------------------------------------------------------------------
-#' org
-#' @name org
-#' @param org Organization ID (numeric) or name (character) 
+## equipment_types ---------------------------------------------------------
+#' equipment_types
+#' @name equipment_types
+#' @param equipment_types Character vector. One or more point_types
+NULL
+
+## orgs ---------------------------------------------------------------------
+#' orgs
+#' @name orgs
+#' @param orgs Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed. 
 NULL
 
 ## point_ids ---------------------------------------------------------------
@@ -73,10 +79,34 @@ NULL
 #' @param point_ids Integer or vector of integers. One or more point IDs.
 NULL
 
+## point_names -------------------------------------------------------------
+#' point_names
+#' @name point_names
+#' @param point_names Character vector. Use exact text of the point name
+NULL
+
+## point_topics ------------------------------------------------------------
+#' point_topics
+#' @name point_topics
+#' @param point_topics Character vector. One or more point topics
+NULL
+
+## point_types -------------------------------------------------------------
+#' point_types
+#' @name point_types
+#' @param point_types Character vector. One or more point_types
+NULL
+
 ## proceed -----------------------------------------------------------------
 #' proceed
 #' @name proceed
 #' @param proceed (Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting
+NULL
+
+## updated_since -----------------------------------------------------------
+#' updated_since
+#' @name updated_since
+#' @param updated_since A timestamp to query points updated after a certain time 
 NULL
 
 ## verbose -----------------------------------------------------------------
@@ -84,4 +114,3 @@ NULL
 #' @name  verbose
 #' @param verbose Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.
 NULL
-
