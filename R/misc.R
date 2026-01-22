@@ -36,44 +36,36 @@ get_point_types <- function(){
 }
 
 
-# Search by Org --------------------------------------------------------
+# Search Organizations --------------------------------------------------------
 
-#' Search by Org
+#' Search Organizations
 #' 
-#' @param data A data frame containing an `org_id` column. If `org_name` is missing, it will be added via API.
-#' @inheritParams org 
+#' @inheritParams orgs
 #' 
-#' @return Filtered data frame with `org_name` included.
-search_by_org <- function(data, org = NULL) {
+#' @return A dataframe containing the matched org(s).
+search_orgs <- function(orgs = NULL, vebrose = TRUE) {
   
-  if(missing(data)){
-    stop("data missing.")
+  if(is.null(orgs)){
+    stop("Please provide 'orgs' paramter.")
   }
-  
-  # Join with org names if missing
-  if (!"org_name" %in% names(data)) {
-    orgs <- api.request('organizations', verbose = FALSE)$data %>% 
-      select(org_id = id, org_name = name)
-    
-    data <- left_join(data, orgs, by = "org_id") %>%
-      relocate(org_name, .after = org_id)
-  }
-  
-  
-  if (!is.null(org)) {
-    if (is.numeric(org)) {
-      # If the input is numeric, search by id
-      data <- data %>% filter(org_id == org)
+
+    all_orgs <- api.request('organizations', verbose = FALSE)$data
       
-    } else if (is.character(org)) {
-      # If the input is text, search by Name
-      data <- data %>% filter(grepl(org, org_name, ignore.case = TRUE))
-    } else {
-      stop("Invalid input. Please provide either numeric (id) or character (name).")
-    }
+      search_text <- paste(orgs, collapse = "|")
+      
+      result <- all_orgs %>% 
+        dplyr::filter(id %in% orgs | grepl(search_text, name, ignore.case = TRUE))
     
-  }
-  return(data)
+      if(verbose){
+      if (nrow(result) == 0) {
+        cat("No matching orgs found. Please check your input.")
+      } else {
+        cat(sprintf("Found %d org(s): %s\n", nrow(result), paste(result$name, 
+                                                                 collapse = ", ")))
+      }
+      }
+      
+  return(result)
 }
 
 
@@ -83,13 +75,13 @@ search_by_org <- function(data, org = NULL) {
 #' 
 #' Retrieve all user info in your organization.
 #'
-#' @inheritParams org
+#' @inheritParams orgs
 #' 
 #' @return A data.frame of all user information.
 #' 
 #' @export
 
-get_users <- function(org = NULL){
+get_users <- function(orgs = NULL){
   
   #Get roles db
   roles <- api.request('roles',verbose = FALSE)
@@ -120,7 +112,12 @@ get_users <- function(org = NULL){
    relocate(role_name,.after=name) %>% 
   convert_to_datetime()  
     
-  users <- search_by_org(data = users,org = org)
+  if(!is.null(orgs)){
+    orgs <- search_orgs(orgs = orgs,verbose = verbose)
+    
+    users <- users %>% 
+      filter(org_id %in% orgs$id)
+  }
   
   return(users)
 }
@@ -132,16 +129,22 @@ get_users <- function(org = NULL){
 #' 
 #' Get all deployments in your organization.
 #' 
-#' @inheritParams org
+#' @inheritParams orgs
 #' 
 #' @return A data.frame of all deployments.
 #' 
 #' @export
-get_deployments <- function(org = NULL){
+get_deployments <- function(orgs = NULL){
 
   deployments <- api.request('deployment', verbose = FALSE)  %>%
-    convert_to_datetime() %>%
-    search_by_org(org = org)
+    convert_to_datetime() 
+  
+  if(!is.null(orgs)){
+  orgs <- search_orgs(orgs = orgs,vebrose = verbose)
+    
+  deployments <- deployments %>% 
+    filter(org_id %in% orgs$id)
+  }
   
   return(deployments)
 }
