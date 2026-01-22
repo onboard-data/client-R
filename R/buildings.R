@@ -345,7 +345,7 @@ get_metadata <- function(orgs = NULL,
                          verbose = TRUE) {
   
   if (all(sapply(list(orgs,buildings,point_ids,point_names,point_topics,updated_since,
-                      point_types,equipment,equipment_types),is.null))) {
+                      point_types,equipment_ids,equipment_types),is.null))) {
     stop("Please provide any building parameter to run query.")
   }
   
