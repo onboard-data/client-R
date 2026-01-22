@@ -24,13 +24,14 @@
 #' @export
 search_buildings <- function(buildings = NULL,
                              verbose = TRUE) {
-  if (is.null(buildings) || length(buildings) == 0) {
-    stop("The 'buildings' parameter is required and cannot be empty.")
-  }
-  
+
+  if(is.null(buildings)){
+ stop("Please provide 'buildings' paramter.")
+    }
+    
   all_buildings <- api.request(endpoint = "buildings",
                                verbose = FALSE)
-
+  
   if (is.numeric(buildings)) {
     result <- all_buildings %>%
       dplyr::filter(id %in% buildings)
@@ -42,12 +43,14 @@ search_buildings <- function(buildings = NULL,
       dplyr::filter(id %in% buildings | grepl(search_text, name, ignore.case = TRUE))
     
   }
-  if (nrow(result) == 0) {
-    stop("No buildings found. Please check your input.")
-  }
   
   if (verbose) {
+    
+    if (nrow(result) == 0) {
+      cat("No matching buildings found. Please check your input.")
+    } else {
     cat(sprintf("Found %d building(s): %s\n", nrow(result), paste(result$name, collapse = ", ")))
+    }
   }
   
   return(result)
@@ -304,10 +307,17 @@ get_published_devices <- function(building_ids, verbose = TRUE){
 #' Retrieves live points and equipment for a given building or selection and outputs a clean metadata data.frame.
 #'
 #' @inheritParams buildings
-#' @param query Building parameters query from the point selector.
+#' @inheritParams orgs 
+#' @inheritParams point_ids
+#' @inheritParams point_names
+#' @inheritParams point_topics
+#' @inheritParams updated_since
+#' @inheritParams point_types
+#' @inheritParams equipment_ids
+#' @inheritParams equipment_types 
 #' @inheritParams verbose
 #'  
-#' @return A data.frame of clean metadata for the requested points.
+#' @return A data.frame of clean metadata from the parameters provided.
 #'
 #' @examples
 #' \dontrun{
@@ -323,25 +333,46 @@ get_published_devices <- function(building_ids, verbose = TRUE){
 #' metadata <- get_metadata(query = query)
 #' }
 #' @export
-get_metadata <- function(buildings = NULL,
-                         query = NULL,
+get_metadata <- function(orgs = NULL,
+                         buildings = NULL,
+                         point_ids = NULL,
+                         point_names = NULL,
+                         point_topics = NULL,
+                         updated_since = NULL,
+                         point_types = NULL,
+                         equipment_ids = NULL,
+                         equipment_types = NULL,
                          verbose = TRUE) {
   
-  if (is.null(query) && is.null(buildings)) {
-    stop("Provide either building names/IDs or query parameters")
+  if (all(sapply(list(orgs,buildings,point_ids,point_names,point_topics,updated_since,
+                      point_types,equipment,equipment_types),is.null))) {
+    stop("Please provide any building parameter to run query.")
   }
-
-    if (!is.null(buildings)) {
-
+  
+  if(!is.null(orgs)){
+    org_info <- search_orgs(orgs = orgs,vebrose = verbose)
+    orgs <- org_info$id
+  }
+  
+  if (!is.null(buildings)) {
+    
     building_info <- search_buildings(buildings = buildings, verbose = verbose)
     
-    query <- PointSelector()
-    query$buildings <- building_info$id
-}
+    buildings <- building_info$id
+    
+  }
 
-    if (!is.list(query) || is.atomic(query)) {
-      stop("Selection must be a non-atomic named list with fields like: equipment, points, etc.")
-    }
+  query <- PointSelector()
+  query$orgs <- orgs
+  query$buildings <- buildings
+  query$point_ids = point_ids
+  query$point_names = point_names
+  query$point_topics = point_topics
+  query$updated_since = updated_since
+  query$point_types = point_types
+  query$equipment = equipment_ids
+  query$equipment_types = equipment_types
+
   
   #Run query to get selection
   selection <- select_points(query,verbose = FALSE)

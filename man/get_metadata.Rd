@@ -4,17 +4,42 @@
 \alias{get_metadata}
 \title{GET Metadata}
 \usage{
-get_metadata(buildings = NULL, query = NULL, verbose = TRUE)
+get_metadata(
+  orgs = NULL,
+  buildings = NULL,
+  point_ids = NULL,
+  point_names = NULL,
+  point_topics = NULL,
+  updated_since = NULL,
+  point_types = NULL,
+  equipment_ids = NULL,
+  equipment_types = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
+\item{orgs}{Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+
 \item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
-\item{query}{Building parameters query from the point selector.}
+\item{point_ids}{Integer or vector of integers. One or more point IDs.}
+
+\item{point_names}{Character vector. Use exact text of the point name}
+
+\item{point_topics}{Character vector. One or more point topics}
+
+\item{updated_since}{A timestamp to query points updated after a certain time}
+
+\item{point_types}{Character vector. One or more point_types}
+
+\item{equipment_ids}{Integer or vector of integers. One or more equipment IDs.}
+
+\item{equipment_types}{Character vector. One or more point_types}
 
 \item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
-A data.frame of clean metadata for the requested points.
+A data.frame of clean metadata from the parameters provided.
 }
 \description{
 Retrieves live points and equipment for a given building or selection and outputs a clean metadata data.frame.
