@@ -4,6 +4,7 @@
 #'
 #' Search buildings in your organization by ID or name.
 #'
+#' @inheritParams orgs
 #' @inheritParams buildings
 #' @inheritParams verbose
 #'
@@ -22,15 +23,22 @@
 #' }
 #'
 #' @export
-search_buildings <- function(buildings = NULL,
+search_buildings <- function(orgs = NULL,
+                             buildings = NULL,
                              verbose = TRUE) {
 
-  if(is.null(buildings)){
- stop("Please provide 'buildings' paramter.")
+  if(is.null(c(buildings,orgs))){
+ stop("Please provide 'orgs and/or 'buildings' paramters.")
     }
     
   all_buildings <- api.request(endpoint = "buildings",
                                verbose = FALSE)
+  
+  if(!is.null(orgs)){
+    orgs <- search_orgs(orgs = orgs, verbose = verbose)
+    all_buildings <- all_buildings %>% 
+      filter(org_id %in% orgs$id)
+  }
   
   if (is.numeric(buildings)) {
     result <- all_buildings %>%
@@ -43,6 +51,7 @@ search_buildings <- function(buildings = NULL,
       dplyr::filter(id %in% buildings | grepl(search_text, name, ignore.case = TRUE))
     
   }
+  
   
   if (verbose) {
     
