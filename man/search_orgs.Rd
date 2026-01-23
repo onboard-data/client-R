@@ -4,10 +4,12 @@
 \alias{search_orgs}
 \title{Search Organizations}
 \usage{
-search_orgs(orgs = NULL, vebrose = TRUE)
+search_orgs(orgs = NULL, verbose = TRUE)
 }
 \arguments{
-\item{orgs}{Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
 A dataframe containing the matched org(s).

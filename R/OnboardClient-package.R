@@ -73,7 +73,7 @@ NULL
 ## orgs ---------------------------------------------------------------------
 #' orgs
 #' @name orgs
-#' @param orgs Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed. 
+#' @param orgs (Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed. 
 NULL
 
 ## point_ids ---------------------------------------------------------------

@@ -18,7 +18,7 @@ get_metadata(
 )
 }
 \arguments{
-\item{orgs}{Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
 
 \item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 

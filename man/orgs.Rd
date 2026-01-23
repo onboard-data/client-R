@@ -4,7 +4,7 @@
 \alias{orgs}
 \title{orgs}
 \arguments{
-\item{orgs}{Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
 }
 \description{
 orgs

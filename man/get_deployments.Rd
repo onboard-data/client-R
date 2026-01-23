@@ -7,7 +7,7 @@
 get_deployments(orgs = NULL)
 }
 \arguments{
-\item{orgs}{Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
 }
 \value{
 A data.frame of all deployments.

@@ -4,9 +4,11 @@
 \alias{search_buildings}
 \title{Search Buildings in Your Organization}
 \usage{
-search_buildings(buildings = NULL, verbose = TRUE)
+search_buildings(orgs = NULL, buildings = NULL, verbose = TRUE)
 }
 \arguments{
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+
 \item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
 \item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}

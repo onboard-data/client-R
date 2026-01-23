@@ -41,9 +41,10 @@ get_point_types <- function(){
 #' Search Organizations
 #' 
 #' @inheritParams orgs
+#' @inheritParams verbose
 #' 
 #' @return A dataframe containing the matched org(s).
-search_orgs <- function(orgs = NULL, vebrose = TRUE) {
+search_orgs <- function(orgs = NULL, verbose = TRUE) {
   
   if(is.null(orgs)){
     stop("Please provide 'orgs' paramter.")
@@ -118,7 +119,9 @@ get_users <- function(orgs = NULL){
     users <- users %>% 
       filter(org_id %in% orgs$id)
   }
-  
+  if(verbose){
+  cat(sprintf("Found %s users(s)",nrow(users)))
+  }
   return(users)
 }
 
@@ -140,10 +143,14 @@ get_deployments <- function(orgs = NULL){
     convert_to_datetime() 
   
   if(!is.null(orgs)){
-  orgs <- search_orgs(orgs = orgs,vebrose = verbose)
+  orgs <- search_orgs(orgs = orgs,verbose = verbose)
     
   deployments <- deployments %>% 
     filter(org_id %in% orgs$id)
+  }
+  
+  if(verbose){
+  cat(sprintf("Found %s deployment(s)",nrow(deployments)))
   }
   
   return(deployments)
