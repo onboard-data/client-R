@@ -330,16 +330,9 @@ get_published_devices <- function(building_ids, verbose = TRUE){
 #'
 #' @examples
 #' \dontrun{
-#' metadata <- get_metadata(buildings = c(427, "Laboratory"))
-#'
-#' OR
-#'
-#' query <- PointSelector()
-#' query$buildings <- 427
-#' query$equipment_types <- 'HVAC/AHU'
-#' query$point_types <- c('supply_air_temperature_sensor','supply_air_static_pressure_sensor')
-#'
-#' metadata <- get_metadata(query = query)
+#' metadata <- get_metadata (orgs = "Onboard",point_types = "supply_air_temperature_sensor")
+#' 
+#' metadata <- get_metadata(buildings = c(427, "Laboratory"),equipment_types = c("HVAC/AHU","HVAC/VAV"))
 #' }
 #' @export
 get_metadata <- function(orgs = NULL,
@@ -355,17 +348,7 @@ get_metadata <- function(orgs = NULL,
   
   if (all(sapply(list(orgs,buildings,point_ids,point_names,point_topics,updated_since,
                       point_types,equipment_ids,equipment_types),is.null))) {
-    stop("Please provide any building parameter to run query.")
-  }
-  
-  if (!all(sapply(list(orgs,buildings),is.null))) {
-    
-    building_info <- search_buildings(orgs = orgs, buildings = buildings, verbose = verbose)
-    
-    buildings <- building_info$id
-    
-    orgs <- unique(building_info$org_id)
-    
+    stop("Please provide atleast one building parameter to run query.")
   }
 
   query <- PointSelector()
