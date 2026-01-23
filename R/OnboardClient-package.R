@@ -1,6 +1,9 @@
 #' @keywords internal
 "_PACKAGE"
 
+# Suppress R CMD check NOTEs for column names used in dplyr expressions
+utils::globalVariables("id")
+
 # Namespace ---------------------------------------------------------------
 ## usethis namespace: start
 #' @import dplyr
