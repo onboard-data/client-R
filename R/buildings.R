@@ -358,16 +358,13 @@ get_metadata <- function(orgs = NULL,
     stop("Please provide any building parameter to run query.")
   }
   
-  if(!is.null(orgs)){
-    org_info <- search_orgs(orgs = orgs,vebrose = verbose)
-    orgs <- org_info$id
-  }
-  
-  if (!is.null(buildings)) {
+  if (!all(sapply(list(orgs,buildings),is.null))) {
     
-    building_info <- search_buildings(buildings = buildings, verbose = verbose)
+    building_info <- search_buildings(orgs = orgs, buildings = buildings, verbose = verbose)
     
     buildings <- building_info$id
+    
+    orgs <- unique(building_info$org_id)
     
   }
 
