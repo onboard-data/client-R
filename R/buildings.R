@@ -330,7 +330,7 @@ get_published_devices <- function(building_ids, verbose = TRUE){
 #'
 #' @examples
 #' \dontrun{
-#' metadata <- get_metadata (orgs = "Onboard",point_types = "supply_air_temperature_sensor")
+#' metadata <- get_metadata (orgs = "Onboard", point_types = "supply_air_temperature_sensor")
 #' 
 #' metadata <- get_metadata(buildings = c(427, "Laboratory"),equipment_types = c("HVAC/AHU","HVAC/VAV"))
 #' }
