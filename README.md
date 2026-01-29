@@ -64,9 +64,11 @@ equipment <- get_equipment_by_ids(selection$equipment)
 
 #For clean metadata output
 metadata <- get_metadata(
-                          buildings = 427,
-                          point_types = c('supply_air_temeperature_sensor','zone_air_temperature_sensor')
-                          )
+  buildings = 427,
+  point_types = c(
+    'supply_air_temeperature_sensor',
+    'zone_air_temperature_sensor')
+)
 
 ##OR
 
