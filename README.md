@@ -12,39 +12,37 @@ Instructions and examples for how to use these API bindings are further document
 
 #### Installing API Library and verifying connectivity
 
-You can install the official release (stable) from CRAN using the standard `install.packages()` function, or use the development version (unstable) by installing from github. 
-
->**Note**
->
->Proceed at your own risk if using the dev version! While the dev version may offer extra functionality, it is our active development platform. This means it is also more prone to error as it's not necessarily fully tested. If something breaks or doesn't work as expected, though, please let us know, as we would certainly like to know so we can push a patch.
+You can install OnboardClient from github. 
 
 ```R
-# official version (stable)
-install.packages('OnboardClient')
-
-# dev version (unstable)
 install.packages('devtools') # Install devtools package first
 devtools::install_github(repo='onboard-data/client-R') # install from github
 ```
-To test if your API key is working correctly, use `api.setup()`, and enter your api keys in the dialogue box when prompted.
+Connect with the API using `api.setup()`, and enter your api keys in the dialogue box when prompted.
 Check the `Remember with keyring` option if you wish to save your api keys securely with the [keyring](https://support.rstudio.com/hc/en-us/articles/360000969634) package.
 
 ```R
 library(OnboardClient)
 
-api.setup() # set up api url and api keys. Your connection is established if it returns 200.
+api.setup() # set up api url and api keys. If your connection is established, it returns a welcome message.
 
-whoami <- api.get('whoami') # Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
+whoami <- api.request('whoami') # Verify your access to Onboard's API scopes. Generates a list called whoami in R's Global Environment
 
-all_buildings <- get_buildings() #Query site data for all buildings in your organization
+all_buildings <- api.request("buildings") #Query building information for all buildings in your organization
+
+building_search <- search_buildings(buildings="lab") #Search building information for specific buildings using search string (non case-sensitive) 
+
+org_search <- search_orgs(orgs = "onboard") #Search specific organization if you access to more than one orgs (non case-sensitive)
 ```
 
 #### Query Data Model
 
 ```R
-all_equip_types <- get_equip_types() #Query all equipment types in Onboard's Data Model
+all_equip_types <- api.request("equiptype") #Query all equipment types in Onboard's Data Model
 
-all_point_types <- get_point_types() #Query all point types in Onboard's Data Model
+all_point_types <- api.request("pointtypes") #Query all point types in Onboard's Data Model
+# OR
+all_point_types <- get_point_types() #Query a clean version of point_types
 ```
 
 ### Query metadata and timeseries data
@@ -53,7 +51,7 @@ all_point_types <- get_point_types() #Query all point types in Onboard's Data Mo
 query <- PointSelector() # using point selector function
 
 query$buildings <- c(427) 
-query$point_types <- c('Supply Air Temperature','Discharge Air Temperature')
+query$point_types <- c('supply_air_temeperature_sensor','zone_air_temperature_sensor')
 
 selection <- select_points(query) #Select points form database based on your query
 
@@ -65,11 +63,14 @@ equipment <- get_equipment_by_ids(selection$equipment)
 
 
 #For clean metadata output
-metadata <- get_metadata(selection=selection) #Query metadata by selection list we got above
+metadata <- get_metadata(
+                          buildings = 427,
+                          point_types = c('supply_air_temeperature_sensor','zone_air_temperature_sensor')
+                          )
 
 ##OR
 
-metadata <- get_metadata(buildings=c(427,'Laboratory')) # Query entire metadata for building id 427 and building name: Laboratory
+metadata <- get_metadata(orgs = "onboard",buildings=c(427,'Laboratory')) # Query entire metadata for building id 427 and building name: Laboratory inside org name: onboard
 
 #For timeseries output
 library(lubridate)
@@ -87,11 +88,9 @@ timeseries <- get_timeseries(start_time= start_time, end_time = end_time, point_
 This example requires an Onboard API key with scopes `admin`, `collection:admin`, and `staging` 
 
 ```R
-staged_data <- get_staging_data(building = 427) # Query staged data for building id 427
+staged_data <- get_staging_data(buildings = c(427,"Laboratory") # Query staged data for building id 427 & building name: Laboratory
 
-staged_data <- get_staging_data(building ='Laboratory') # Query staged data for building name: Laboratory
-
-deployments <- api.get('deployments') #Query all deployments in your organization
+deployments <- get_deployments() #Query all deployments in your organization
 
 users <- get_users() #Qeury all users in your organization
 
@@ -99,7 +98,7 @@ users <- get_users() #Qeury all users in your organization
 
 ## License
 
- Copyright 2018-2024 Onboard Data Inc
+ Copyright 2018-2026 Onboard Data Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.

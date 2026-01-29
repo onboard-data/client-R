@@ -54,8 +54,13 @@ search_orgs <- function(orgs = NULL, verbose = TRUE) {
       
       search_text <- paste(orgs, collapse = "|")
       
-      result <- all_orgs %>% 
-        dplyr::filter(id %in% orgs | grepl(search_text, name, ignore.case = TRUE))
+      result <- all_orgs %>%
+        dplyr::filter(
+          id %in% orgs |
+            grepl(search_text, name, ignore.case = TRUE) |
+            grepl(search_text, short_name, ignore.case = TRUE) |
+            grepl(search_text, name_abbr, ignore.case = TRUE)
+        )
     
       if(verbose){
       if (nrow(result) == 0) {
