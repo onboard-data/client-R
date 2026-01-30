@@ -140,11 +140,11 @@ get_users <- function(orgs = NULL, verbose = TRUE){
 #' Get all deployments in your organization.
 #' 
 #' @inheritParams orgs
-#' 
+#' @inheritParams verbose
 #' @return A data.frame of all deployments.
 #' 
 #' @export
-get_deployments <- function(orgs = NULL){
+get_deployments <- function(orgs = NULL, verbose = TRUE){
 
   deployments <- api.request('deployment', verbose = FALSE)  %>%
     convert_to_datetime() 
