@@ -83,11 +83,13 @@ search_orgs <- function(orgs = NULL, verbose = TRUE) {
 #'
 #' @inheritParams orgs
 #' 
+#' @inheritParams verbose
+#' 
 #' @return A data.frame of all user information.
 #' 
 #' @export
 
-get_users <- function(orgs = NULL){
+get_users <- function(orgs = NULL, verbose = TRUE){
   
   #Get roles db
   roles <- api.request('roles',verbose = FALSE)
