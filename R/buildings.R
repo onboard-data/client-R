@@ -353,6 +353,8 @@ get_metadata <- function(orgs = NULL,
   
   if(!is.null(orgs) | !is.null(buildings)){
   building_ids <- search_buildings(orgs = orgs,buildings = buildings)$id
+  } else {
+    building_ids = NULL
   }
   
   query <- PointSelector()
