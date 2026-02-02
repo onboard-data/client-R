@@ -4,10 +4,12 @@
 \alias{get_deployments}
 \title{Deployments}
 \usage{
-get_deployments(orgs = NULL)
+get_deployments(orgs = NULL, verbose = TRUE)
 }
 \arguments{
 \item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+
+\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
 }
 \value{
 A data.frame of all deployments.
