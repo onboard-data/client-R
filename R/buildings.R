@@ -350,10 +350,13 @@ get_metadata <- function(orgs = NULL,
                       point_types,equipment_ids,equipment_types),is.null))) {
     stop("Please provide atleast one building parameter to run query.")
   }
-
+  
+  if(!is.null(orgs) | !is.null(buildings)){
+  building_ids <- search_buildings(orgs = orgs,buildings = buildings)$id
+  }
+  
   query <- PointSelector()
-  query$orgs <- orgs
-  query$buildings <- buildings
+  query$buildings <- building_ids
   query$point_ids = point_ids
   query$point_names = point_names
   query$point_topics = point_topics
