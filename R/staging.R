@@ -172,7 +172,7 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 #'@export
 update_staging_points <- function(building, 
                                   staging_points, 
-                                  proceed = NULL, verbose = TRUE){
+                                  proceed = NULL,verbose = TRUE){
   
   if (length(building) > 1)
     stop("Only one building ID or name is allowed.")
@@ -180,7 +180,7 @@ update_staging_points <- function(building,
   # Get building info
   building_info <- search_buildings(buildings = building, verbose = verbose)
   
-  required_cols <- c("equip_names", "topic")
+  required_cols <- c("topic")
   
   staging_points_cols <- names(staging_points)
   
@@ -200,7 +200,7 @@ update_staging_points <- function(building,
   }
   
   #Select columns
-  optional_cols <- c("point_type_tag_name","point_type_confidence","raw_unit_id")
+  optional_cols <- c("equip_names","point_type_tag_name","point_type_confidence","raw_unit_id")
   
   staging_points <- staging_points %>%
     select(any_of(c(required_cols, optional_cols))) %>%
@@ -224,15 +224,22 @@ update_staging_points <- function(building,
     stop("Operation canceled by user.")
   }
   
+  if("equip_names" %in% staging_points_cols){
+  staging_points <- staging_points
+  #group points assigned to multiple equipment together
+  group_by(across(-equip_names)) %>%
+    reframe(equip_names=list(equip_names))  %>%
+    #Convert points with multiple equip_names into a list
+    mutate(across(equip_names, ~ (map(., function(x) (str_split(x, ", ")))))) 
+  
+  remove_equip_names = TRUE
+  }
+  
   #Convert body
   staging_body <- staging_points %>% 
-    #group points assigned to multiple equipment together
-    group_by(across(-equip_names)) %>% 
-    reframe(equip_names=list(equip_names))  %>%  
-    #Convert points with multiple equip_names into a list
-    mutate(across(equip_names, ~ (map(., function(x) (str_split(x, ", ")))))) %>% 
     #Convert NULL characters into NA
     mutate(across(everything(.), ~ ifelse(. == "NULL", NA, .))) %>% 
+    distinct(topic,.keep_all = TRUE) %>% 
     split(1:nrow(.)) %>%  
     purrr::map(~ {
       row_list = as.list(.)
@@ -257,16 +264,22 @@ update_staging_points <- function(building,
       )
       purrr::compact(result)  # Remove NULL elements
     })  %>%  
-    unname()  
+    unname()
   
-  #COnvert na equip_names to empty list
-  staging_body <- lapply(staging_body, function(x) {
-    if (all(is.na(x$equip_names))) x$equip_names <- list()
-    x
-  })
+  if(remove_equip_names==TRUE){
+    staging_body <-lapply(staging_body,function(x){
+      x$equip_names <- NULL
+      x})
+  } else {
+    #COnvert na equip_names to empty list
+    staging_body <- lapply(staging_body, function(x) {
+      if (all(is.na(x$equip_names))) x$equip_names <- list()
+      x
+    })
+  }
 
   #Check json body (for debugging)
-  #staging_body %>% toJSON(auto_unbox = TRUE)
+  staging_body %>% toJSON(auto_unbox = TRUE)
   
   api_output = api.request(endpoint = paste0("staging/",building_info$id,"/points"),
                            method = "PATCH",
