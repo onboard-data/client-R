@@ -231,7 +231,7 @@ update_staging_points <- function(building,
     reframe(equip_names=list(equip_names))  %>%
     #Convert points with multiple equip_names into a list
     mutate(across(equip_names, ~ (map(., function(x) (str_split(x, ", ")))))) 
-  
+  } else{
   remove_equip_names = TRUE
   }
   
