@@ -224,7 +224,7 @@ update_staging_points <- function(building,
     stop("Operation canceled by user.")
   }
   
-  if("equip_names" %in% staging_points_cols){
+  if("equip_names" %in% staging_points_cols && !all(is.na(staging_points$equip_names))){
   staging_points <- staging_points
   #group points assigned to multiple equipment together
   group_by(across(-equip_names)) %>%
