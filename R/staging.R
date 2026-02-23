@@ -224,13 +224,14 @@ update_staging_points <- function(building,
     stop("Operation canceled by user.")
   }
   
-  if("equip_names" %in% staging_points_cols && !all(is.na(staging_points$equip_names))){
-  staging_points <- staging_points
+  if("equip_names" %in% staging_points_cols ){
+  staging_points <- staging_points %>% 
   #group points assigned to multiple equipment together
   group_by(across(-equip_names)) %>%
     reframe(equip_names=list(equip_names))  %>%
     #Convert points with multiple equip_names into a list
-    mutate(across(equip_names, ~ (map(., function(x) (str_split(x, ", ")))))) 
+    mutate(across(equip_names, ~ (purrr::map(., function(x) (stringr::str_split(x, ", ")))))) 
+  remove_equip_names = FALSE
   } else{
   remove_equip_names = TRUE
   }
@@ -279,7 +280,7 @@ update_staging_points <- function(building,
   }
 
   #Check json body (for debugging)
-  staging_body %>% toJSON(auto_unbox = TRUE)
+  staging_body %>% jsonlite::toJSON(auto_unbox = TRUE,pretty = TRUE)
   
   api_output = api.request(endpoint = paste0("staging/",building_info$id,"/points"),
                            method = "PATCH",
