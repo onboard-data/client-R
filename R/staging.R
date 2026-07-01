@@ -50,6 +50,9 @@ get_staging_points <- function(building_id, verbose = TRUE) {
   points <- api.request(endpoint = paste0("staging/", building_id,"/points"), 
               verbose = verbose,response_body = "json") 
   
+  if(length(points)==0){
+    stop("No points found.")
+  }
   points <- jsonlite::fromJSON(jsonlite::toJSON(points), flatten = TRUE) %>% 
     convert_to_datetime()
   
