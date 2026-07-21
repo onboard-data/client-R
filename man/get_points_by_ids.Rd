@@ -9,7 +9,7 @@ get_points_by_ids(point_ids, verbose = TRUE)
 \arguments{
 \item{point_ids}{Integer or vector of integers. One or more point IDs.}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A `data.frame` containing metadata of the requested points. Returns an empty `data.frame` if no points are found.

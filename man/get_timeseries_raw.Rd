@@ -28,7 +28,7 @@ get_timeseries_raw(
 
 \item{resample_mins}{Optional numeric value of minutes for re-sampling data}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A long-format data.frame with point ID, timestamp, and raw values.

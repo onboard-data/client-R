@@ -120,12 +120,8 @@ get_users <- function(orgs = NULL, verbose = TRUE){
    relocate(role_name,.after=name) %>% 
   convert_to_datetime()  
     
-  if(!is.null(orgs)){
-    orgs <- search_orgs(orgs = orgs,verbose = verbose)
-    
-    users <- users %>% 
-      filter(org_id %in% orgs$id)
-  }
+  users <- .filter_by_orgs(users, orgs, verbose)
+
   if(verbose){
   cat(sprintf("Found %s users(s)",nrow(users)))
   }
@@ -149,13 +145,8 @@ get_deployments <- function(orgs = NULL, verbose = TRUE){
   deployments <- api.request('deployment', verbose = FALSE)  %>%
     convert_to_datetime() 
   
-  if(!is.null(orgs)){
-  orgs <- search_orgs(orgs = orgs,verbose = verbose)
-    
-  deployments <- deployments %>% 
-    filter(org_id %in% orgs$id)
-  }
-  
+  deployments <- .filter_by_orgs(deployments, orgs, verbose)
+
   if(verbose){
   cat(sprintf("Found %s deployment(s)",nrow(deployments)))
   }

@@ -10,7 +10,7 @@ get_staging_devices(building_id, verbose = TRUE)
 \arguments{
 \item{building_id}{Integer. ID of the building.}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A data.frame of staging devices.

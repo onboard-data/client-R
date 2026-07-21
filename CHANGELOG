@@ -7,23 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added 
+## [3.0.0] - 2026-07-21
+
+### Added
 
 - added getter wrappers for unit, measurement, and tag queries to data model
 - api.setup now prints HTTP status code
-- option to upload CSV with POST calls
 - option to provide api keys as an argument with api.setup. It is NULL by default
 - Faster processing of raw timeseries data. Vectorized for-loop.
+- get_staging_data() now drops rows where both device_id and topic are missing from the combined output.
+
+### Changed
+
+- Refactored api.R, staging.R, buildings.R, and timeseries.R to remove duplicated internal logic. Generic internal helpers (confirmation prompts, single-building resolution, required-column checks, scalar/list wrapping, org filtering, etc.) now live centrally in helpers.R instead of being copy-pasted per file.
+- get_staging_data() and get_points_by_ids() now combine per-building/per-chunk results in a single rbind.fill() call instead of growing a data.frame one row-bind at a time.
+- Standardized the "operation canceled" confirmation message across update_staging_points(), update_staging_equip(), publish(), and unpublish().
+- api.setup() combines its environment-variable writes into fewer Sys.setenv() calls.
+
+### Removed
+
+- Dropped unused dependencies data.table, rlist, and tibble (and their corresponding importFrom declarations) -- none of their functions were referenced anywhere in the package.
 
 ### Fixed
 
+- get_staging_equipment(), get_staging_devices(), and get_staging_points() no longer error when a building has zero staged equipment/devices/points. Their empty-response placeholders previously used mismatched column names (e.g. staged_device_ids instead of staging_device_id, and a devices placeholder missing staging_id/building_id), which caused a "column doesn't exist" error further down the pipeline in get_staging_data().
 - get_timeseries_raw
   - default timezone format now UTC instead of user's time zone
   - columns no longer duplicated
 - convert epoch timestamps to UTC instead of EST in get_metadata and get_staged_data
 - make some arguments optional for get_metadata, check that selection is non-atomic list
 - get_users
-  - Fixed an error where timestamps conversion from unix threw an error 
+  - Fixed an error where timestamps conversion from unix threw an error
+- Removed dead code: an unused intermediate `result` assignment in update_staging_equip()'s body construction, and an unused `item <- nested_list[[1]]` assignment in nested_list_to_df().
+- .Rbuildignore referenced a nonexistent `testing_script.R`; corrected to match the actual `_test.R` scratch file so it's excluded from built packages.
+- Added `utils` to DESCRIPTION's Imports to match the `importFrom(utils, ...)` entries already declared in NAMESPACE.
 
 ## [1.0.0] - 2022-10-21
 
@@ -39,5 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 
-[unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/onboard-data/client-R/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/onboard-data/client-R/compare/v1.0.0...v3.0.0
 [1.0.0]: https://github.com/onboard-data/client-R/commit/e5546cd548685a44ce5d302b06f05518f5fe1f16

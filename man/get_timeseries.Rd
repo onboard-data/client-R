@@ -28,7 +28,7 @@ get_timeseries(
 
 \item{resample_mins}{Optional numeric value of minutes for re-sampling data}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A wide data.frame of time-series data, with timestamp and all requested point IDs as columns.

@@ -30,38 +30,34 @@ search_buildings <- function(orgs = NULL,
   if(is.null(c(buildings,orgs))){
  stop("Please provide 'orgs and/or 'buildings' paramters.")
     }
-    
+
   all_buildings <- api.request(endpoint = "buildings",
                                verbose = FALSE)
-  
-  if(!is.null(orgs)){
-    orgs <- search_orgs(orgs = orgs, verbose = verbose)
-    all_buildings <- all_buildings %>% 
-      filter(org_id %in% orgs$id)
-  }
-  
+
+  all_buildings <- .filter_by_orgs(all_buildings, orgs, verbose)
+
   if (is.numeric(buildings)) {
     result <- all_buildings %>%
       dplyr::filter(id %in% buildings)
-    
+
   } else {
     search_text <- paste(buildings, collapse = "|")
-    
-    result <- all_buildings %>% 
+
+    result <- all_buildings %>%
       dplyr::filter(id %in% buildings | grepl(search_text, name, ignore.case = TRUE))
-    
+
   }
-  
-  
+
+
   if (verbose) {
-    
+
     if (nrow(result) == 0) {
       cat("No matching buildings found. Please check your input.")
     } else {
     cat(sprintf("Found %d building(s): %s\n", nrow(result), paste(result$name, collapse = ", ")))
     }
   }
-  
+
   return(result)
 }
 
@@ -70,18 +66,18 @@ search_buildings <- function(orgs = NULL,
 #' Point Selector Template
 #'
 #' Create a query template to select metadata points.
-#' 
+#'
 #' @returns An empty named list of possible point selection criteria.
-#' 
-#' @examples 
+#'
+#' @examples
 #' \dontrun{
 #' query <- PointSelector()
-#' 
+#'
 #' query$buildings <- 101
 #' query$equipment_types <- 'HVAC/AHU'
 #' query$point_types <- c('supply_air_temperature_sensor','supply_air_static_pressure_sensor')
 #' }
-#' 
+#'
 #' @export
 PointSelector <- function(){
   query <- list(
@@ -95,7 +91,7 @@ PointSelector <- function(){
     equipment = '',
     equipment_types = ''
   )
-  
+
   return(query)
 }
 
@@ -120,18 +116,18 @@ PointSelector <- function(){
 #'
 #' @export
 select_points <- function(query, verbose = TRUE){
-  
+
   # Convert `updated_since` if specified
   if (!is.null(query$updated_since) && query$updated_since != "") {
     query$updated_since <- as.numeric(as.POSIXct(query$updated_since, tz = "UTC"))
   }
-  
+
   # Drop empty values
   query <- query[query != ""]
-  
+
   # Wrap each non-empty field in a list
   query <- lapply(query, as.list)
-  
+
   # POST the query to the endpoint
   endpoint <- "points/select"
   response <- api.request(
@@ -140,7 +136,7 @@ select_points <- function(query, verbose = TRUE){
     request_body = query,
     verbose = verbose
   )
-  
+
   return(response)
 }
 
@@ -171,48 +167,47 @@ select_points <- function(query, verbose = TRUE){
 #'
 #' @export
 get_points_by_ids <- function(point_ids, verbose = TRUE){
-  
+
   if (length(point_ids) == 0) {
     warning("No point IDs provided.")
     return(data.frame())
   }
-  
+
   id_unlist <- unlist(point_ids)
-  
-  #Separate point ids into chunks of 500
-  chunks <- split(id_unlist,
-                  ceiling(seq_along(id_unlist)/500))
-  
-  
-  all_points <- data.frame()
-  
-  for (chunk in chunks) {
-    encoded_ids <- URLencode(toJSON(chunk), reserved = TRUE)
-    endpoint <- paste0("points?point_ids=", encoded_ids)
-    
-    points_chunk <- api.request(endpoint = endpoint, verbose = verbose)
-    
-    #Handle state_text columns if they exist
-    if ("state_text" %in% names(points_chunk)) {
-      points_chunk <- points_chunk %>% 
-        rowwise() %>%
-        mutate(state_text = paste(na.omit(unlist(state_text)), collapse = ", ")) %>%
-        ungroup()
-    }
-    
-    all_points <- plyr::rbind.fill(all_points, points_chunk)
-  }
-  
-  all_points <- all_points %>% 
+
+  # Separate point ids into chunks of 500 to stay under URL length limits
+  chunks <- split(id_unlist, ceiling(seq_along(id_unlist) / 500))
+
+  points_by_chunk <- chunks %>%
+    purrr::map(function(chunk) {
+      encoded_ids <- URLencode(toJSON(chunk), reserved = TRUE)
+      endpoint <- paste0("points?point_ids=", encoded_ids)
+
+      points_chunk <- api.request(endpoint = endpoint, verbose = verbose)
+
+      # Handle state_text columns if they exist
+      if ("state_text" %in% names(points_chunk)) {
+        points_chunk <- points_chunk %>%
+          rowwise() %>%
+          mutate(state_text = paste(na.omit(unlist(state_text)), collapse = ", ")) %>%
+          ungroup()
+      }
+
+      points_chunk
+    })
+
+  # Combine all chunks in a single pass (rbind.fill accepts a list
+  # directly), instead of growing the data.frame one rbind at a time
+  all_points <- plyr::rbind.fill(points_by_chunk)
+
+  all_points %>%
     # Normalize and separate rows by equip_id
     mutate(across(equip_id, ~ gsub("c\\(|\\)", "", .))) %>% # Remove "c()" if present
     separate_rows(equip_id, sep = ",\\s*") %>%      # Split by comma and optional space
-    mutate(across(equip_id, ~ suppressWarnings(as.numeric(.)))) %>% 
-    mutate(across(id, ~as.numeric(.))) %>% 
+    mutate(across(equip_id, ~ suppressWarnings(as.numeric(.)))) %>%
+    mutate(across(id, ~ as.numeric(.))) %>%
     convert_to_datetime()
-    
-  return(all_points)
-  
+
 }
 
 
@@ -241,16 +236,14 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
 #'
 #' @export
 get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
-  
+
   if (length(equipment_ids) == 0) {
     warning("No equipment IDs provided.")
     return(data.frame())
   }
-  
-  if(length(equipment_ids)==1){
-    equipment_ids = list(equipment_ids)
-  }
-  
+
+  equipment_ids <- .as_list_if_scalar(equipment_ids)
+
   request_body <- list(equipment_ids = equipment_ids)
 
   equipment <- api.request(
@@ -258,7 +251,7 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
     method = "POST",
     request_body = request_body,
     verbose = verbose
-  )  
+  )
   return(equipment)
 }
 
@@ -281,31 +274,30 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
 #'
 #' @export
 get_published_devices <- function(building_ids, verbose = TRUE){
-  
+
   published_devices <- building_ids %>%
     lapply(function(id) {
       api.request(endpoint = paste0("buildings/", id, "/devices"),
-                  verbose = verbose, response_body = "json") %>% 
-      jsonlite::toJSON() %>% 
+                  verbose = verbose, response_body = "json") %>%
+        jsonlite::toJSON() %>%
         jsonlite::fromJSON(flatten = TRUE)
     }) %>%
-    bind_rows() 
-  
-  
-  if(nrow(published_devices)==0){
+    bind_rows()
+
+  if (nrow(published_devices) == 0) {
     cat(sprintf("No Published devices found."))
-    published_devices <- data.frame(id=NULL)
-  } else{
-    published_devices <- published_devices %>% 
+    published_devices <- data.frame(id = NULL)
+  } else {
+    published_devices <- published_devices %>%
       select_if(names(.) %in% c(
-        "building_id","id","name","device_id","deployment_site","subdeployment_type",
-             "properties.modelName","properties.vendorName",
-             "properties.address","properties.location","properties.last_discovery")) %>% 
-      convert_to_datetime() %>% 
+        "building_id", "id", "name", "device_id", "deployment_site", "subdeployment_type",
+        "properties.modelName", "properties.vendorName",
+        "properties.address", "properties.location", "properties.last_discovery")) %>%
+      convert_to_datetime() %>%
       mutate(across(id, ~ as.numeric(.)))
   }
-  
-  return(published_devices)
+
+  published_devices
 }
 
 
@@ -316,22 +308,22 @@ get_published_devices <- function(building_ids, verbose = TRUE){
 #' Retrieves live points and equipment for a given building or selection and outputs a clean metadata data.frame.
 #'
 #' @inheritParams buildings
-#' @inheritParams orgs 
+#' @inheritParams orgs
 #' @inheritParams point_ids
 #' @inheritParams point_names
 #' @inheritParams point_topics
 #' @inheritParams updated_since
 #' @inheritParams point_types
 #' @inheritParams equipment_ids
-#' @inheritParams equipment_types 
+#' @inheritParams equipment_types
 #' @inheritParams verbose
-#'  
+#'
 #' @return A data.frame of clean metadata from the parameters provided.
 #'
 #' @examples
 #' \dontrun{
 #' metadata <- get_metadata (orgs = "Onboard", point_types = "supply_air_temperature_sensor")
-#' 
+#'
 #' metadata <- get_metadata(buildings = c(427, "Laboratory"),equipment_types = c("HVAC/AHU","HVAC/VAV"))
 #' }
 #' @export
@@ -345,18 +337,18 @@ get_metadata <- function(orgs = NULL,
                          equipment_ids = NULL,
                          equipment_types = NULL,
                          verbose = TRUE) {
-  
+
   if (all(sapply(list(orgs,buildings,point_ids,point_names,point_topics,updated_since,
                       point_types,equipment_ids,equipment_types),is.null))) {
     stop("Please provide atleast one building parameter to run query.")
   }
-  
-  if(!is.null(orgs) | !is.null(buildings)){
-  building_ids <- search_buildings(orgs = orgs,buildings = buildings)$id
+
+  if (!is.null(orgs) | !is.null(buildings)) {
+    building_ids <- search_buildings(orgs = orgs, buildings = buildings)$id
   } else {
     building_ids = NULL
   }
-  
+
   query <- PointSelector()
   query$buildings <- building_ids
   query$point_ids = point_ids
@@ -367,80 +359,78 @@ get_metadata <- function(orgs = NULL,
   query$equipment = equipment_ids
   query$equipment_types = equipment_types
 
-  
-  #Run query to get selection
-  selection <- select_points(query,verbose = FALSE)
-    
-    if (length(selection$points) == 0) stop("No metadata found.")
-    
-    if (verbose) cat(sprintf("Querying %s points...\n", length(selection$points)))
-    points_data <- get_points_by_ids(point_ids = selection$points, verbose = FALSE)
-    
-    if (verbose) cat(sprintf("Querying %s equipment...\n", length(selection$equipment)))
-    equip_data <- get_equipment_by_ids(equipment_ids = selection$equipment, verbose = FALSE)
-    
-    if(verbose) cat("Querying devices...\n")
-    devices_data <- get_published_devices(building_ids = selection$buildings,verbose=FALSE)
-  
-    names(points_data) <- paste0("p.", names(points_data))
-    names(equip_data) <- paste0("e.", names(equip_data))
-    names(devices_data) <- paste0("d.",names(devices_data))
+  # Run query to get selection
+  selection <- select_points(query, verbose = FALSE)
+
+  if (length(selection$points) == 0) stop("No metadata found.")
+
+  if (verbose) cat(sprintf("Querying %s points...\n", length(selection$points)))
+  points_data <- get_points_by_ids(point_ids = selection$points, verbose = FALSE)
+
+  if (verbose) cat(sprintf("Querying %s equipment...\n", length(selection$equipment)))
+  equip_data <- get_equipment_by_ids(equipment_ids = selection$equipment, verbose = FALSE)
+
+  if (verbose) cat("Querying devices...\n")
+  devices_data <- get_published_devices(building_ids = selection$buildings, verbose = FALSE)
+
+  names(points_data) <- paste0("p.", names(points_data))
+  names(equip_data) <- paste0("e.", names(equip_data))
+  names(devices_data) <- paste0("d.", names(devices_data))
 
   # Handle equipment relationships
+  if ("e.source_equip" %in% names(equip_data)) {
+    id_name_map <- equip_data %>% select(e.id, e.name)
 
-    if ("e.source_equip" %in% names(equip_data)) {
-      id_name_map <- equip_data %>% select(e.id, e.name)
-  
-      source_equip <- equip_data %>%
-        select(e.id, starts_with("e.source_equip")) %>%
-        pivot_longer(cols = -e.id, names_to = "source", values_to = "rel") %>%
-        filter(rel != "NULL") %>%
-        mutate(source = as.integer(gsub("e.source_equip\\.", "", source))) %>%
-        left_join(id_name_map, by = c("source" = "e.id")) %>%
-        select(e.id, source = e.name)
+    source_equip <- equip_data %>%
+      select(e.id, starts_with("e.source_equip")) %>%
+      pivot_longer(cols = -e.id, names_to = "source", values_to = "rel") %>%
+      filter(rel != "NULL") %>%
+      mutate(source = as.integer(gsub("e.source_equip\\.", "", source))) %>%
+      left_join(id_name_map, by = c("source" = "e.id")) %>%
+      select(e.id, source = e.name)
 
-      target_equip <- equip_data %>%
-        select(e.id, starts_with("e.target_equip")) %>%
-        pivot_longer(cols = -e.id, names_to = "target", values_to = "rel") %>%
-        filter(rel != "NULL") %>%
-        mutate(target = as.integer(gsub("e.target_equip\\.", "", target))) %>%
-        left_join(id_name_map, by = c("target" = "e.id")) %>%
-        group_by(e.id) %>%
-        summarise(target = paste(e.name, collapse = ", "), .groups = "drop")
+    target_equip <- equip_data %>%
+      select(e.id, starts_with("e.target_equip")) %>%
+      pivot_longer(cols = -e.id, names_to = "target", values_to = "rel") %>%
+      filter(rel != "NULL") %>%
+      mutate(target = as.integer(gsub("e.target_equip\\.", "", target))) %>%
+      left_join(id_name_map, by = c("target" = "e.id")) %>%
+      group_by(e.id) %>%
+      summarise(target = paste(e.name, collapse = ", "), .groups = "drop")
 
-      #Merge with equip_data
-      equip_data <- equip_data %>%
-        select(-starts_with("e.source"), -starts_with("e.target")) %>%
-        left_join(source_equip, by = "e.id") %>%
-        left_join(target_equip, by = "e.id")
+    # Merge with equip_data
+    equip_data <- equip_data %>%
+      select(-starts_with("e.source"), -starts_with("e.target")) %>%
+      left_join(source_equip, by = "e.id") %>%
+      left_join(target_equip, by = "e.id")
 
   }
-  
-    # Join points, equipment & devices metadata
-    metadata <- full_join(equip_data, points_data, by = c("e.id" = "p.equip_id")) %>% 
-      mutate(
-        p.tagged_units = ifelse(is.na(p.tagged_units), p.units, as.character(p.tagged_units)))  %>%  
-      left_join(devices_data,by=c("p.published_device_id"="d.id")) %>% 
-      #Rename some fields
-      rename(
-        e.equipment_id = e.id,
-        p.point_id = p.id,
-        p.point_type = p.type,
-        e.equip_type = e.equip_type_tag,
-        building_id = e.building_id) %>%   
-      select(where(~ !all(is.na(.))))
-    
-    # Drop irrelevant columns
-    drop_cols <- paste(c(
-      "p.building_id","d.building_id", "_type_name", "_type_abbr", "_subtype",
-      "flow", "\\.y", "child", "parent_equip", "measurement",
-      "raw_unit_id", "hash", "e.points", "e.tags"
-    ), collapse = "|")
-      
-    metadata <- metadata %>%
-      select(-matches(drop_cols)) %>%
-      select(sort(tidyselect::peek_vars()))
 
-    if (verbose) cat("Metadata generated.\n")
-    return(metadata)
-}  
+  # Join points, equipment & devices metadata
+  metadata <- full_join(equip_data, points_data, by = c("e.id" = "p.equip_id")) %>%
+    mutate(
+      p.tagged_units = ifelse(is.na(p.tagged_units), p.units, as.character(p.tagged_units)))  %>%
+    left_join(devices_data, by = c("p.published_device_id" = "d.id")) %>%
+    # Rename some fields
+    rename(
+      e.equipment_id = e.id,
+      p.point_id = p.id,
+      p.point_type = p.type,
+      e.equip_type = e.equip_type_tag,
+      building_id = e.building_id) %>%
+    select(where(~ !all(is.na(.))))
+
+  # Drop irrelevant columns
+  drop_cols <- paste(c(
+    "p.building_id", "d.building_id", "_type_name", "_type_abbr", "_subtype",
+    "flow", "\\.y", "child", "parent_equip", "measurement",
+    "raw_unit_id", "hash", "e.points", "e.tags"
+  ), collapse = "|")
+
+  metadata <- metadata %>%
+    select(-matches(drop_cols)) %>%
+    select(sort(tidyselect::peek_vars()))
+
+  if (verbose) cat("Metadata generated.\n")
+  return(metadata)
+}

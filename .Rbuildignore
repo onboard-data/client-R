@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^testing_script\.R$
+^_test\.R$
 ^LICENSE\.md$
 ^README\.md$
 ^NEWS\.md$

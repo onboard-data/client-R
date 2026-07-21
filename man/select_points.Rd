@@ -9,7 +9,7 @@ select_points(query, verbose = TRUE)
 \arguments{
 \item{query}{A named list, typically created using `PointSelector()`, defining filter criteria such as buildings, point types, or equipment.}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A named list of all the selected buildings, equipment IDs, equipment_types, point_types & point IDs for that category.

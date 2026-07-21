@@ -42,10 +42,8 @@ get_timeseries_raw <- function(start_time, end_time,
                 start_time, end_time, length(point_ids)))
   }
   
-  if (length(point_ids) == 1) {
-    point_ids <- list(point_ids)
-  }
-  
+  point_ids <- .as_list_if_scalar(point_ids)
+
   timeseries_query <- list(
     start = as.numeric(as.POSIXlt(start_time, tz = "UTC")),
     end = as.numeric(as.POSIXlt(end_time, tz = "UTC")),

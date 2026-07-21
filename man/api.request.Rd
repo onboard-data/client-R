@@ -24,7 +24,7 @@ api.request(
 
 \item{response_body}{A character string indicating how to parse the response. One of `"string"` or `"json"`. Defaults to `"string"`}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A parsed API response. If `response_body = "string"`, the response is converted to a list or dataframe. If `"json"`, returns the raw JSON structure as a list.

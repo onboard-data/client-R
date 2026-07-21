@@ -7,9 +7,9 @@
 get_published_devices(building_ids, verbose = TRUE)
 }
 \arguments{
-\item{building_ids}{Character vector or integer corresponding to building ids.}
+\item{building_ids}{Integer or vector of integers corresponding to building IDs. Unlike `buildings`, these are used directly (e.g. in API endpoint paths) and are not resolved by name.}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A `data.frame` containing metadata of the published devices for the requested building IDs. Returns an empty list if no matches are found.

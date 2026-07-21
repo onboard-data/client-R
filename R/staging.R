@@ -19,6 +19,7 @@
 #' @inheritParams verbose
 #'
 #' @return A data.frame of the requested staging resource, with column names prefixed.
+#' @noRd
 .get_staging_resource <- function(building_id,
                                    resource,
                                    prefix,
@@ -106,66 +107,6 @@ get_staging_points <- function(building_id, verbose = TRUE) {
 
 # Combined Data --------------------------------------------------------
 
-#' Fetch Combined Staging Data for a Single Building
-#'
-#' Internal helper for `get_staging_data()`. Fetches staged points, equipment,
-#' and devices for one building and joins them into a single data.frame.
-#'
-#' @param bldg_id Integer. Building ID.
-#' @param bldg_name Character. Building name (used for verbose messages and
-#'   the resulting `building_name` column).
-#' @inheritParams verbose
-#'
-#' @return A data.frame combining staged points, equipment, and devices for the building.
-.fetch_building_staging_data <- function(bldg_id, bldg_name, verbose = TRUE) {
-
-  if (verbose) cat(sprintf("Fetching staging data for %s...\n", bldg_name))
-
-  if (verbose) cat("Fetching staged points...\n")
-  points <- get_staging_points(building_id = bldg_id, verbose = FALSE)
-
-  if (verbose) cat("Fetching staged equipment...\n")
-  equip <- get_staging_equipment(building_id = bldg_id, verbose = FALSE)
-
-  if (verbose) cat("Fetching staged devices...\n")
-  devices <- get_staging_devices(building_id = bldg_id, verbose = FALSE) %>%
-    mutate(building_name = bldg_name)
-
-  points %>%
-    full_join(equip, by = c("p.equip_ids" = "e.equip_id")) %>%
-    mutate(across(c("p.staging_device_id", ends_with("type_id"), ends_with("unit_id")),
-                  ~ as.integer(.))) %>%
-    full_join(devices, by = c("p.staging_device_id" = "d.staging_id")) %>%
-    rename(building_id = d.building_id) %>%
-    distinct()
-}
-
-#' Enrich Staging Data with Type/Unit Labels
-#'
-#' Internal helper for `get_staging_data()`. Joins raw staging metadata against
-#' the data model (equipment types, point types, units) to attach
-#' human-readable labels, and sorts columns alphabetically.
-#'
-#' @param staging_data A data.frame produced by combining staged points, equipment, and devices.
-#'
-#' @return `staging_data` with `e.equipment_type_tag_name`, `p.point_type_tag_name`,
-#'   and `p.raw_unit` columns added, columns sorted alphabetically.
-.enrich_staging_metadata <- function(staging_data) {
-
-  point_types <- api.request("pointtypes", verbose = FALSE)
-  units <- api.request("unit", verbose = FALSE)
-  equipment_types <- api.request("equiptype", verbose = FALSE)
-
-  staging_data %>%
-    left_join(select(equipment_types, id, e.equipment_type_tag_name = tag_name),
-              by = c("e.equipment_type_id" = "id")) %>%
-    left_join(select(point_types, id, p.point_type_tag_name = tag_name),
-              by = c("p.point_type_id" = "id")) %>%
-    left_join(select(units, id, p.raw_unit = name_abbr),
-              by = c("p.raw_unit_id" = "id")) %>%
-    select(order(colnames(.)))
-}
-
 #' Get Staging Data
 #' Retrieve metadata (points, equipment, devices) from the staging area for one or more buildings.
 #' @inheritParams buildings
@@ -176,11 +117,33 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 
   buildings <- search_buildings(buildings = buildings, verbose = verbose)
 
-  staging_data <- purrr::map2(
-    buildings$id, buildings$name,
-    ~ .fetch_building_staging_data(bldg_id = .x, bldg_name = .y, verbose = verbose)
-  ) %>%
-    purrr::reduce(plyr::rbind.fill, .init = data.frame())
+  # Fetch and join points/equipment/devices for each building
+  building_staging_data <- purrr::map2(buildings$id, buildings$name, function(bldg_id, bldg_name) {
+
+    if (verbose) cat(sprintf("Fetching staging data for %s...\n", bldg_name))
+
+    if (verbose) cat("Fetching staged points...\n")
+    points <- get_staging_points(building_id = bldg_id, verbose = FALSE)
+
+    if (verbose) cat("Fetching staged equipment...\n")
+    equip <- get_staging_equipment(building_id = bldg_id, verbose = FALSE)
+
+    if (verbose) cat("Fetching staged devices...\n")
+    devices <- get_staging_devices(building_id = bldg_id, verbose = FALSE) %>%
+      mutate(building_name = bldg_name)
+
+    points %>%
+      full_join(equip, by = c("p.equip_ids" = "e.equip_id")) %>%
+      mutate(across(c("p.staging_device_id", ends_with("type_id"), ends_with("unit_id")),
+                    ~ as.integer(.))) %>%
+      full_join(devices, by = c("p.staging_device_id" = "d.staging_id")) %>%
+      rename(building_id = d.building_id) %>%
+      distinct()
+  })
+
+  # Combine all buildings in a single pass (rbind.fill accepts a list
+  # directly), instead of growing the data.frame one rbind at a time
+  staging_data <- plyr::rbind.fill(building_staging_data)
 
   # Drop rows where device_id and topic are both missing
   staging_data <- staging_data %>%
@@ -191,7 +154,19 @@ get_staging_data <- function(buildings, verbose = TRUE) {
   staging_data <- staging_data %>%
     select(-contains(c("state_text", "@prop")))
 
-  staging_data_final <- .enrich_staging_metadata(staging_data)
+  # Fetch data-model lookups once (not per building)
+  point_types <- api.request("pointtypes", verbose = FALSE)
+  units <- api.request("unit", verbose = FALSE)
+  equipment_types <- api.request("equiptype", verbose = FALSE)
+
+  staging_data_final <- staging_data %>%
+    left_join(select(equipment_types, id, e.equipment_type_tag_name = tag_name),
+              by = c("e.equipment_type_id" = "id")) %>%
+    left_join(select(point_types, id, p.point_type_tag_name = tag_name),
+              by = c("p.point_type_id" = "id")) %>%
+    left_join(select(units, id, p.raw_unit = name_abbr),
+              by = c("p.raw_unit_id" = "id")) %>%
+    select(order(colnames(.)))
 
   if (verbose) cat("Staging data created.\n")
 
@@ -200,6 +175,12 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 
 
 # Update Staging -------------------------------------------------------
+#
+# NOTE: .resolve_single_building(), .confirm_or_stop(), .require_cols(),
+# .default_confidence_col(), .extract_prefixed_fields(), .nullify_null_strings(),
+# and .as_list_if_scalar() used below now live in helpers.R -- they're generic
+# utilities, not staging-specific, and .as_list_if_scalar() in particular is
+# also used from buildings.R and timeseries.R.
 
 #' Update Staging Points
 #'
@@ -217,22 +198,13 @@ update_staging_points <- function(building,
                                   staging_points,
                                   proceed = NULL,verbose = TRUE){
 
-  if (length(building) > 1)
-    stop("Only one building ID or name is allowed.")
-
-  # Get building info
-  building_info <- search_buildings(buildings = building, verbose = verbose)
+  building_info <- .resolve_single_building(building, verbose)
 
   required_cols <- c("topic")
 
   staging_points_cols <- names(staging_points)
 
-  if(!all(required_cols %in% staging_points_cols)){
-    stop(sprintf(
-      "staging_points is missing cols %s",
-      paste(required_cols, collapse = " or ")
-    ))
-  }
+  .require_cols(staging_points_cols, required_cols, "staging_points")
 
   if(('raw_unit' %in% staging_points_cols)){
     #Getting unit ids to match
@@ -247,25 +219,13 @@ update_staging_points <- function(building,
 
   staging_points <- staging_points %>%
     select(any_of(c(required_cols, optional_cols))) %>%
-    {
-      if (!"point_type_confidence" %in% names(.))
-        mutate(., point_type_confidence = 100)
-      else
-        .
-    } %>%
-    mutate(raw_unit_confidence = 100)
+    .default_confidence_col("point_type_confidence") %>%
+    .default_confidence_col("raw_unit_confidence")
 
-  if(is.null(proceed)){
-    proceed = askYesNo(msg = sprintf(
-      "Do you want to proceed updating %s points for building %s",
-                       nrow(staging_points),
-                       building_info$name))
-  }
-
-  # Stop if not confirmed
-  if (is.na(proceed) || !proceed) {
-    stop("Operation canceled by user.")
-  }
+  .confirm_or_stop(proceed, sprintf(
+    "Do you want to proceed updating %s points for building %s",
+    nrow(staging_points),
+    building_info$name))
 
   if("equip_names" %in% staging_points_cols ){
   staging_points <- staging_points %>%
@@ -281,8 +241,7 @@ update_staging_points <- function(building,
 
   #Convert body
   staging_body <- staging_points %>%
-    #Convert NULL characters into NA
-    mutate(across(everything(.), ~ ifelse(. == "NULL", NA, .))) %>%
+    .nullify_null_strings() %>%
     distinct(topic,.keep_all = TRUE) %>%
     split(1:nrow(.)) %>%
     purrr::map(~ {
@@ -290,11 +249,8 @@ update_staging_points <- function(building,
 
       topic = row_list$topic
 
-      point_type = row_list[grepl("^point_type_", names(row_list))]
-      names(point_type) = sub("point_type_","",names(point_type))
-
-      raw_unit = row_list[grepl("^raw_unit_", names(row_list))]
-      names(raw_unit) = sub("raw_unit_","",names(raw_unit))
+      point_type = .extract_prefixed_fields(row_list, "point_type_")
+      raw_unit = .extract_prefixed_fields(row_list, "raw_unit_")
 
       equip_names = unlist(row_list$equip_names, recursive = FALSE)
 
@@ -350,65 +306,38 @@ update_staging_equip <- function(building,
                                  staging_equip,
                                  proceed = NULL, verbose = TRUE){
 
-  if (length(building) > 1)
-    stop("Only one building ID or name is allowed.")
-
-  # Get building info
-  building_info <- search_buildings(buildings = building, verbose = verbose)
+  building_info <- .resolve_single_building(building, verbose)
 
   required_cols <- c("name")
 
   staging_equip_cols <- names(staging_equip)
 
-  if(!all(required_cols %in% staging_equip_cols)){
-    stop(sprintf(
-      "staging_equip is missing cols %s",
-      paste(required_cols, collapse = " or ")
-    ))
-  }
+  .require_cols(staging_equip_cols, required_cols, "staging_equip")
 
-  if(is.null(proceed)){
-    proceed = askYesNo(msg = sprintf(
-      "Do you want to proceed updating %s equipment for building %s",
-      nrow(staging_equip),
-      building_info$name))
-  }
-
-  # Stop if not confirmed
-  if (is.na(proceed) || !proceed) {
-    stop("Operation canceled by user.")
-  }
+  .confirm_or_stop(proceed, sprintf(
+    "Do you want to proceed updating %s equipment for building %s",
+    nrow(staging_equip),
+    building_info$name))
 
   #Select Columns
   optional_cols <- c("equipment_type_tag_name","equipment_type_confidence","new_name")
 
   staging_equip <- staging_equip %>%
     select(any_of(c(required_cols, optional_cols))) %>%
-    {
-      if (!"equipment_type_confidence" %in% names(.))
-        mutate(., equipment_type_confidence = 100)
-      else
-        .
-    }
+    .default_confidence_col("equipment_type_confidence")
 
   #Convert body
   staging_body <- staging_equip %>%
-    #Convert NULL characters into NA
-    mutate(across(everything(.), ~ ifelse(. == "NULL", NA, .))) %>%
+    .nullify_null_strings() %>%
     split(1:nrow(.))  %>%
     purrr::map(~{
       row_list = as.list(.)
 
-      #  row_list = staging_json[[1]]
-
       name = row_list$name
 
-      equipment_type = row_list[grepl("^equipment_type_",names(row_list))]
-      names(equipment_type) = sub("equipment_type_","",names(equipment_type))
+      equipment_type = .extract_prefixed_fields(row_list, "equipment_type_")
 
       new_name = row_list$new_name
-
-      result = list(name = name,equipment_type = equipment_type, new_name = new_name)
 
       # Build final structure dynamically and remove empty elements
       result <- list(
@@ -452,10 +381,8 @@ publish <- function(building,
                     topics = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
-  if (length(building) > 1)
-    stop("Only one building ID or name is allowed.")
 
-  building_info <- search_buildings(buildings = building, verbose = verbose)
+  building_info <- .resolve_single_building(building, verbose)
 
   if (is.null(equipment)) {
     stop(sprintf(
@@ -464,41 +391,18 @@ publish <- function(building,
     ))
   }
 
-  publish_list <- list()
-
-  #Set Equip IDs
-  if (length(equipment) == 1) {
-    publish_list$equip_ids = list(equipment)
-  } else {
-    publish_list$equip_ids = equipment
-  }
-
-  #Set Topics
-  if (is.null(topics)) {
-    publish_list$topics = list()
-  } else {
-    if (length(topics) == 1) {
-      publish_list$topics = list(topics)
-    } else {
-      publish_list$topics = topics
-    }
-  }
+  publish_list <- list(
+    equip_ids = .as_list_if_scalar(equipment),
+    topics = if (is.null(topics)) list() else .as_list_if_scalar(topics)
+  )
 
   #publish_list %>% toJSON(auto_unbox = TRUE,pretty = TRUE)
 
-  if(is.null(proceed)){
-  proceed <- askYesNo(
-    sprintf(
-      "Do you want to proceed publishing %s equip_ids at building %s:\n",
-      length(equipment),
-      building_info$name
-    )
-  )
-  }
-    if (is.na(proceed)| proceed != TRUE) {
-
-      stop('Stopping Operation.')
-    }
+  .confirm_or_stop(proceed, sprintf(
+    "Do you want to proceed publishing %s equip_ids at building %s:\n",
+    length(equipment),
+    building_info$name
+  ))
 
   # API call
   endpoint <- paste0("staging/", building_info$id, "/apply")
@@ -535,6 +439,11 @@ unpublish <- function(building,
                    point_equipment_relationships = NULL,
                    proceed = NULL,
                    verbose = TRUE) {
+  # NOTE: kept as an explicit inline check (rather than going through
+  # .resolve_single_building()) so this validation still runs *before* the
+  # "at least one param" check below, matching the original error-ordering
+  # and avoiding an unnecessary search_buildings() API call when that check
+  # is the one that ends up failing.
   if (length(building) > 1)
     stop("Only one building ID or name is allowed.")
 
@@ -548,7 +457,7 @@ unpublish <- function(building,
   }
 
   # Get building info and ensure relationships are available
-  building_info <- search_buildings(buildings = building, verbose = verbose)
+  building_info <- .resolve_single_building(building, verbose)
 
   # Prepare the demotion message
   unpublish_message <- sprintf(
@@ -559,14 +468,7 @@ unpublish <- function(building,
     nrow(point_equipment_relationships)
   )
 
-  # Prompt for confirmation
-  if (is.null(proceed)) {
-    proceed <- askYesNo(unpublish_message)
-  }
-
-  if (is.na(proceed) | proceed != TRUE) {
-    stop('Stopping Operation.\n')
-  }
+  .confirm_or_stop(proceed, unpublish_message)
 
   # Default to empty lists if arguments are NULL
   if (is.null(equipment_ids)) {
@@ -577,13 +479,8 @@ unpublish <- function(building,
     point_ids = list(0)
   }
 
-  if(length(equipment_ids) == 1){
-    equipment_ids = list(equipment_ids)
-  }
-
-  if(length(point_ids) == 1){
-    point_ids = list(point_ids)
-  }
+  equipment_ids <- .as_list_if_scalar(equipment_ids)
+  point_ids <- .as_list_if_scalar(point_ids)
 
   # Create a list for the unpublish payload
   unpublish_list <- list(
@@ -601,4 +498,3 @@ unpublish <- function(building,
               request_body = unpublish_list)
 
   }
-

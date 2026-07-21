@@ -13,7 +13,6 @@ Provides a wrapper for the Onboard Data building data API \url{https://api.onboa
 
 Other contributors:
 \itemize{
-  \item Christopher Dudas-Thomas [contributor]
   \item Onboard Data \email{support@onboarddata.io} [copyright holder, funder]
 }
 

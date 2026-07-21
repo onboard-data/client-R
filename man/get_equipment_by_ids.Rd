@@ -9,7 +9,7 @@ get_equipment_by_ids(equipment_ids, verbose = TRUE)
 \arguments{
 \item{equipment_ids}{Integer or vector of integers. One or more equipment IDs.}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A `data.frame` containing metadata of the requested equipment. Returns an empty list if no matches are found.

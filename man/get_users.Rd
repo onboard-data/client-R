@@ -7,9 +7,9 @@
 get_users(orgs = NULL, verbose = TRUE)
 }
 \arguments{
-\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by org name, short name, or abbreviation. Multiple values are allowed.}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A data.frame of all user information.

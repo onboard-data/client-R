@@ -18,7 +18,7 @@ get_metadata(
 )
 }
 \arguments{
-\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by `org_name`. Multiple values are allowed.}
+\item{orgs}{(Optional) Integer, character, or a mix of both. Use integers to search by `org_id`, and strings to search by org name, short name, or abbreviation. Multiple values are allowed.}
 
 \item{buildings}{Integer, character, or a mix of both. Use integers to search by `building_id`, and strings to search by `building name`. Multiple values are allowed.}
 
@@ -34,9 +34,9 @@ get_metadata(
 
 \item{equipment_ids}{Integer or vector of integers. One or more equipment IDs.}
 
-\item{equipment_types}{Character vector. One or more point_types}
+\item{equipment_types}{Character vector. One or more equipment types (e.g. `"HVAC/AHU"`).}
 
-\item{verbose}{Logical; if `TRUE`, prints verbose output including headers and body content. Defaults to `TRUE`.}
+\item{verbose}{Logical; if `TRUE`, prints progress messages (and for `api.request()` specifically, full HTTP request/response details). Defaults to `TRUE`.}
 }
 \value{
 A data.frame of clean metadata from the parameters provided.
