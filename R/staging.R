@@ -252,15 +252,15 @@ update_staging_points <- function(building,
       point_type = .extract_prefixed_fields(row_list, "point_type_")
       raw_unit = .extract_prefixed_fields(row_list, "raw_unit_")
 
-      equip_names = unlist(row_list$equip_names, recursive = FALSE)
+      equip_ids = unlist(row_list$equip_names, recursive = FALSE) #Renaming equip_names to equip_ids
 
       # Build final structure dynamically and remove empty elements
       result <- list(
         topic = topic,
         point_type = if (is.null(point_type$tag_name) || is.na(point_type$tag_name)) NULL else point_type,
         raw_unit = if (is.null(raw_unit$id) || is.na(raw_unit$id)) NULL else raw_unit,
-        equip_names = if(all(is.na(equip_names)) || all(equip_names =="")) NA
-        else equip_names
+        equip_ids = if(all(is.na(equip_ids)) || all(equip_ids =="")) NA #Renaming equip_names to equip_ids
+        else equip_ids
       )
       purrr::compact(result)  # Remove NULL elements
     })  %>%
@@ -268,12 +268,12 @@ update_staging_points <- function(building,
 
   if(remove_equip_names==TRUE){
     staging_body <-lapply(staging_body,function(x){
-      x$equip_names <- NULL
+      x$equip_ids <- NULL
       x})
   } else {
-    #COnvert na equip_names to empty list
+    #Convert na equip_names to empty list
     staging_body <- lapply(staging_body, function(x) {
-      if (all(is.na(x$equip_names))) x$equip_names <- list()
+      if (all(is.na(x$equip_ids))) x$equip_ids <- list()
       x
     })
   }
