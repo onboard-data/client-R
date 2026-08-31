@@ -188,10 +188,19 @@ get_staging_data <- function(buildings, verbose = TRUE) {
 #'
 #' @inheritParams building
 #'
-#' @param staging_points A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name, point_type_confidence and raw_unit are optional columns
+#' @param staging_points A data.frame to upload to the staging area. Must contain equip_ids and topic columns. point_type_tag_name, point_type_confidence and raw_unit are optional columns
 #'
 #' @inheritParams proceed
 #' @return Result output of the update
+#' 
+#'
+#' @examples
+#' \dontrun{
+#' staging_points <- data.frame(equip_ids=c("f6496c46-b2d1-439d-9957-9c26f2025566","3229474_49"), topic="onboard/sandbox/47808/3229474/analogInput/2")
+#'
+#' update_staging_points( building = "Sandbox",staging_points = staging_points)
+#' }
+#'
 #'
 #'@export
 update_staging_points <- function(building,
@@ -215,7 +224,7 @@ update_staging_points <- function(building,
   }
 
   #Select columns
-  optional_cols <- c("equip_names","point_type_tag_name","point_type_confidence","raw_unit_id")
+  optional_cols <- c("equip_ids","point_type_tag_name","point_type_confidence","raw_unit_id")
 
   staging_points <- staging_points %>%
     select(any_of(c(required_cols, optional_cols))) %>%
@@ -227,16 +236,16 @@ update_staging_points <- function(building,
     nrow(staging_points),
     building_info$name))
 
-  if("equip_names" %in% staging_points_cols ){
+  if("equip_ids" %in% staging_points_cols ){
   staging_points <- staging_points %>%
   #group points assigned to multiple equipment together
-  group_by(across(-equip_names)) %>%
-    reframe(equip_names=list(equip_names))  %>%
-    #Convert points with multiple equip_names into a list
-    mutate(across(equip_names, ~ (purrr::map(., function(x) (stringr::str_split(x, ", "))))))
-  remove_equip_names = FALSE
+  group_by(across(-equip_ids)) %>%
+    reframe(equip_ids=list(equip_ids))  %>%
+    #Convert points with multiple equip_ids into a list
+    mutate(across(equip_ids, ~ (purrr::map(., function(x) (stringr::str_split(x, ", "))))))
+  remove_equip_ids = FALSE
   } else{
-  remove_equip_names = TRUE
+  remove_equip_ids = TRUE
   }
 
   #Convert body
@@ -252,26 +261,26 @@ update_staging_points <- function(building,
       point_type = .extract_prefixed_fields(row_list, "point_type_")
       raw_unit = .extract_prefixed_fields(row_list, "raw_unit_")
 
-      equip_ids = unlist(row_list$equip_names, recursive = FALSE) #Renaming equip_names to equip_ids
+      equip_ids = unlist(row_list$equip_ids, recursive = FALSE) 
 
       # Build final structure dynamically and remove empty elements
       result <- list(
         topic = topic,
         point_type = if (is.null(point_type$tag_name) || is.na(point_type$tag_name)) NULL else point_type,
         raw_unit = if (is.null(raw_unit$id) || is.na(raw_unit$id)) NULL else raw_unit,
-        equip_ids = if(all(is.na(equip_ids)) || all(equip_ids =="")) NA #Renaming equip_names to equip_ids
+        equip_ids = if(all(is.na(equip_ids)) || all(equip_ids =="")) NA
         else equip_ids
       )
       purrr::compact(result)  # Remove NULL elements
     })  %>%
     unname()
 
-  if(remove_equip_names==TRUE){
+  if(remove_equip_ids==TRUE){
     staging_body <-lapply(staging_body,function(x){
       x$equip_ids <- NULL
       x})
   } else {
-    #Convert na equip_names to empty list
+    #Convert na equip_ids to empty list
     staging_body <- lapply(staging_body, function(x) {
       if (all(is.na(x$equip_ids))) x$equip_ids <- list()
       x

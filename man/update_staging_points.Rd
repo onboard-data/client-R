@@ -9,7 +9,7 @@ update_staging_points(building, staging_points, proceed = NULL, verbose = TRUE)
 \arguments{
 \item{building}{Character or integer corresponding to a single building name or id. Only one value is allowed (functions using this parameter operate on a single building).}
 
-\item{staging_points}{A data.frame to upload to the staging area. Must contain equip_names and topic columns. point_type_tag_name, point_type_confidence and raw_unit are optional columns}
+\item{staging_points}{A data.frame to upload to the staging area. Must contain equip_ids and topic columns. point_type_tag_name, point_type_confidence and raw_unit are optional columns}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 }
@@ -18,4 +18,13 @@ Result output of the update
 }
 \description{
 Update points on the staging area.
+}
+\examples{
+\dontrun{
+staging_points <- data.frame(equip_ids=c("f6496c46-b2d1-439d-9957-9c26f2025566","3229474_49"), topic="onboard/sandbox/47808/3229474/analogInput/2")
+
+update_staging_points( building = "Sandbox",staging_points = staging_points)
+}
+
+
 }
