@@ -378,8 +378,6 @@ update_staging_equip <- function(building,
 #'
 #' @param equipment  A vector containing all equip_ids to Publish from staging to the live building
 #'
-#' @param topics (Optional) A vector containing all topics to publish for the corresponding equip_ids
-#'
 #' @inheritParams proceed
 #'
 #' @return (Conditional) A named list with result output of promotion.
@@ -387,7 +385,6 @@ update_staging_equip <- function(building,
 #' @export
 publish <- function(building,
                     equipment = NULL,
-                    topics = NULL,
                     proceed = NULL,
                     verbose = TRUE) {
 
@@ -401,8 +398,7 @@ publish <- function(building,
   }
 
   publish_list <- list(
-    equip_ids = .as_list_if_scalar(equipment),
-    topics = if (is.null(topics)) list() else .as_list_if_scalar(topics)
+    equip_ids = .as_list_if_scalar(equipment)
   )
 
   #publish_list %>% toJSON(auto_unbox = TRUE,pretty = TRUE)

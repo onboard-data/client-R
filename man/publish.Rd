@@ -4,20 +4,12 @@
 \alias{publish}
 \title{Publish data on Staging Area}
 \usage{
-publish(
-  building,
-  equipment = NULL,
-  topics = NULL,
-  proceed = NULL,
-  verbose = TRUE
-)
+publish(building, equipment = NULL, proceed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{building}{Character or integer corresponding to a single building name or id. Only one value is allowed (functions using this parameter operate on a single building).}
 
 \item{equipment}{A vector containing all equip_ids to Publish from staging to the live building}
-
-\item{topics}{(Optional) A vector containing all topics to publish for the corresponding equip_ids}
 
 \item{proceed}{(Optional) Logical argument indicating whether to proceed operation without asking for explicit user input. Useful for scripting}
 }
