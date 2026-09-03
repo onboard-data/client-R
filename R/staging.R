@@ -503,3 +503,171 @@ unpublish <- function(building,
               request_body = unpublish_list)
 
   }
+
+# Relationships (FEEDS & CONTAINS) -----------------------------------------
+
+#' Create or Remove a FEEDS/CONTAINS Relationship (internal)
+#'
+#' Shared implementation behind `link_feeds()`/`unlink_feeds()`/
+#' `link_contains()`/`unlink_contains()`. `links` is a long/tidy data.frame -
+#' one row per (source, target) pair, with `NA` in whichever target column
+#' doesn't apply to that row. Rows are grouped by source and collapsed into
+#' one API call per source (`buildings/{building_id}/link/{relationship_type}/{source}`),
+#' matching how the endpoint wants its payload: one source, many targets per
+#' call. Using a data.frame (rather than parallel vectors) keeps each target
+#' explicitly tied to its source, so there's no risk of a target landing on
+#' the wrong source.
+#'
+#' @param relationship_type "feeds" or "contains"
+#' @param links Data.frame with a `source_col` column (published equipment
+#'   ids for "feeds", location names for "contains") and at least one of
+#'   `location_name` / `equipment_id` (the target of that row)
+#' @param source_col Name of the column in `links` holding the source id/name
+#' @param method "POST" to create the relationship, "DELETE" to remove it
+#' @inheritParams building
+#' @inheritParams proceed
+#' @inheritParams verbose
+#' @noRd
+.link_relationship <- function(building,
+                               relationship_type,
+                               links,
+                               source_col,
+                               method,
+                               proceed,
+                               verbose) {
+
+  .require_cols(names(links), source_col, "links")
+
+  if (!"location_name" %in% names(links)) links$location_name <- NA_character_
+  if (!"equipment_id" %in% names(links)) links$equipment_id <- NA_integer_
+
+  links$equipment_id <- suppressWarnings(as.integer(links$equipment_id))
+
+  # Keep only rows with a source and at least one non-NA target
+  links <- links[!is.na(links[[source_col]]) &
+                  !(is.na(links$location_name) & is.na(links$equipment_id)), ]
+
+  if (nrow(links) == 0) {
+    stop("No valid links found - each row needs a source (", source_col,
+        ") and at least one target (location_name or equipment_id).")
+  }
+
+  building_info <- .resolve_single_building(building, verbose)
+
+  # One group per unique source, targets gathered into vectors
+  grouped <- lapply(split(links, links[[source_col]]), function(rows) {
+    list(
+      source = rows[[source_col]][1],
+      location_names = sort(unique(rows$location_name[!is.na(rows$location_name)])),
+      equipment_ids = sort(unique(rows$equipment_id[!is.na(rows$equipment_id)]))
+    )
+  })
+
+  verb <- switch(method, "POST" = "create", "DELETE" = "remove")
+
+  .confirm_or_stop(proceed, sprintf(
+    "Do you want to %s a %s relationship for %s link(s) across %s source(s) in building %s?",
+    verb, toupper(relationship_type), nrow(links), length(grouped), building_info$name
+  ))
+
+  logs <- list()
+
+  if (verbose) pb <- utils::txtProgressBar(min = 0, max = length(grouped), style = 3)
+
+  for (i in seq_along(grouped)) {
+    g <- grouped[[i]]
+
+    # location names go in the URL and must be encoded; equipment ids do not
+    source_path <- if (relationship_type == "contains") URLencode(as.character(g$source)) else g$source
+
+    logs[[as.character(g$source)]] <- api.request(
+      endpoint = paste0("buildings/", building_info$id, "/link/", relationship_type, "/", source_path),
+      method = method,
+      request_body = list(
+        location_names = .as_list_if_scalar(g$location_names),
+        equipment_ids = .as_list_if_scalar(g$equipment_ids)
+      ),
+      verbose = verbose
+    )
+
+    if (verbose) utils::setTxtProgressBar(pb, i)
+  }
+
+  if (verbose) close(pb)
+
+  return(invisible(logs))
+}
+
+
+#' Create a FEEDS Relationship
+#'
+#' Equipment can feed locations and/or other equipment.
+#'
+#' @inheritParams building
+#' @param links Data.frame, one row per link: `source_id` (published
+#'   equipment id of the feeding equipment) plus `location_name` and/or
+#'   `equipment_id` (the fed target for that row - leave the other `NA`)
+#' @inheritParams proceed
+#' @inheritParams verbose
+#'
+#' @return (Conditional) A named list, one entry per source equipment id,
+#'   with the result of each link/feeds request.
+#'
+#' @examples
+#' \dontrun{
+#' links <- data.frame(
+#'   source_id = c(90094, 90094, 90094),
+#'   location_name = c("Room-1", "ROOM-2", NA),
+#'   equipment_id = c(NA, NA, 23321)
+#' )
+#' link_feeds(building = 876, links = links, proceed = TRUE)
+#' }
+#'
+#' @export
+link_feeds <- function(building, links, proceed = NULL, verbose = TRUE) {
+  .link_relationship(building, "feeds", links, source_col = "source_id",
+                     method = "POST", proceed = proceed, verbose = verbose)
+}
+
+
+#' Remove a FEEDS Relationship
+#' @inheritParams link_feeds
+#' @return (Conditional) A named list, one entry per source equipment id,
+#'   with the result of each link/feeds removal request.
+#' @export
+unlink_feeds <- function(building, links, proceed = NULL, verbose = TRUE) {
+  .link_relationship(building, "feeds", links, source_col = "source_id",
+                     method = "DELETE", proceed = proceed, verbose = verbose)
+}
+
+
+#' Create a CONTAINS Relationship
+#'
+#' Locations can contain equipment and/or other locations.
+#'
+#' @inheritParams building
+#' @param links Data.frame, one row per link: `source_location_names` (name
+#'   of the containing location) plus `location_name` and/or `equipment_id`
+#'   (the contained target for that row - leave the other `NA`)
+#' @inheritParams proceed
+#' @inheritParams verbose
+#'
+#' @return (Conditional) A named list, one entry per source location name,
+#'   with the result of each link/contains request.
+#'
+#' @export
+link_contains <- function(building, links, proceed = NULL, verbose = TRUE) {
+  .link_relationship(building, "contains", links, source_col = "source_location_names",
+                     method = "POST", proceed = proceed, verbose = verbose)
+}
+
+
+#' Remove a CONTAINS Relationship
+#' @inheritParams link_contains
+#' @return (Conditional) A named list, one entry per source location name,
+#'   with the result of each link/contains removal request.
+#' @export
+unlink_contains <- function(building, links, proceed = NULL, verbose = TRUE) {
+  .link_relationship(building, "contains", links, source_col = "source_location_names",
+                     method = "DELETE", proceed = proceed, verbose = verbose)
+}
