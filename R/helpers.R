@@ -219,7 +219,7 @@ nested_list_to_df <- function(nested_list) {
 #' Internal helper shared by `search_buildings()` (buildings.R), `get_users()`,
 #' and `get_deployments()` (both misc.R). When `orgs` is provided, resolves it
 #' via `search_orgs()` and filters `df` to matching `org_id`s; otherwise
-#' returns `df` unchanged.
+#' returns `df` unchanged. Stops with an error if `orgs` matches no organizations.
 #'
 #' @param df A data.frame containing an `org_id` column.
 #' @inheritParams orgs
@@ -232,5 +232,10 @@ nested_list_to_df <- function(nested_list) {
     return(df)
   }
   orgs <- search_orgs(orgs = orgs, verbose = verbose)
+
+  if (nrow(orgs) == 0) {
+    stop("No matching orgs found. Please check your input.", call. = FALSE)
+  }
+
   df %>% filter(org_id %in% orgs$id)
 }

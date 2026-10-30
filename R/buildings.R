@@ -31,6 +31,10 @@ search_buildings <- function(orgs = NULL,
  stop("Please provide 'orgs and/or 'buildings' paramters.")
     }
 
+  if (any(trimws(as.character(c(buildings, orgs))) == "")) {
+    stop("'orgs' or 'buildings' cannot contain empty strings.", call. = FALSE)
+  }
+
   all_buildings <- api.request(endpoint = "buildings",
                                verbose = FALSE)
 
@@ -49,13 +53,12 @@ search_buildings <- function(orgs = NULL,
   }
 
 
-  if (verbose) {
+  if (!is.null(buildings) && nrow(result) == 0) {
+    stop("No matching buildings found. Please check your input.", call. = FALSE)
+  }
 
-    if (nrow(result) == 0) {
-      cat("No matching buildings found. Please check your input.")
-    } else {
+  if (verbose && nrow(result) > 0) {
     cat(sprintf("Found %d building(s): %s\n", nrow(result), paste(result$name, collapse = ", ")))
-    }
   }
 
   return(result)
@@ -338,15 +341,15 @@ get_metadata <- function(orgs = NULL,
                          equipment_types = NULL,
                          verbose = TRUE) {
 
-  if (all(sapply(list(orgs,buildings,point_ids,point_names,point_topics,updated_since,
-                      point_types,equipment_ids,equipment_types),is.null))) {
-    stop("Please provide atleast one building parameter to run query.")
-  }
-
   if (!is.null(orgs) | !is.null(buildings)) {
     building_ids <- search_buildings(orgs = orgs, buildings = buildings)$id
   } else {
     building_ids = NULL
+  }
+  
+  if (all(sapply(list(orgs,buildings,point_ids,point_names,point_topics,updated_since,
+                      point_types,equipment_ids,equipment_types),is.null))) {
+    stop("Please provide atleast one building parameter to run query.")
   }
 
   query <- PointSelector()

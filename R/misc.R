@@ -62,13 +62,9 @@ search_orgs <- function(orgs = NULL, verbose = TRUE) {
             grepl(search_text, name_abbr, ignore.case = TRUE)
         )
     
-      if(verbose){
-      if (nrow(result) == 0) {
-        cat("No matching orgs found. Please check your input.")
-      } else {
-        cat(sprintf("Found %d org(s): %s\n", nrow(result), paste(result$name, 
+      if(verbose && nrow(result) > 0){
+        cat(sprintf("Found %d org(s): %s\n", nrow(result), paste(result$name,
                                                                  collapse = ", ")))
-      }
       }
       
   return(result)
