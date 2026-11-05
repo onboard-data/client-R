@@ -97,9 +97,11 @@ get_users <- function(orgs = NULL, verbose = TRUE){
   users <- api.request('users', verbose = FALSE)
   
   #Format users
-  users <- users$data %>%  
-    mutate(across(.data$roles,
-                  ~gsub('c\\(|\\)|\\"|','',.))) %>% 
+  users <- users$data |> 
+    # Flatten the roles list-column
+    mutate(roles = vapply(.data$roles,
+                          function(r) if (length(r) == 0) NA_character_ else paste(r, collapse = ", "),
+                          character(1))) |>  
     mutate(across(.data$roles,
                   ~gsub(':',', ',.))) %>% 
     separate_rows(.data$roles,sep = ", ") %>% 
@@ -107,7 +109,7 @@ get_users <- function(orgs = NULL, verbose = TRUE){
     left_join(roles,
               by = c('roles'))  %>%  
     select(.data$id, .data$org_id, .data$org_name, .data$role_name, .data$email, 
-           .data$username, .data$first_name, .data$last_name, .data$last_login, 
+           .data$first_name, .data$last_name, .data$last_login, 
            .data$created, .data$password_reset, .data$active) %>% 
     #Combine first and last names
     tidyr::unite(col = "name", c(first_name,last_name)) %>% 
