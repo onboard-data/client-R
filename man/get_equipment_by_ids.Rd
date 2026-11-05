@@ -4,7 +4,7 @@
 \alias{get_equipment_by_ids}
 \title{Get Equipment by ID}
 \usage{
-get_equipment_by_ids(equipment_ids, verbose = TRUE)
+get_equipment_by_ids(equipment_ids, response_body = "string", verbose = TRUE)
 }
 \arguments{
 \item{equipment_ids}{Integer or vector of integers. One or more equipment IDs.}

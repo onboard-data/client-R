@@ -238,7 +238,7 @@ get_points_by_ids <- function(point_ids, verbose = TRUE){
 #' }
 #'
 #' @export
-get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
+get_equipment_by_ids <- function(equipment_ids, response_body = "string", verbose = TRUE){
 
   if (length(equipment_ids) == 0) {
     warning("No equipment IDs provided.")
@@ -249,13 +249,51 @@ get_equipment_by_ids <- function(equipment_ids, verbose = TRUE){
 
   request_body <- list(equipment_ids = equipment_ids)
 
+  # Always fetched as parsed JSON: the relationship fields are flattened from
+  # the raw structure below (jsonlite's data.frame simplification can't
+  # reliably tell an empty link_types entry from a missing one).
   equipment <- api.request(
     endpoint = "equipment/query",
     method = "POST",
     request_body = request_body,
+    response_body = "json",
     verbose = verbose
   )
-  return(equipment)
+
+  if (response_body == "json" || length(equipment) == 0) {
+    return(equipment)
+  }
+
+  # Relationship fields -> equipment_relationships_sources/_targets and
+  # location_relationships_sources/_targets. Each cell is a data.frame with
+  # one row per (related item, link type): link_types become entries of a
+  # single `link_type` column.
+  rel_fields <- c("equipment_relationships", "location_relationships")
+
+  flatten_relationships <- function(rels) {
+    if (length(rels) == 0) {
+      return(data.frame(link_type = character()))
+    }
+    dplyr::bind_rows(lapply(rels, function(r) {
+      link_types <- names(r$link_types)
+      data.frame(r[setdiff(names(r), "link_types")],
+                 link_type = if (is.null(link_types)) NA_character_ else link_types)
+    }))
+  }
+
+  # Everything except the relationship fields becomes the regular data.frame
+  equipment_df <- lapply(equipment, function(e) e[setdiff(names(e), rel_fields)]) %>%
+    jsonlite::toJSON(auto_unbox = TRUE, null = "null") %>%
+    jsonlite::fromJSON(flatten = TRUE)
+
+  for (field in rel_fields) {
+    for (side in c("sources", "targets")) {
+      equipment_df[[paste0(field, "_", side)]] <-
+        lapply(equipment, function(e) flatten_relationships(e[[field]][[side]]))
+    }
+  }
+
+  return(equipment_df)
 }
 
 
@@ -380,35 +418,6 @@ get_metadata <- function(orgs = NULL,
   names(equip_data) <- paste0("e.", names(equip_data))
   names(devices_data) <- paste0("d.", names(devices_data))
 
-  # Handle equipment relationships
-  if ("e.source_equip" %in% names(equip_data)) {
-    id_name_map <- equip_data %>% select(e.id, e.name)
-
-    source_equip <- equip_data %>%
-      select(e.id, starts_with("e.source_equip")) %>%
-      pivot_longer(cols = -e.id, names_to = "source", values_to = "rel") %>%
-      filter(rel != "NULL") %>%
-      mutate(source = as.integer(gsub("e.source_equip\\.", "", source))) %>%
-      left_join(id_name_map, by = c("source" = "e.id")) %>%
-      select(e.id, source = e.name)
-
-    target_equip <- equip_data %>%
-      select(e.id, starts_with("e.target_equip")) %>%
-      pivot_longer(cols = -e.id, names_to = "target", values_to = "rel") %>%
-      filter(rel != "NULL") %>%
-      mutate(target = as.integer(gsub("e.target_equip\\.", "", target))) %>%
-      left_join(id_name_map, by = c("target" = "e.id")) %>%
-      group_by(e.id) %>%
-      summarise(target = paste(e.name, collapse = ", "), .groups = "drop")
-
-    # Merge with equip_data
-    equip_data <- equip_data %>%
-      select(-starts_with("e.source"), -starts_with("e.target")) %>%
-      left_join(source_equip, by = "e.id") %>%
-      left_join(target_equip, by = "e.id")
-
-  }
-
   # Join points, equipment & devices metadata
   metadata <- full_join(equip_data, points_data, by = c("e.id" = "p.equip_id")) %>%
     mutate(
@@ -426,7 +435,7 @@ get_metadata <- function(orgs = NULL,
   # Drop irrelevant columns
   drop_cols <- paste(c(
     "p.building_id", "d.building_id", "_type_name", "_type_abbr", "_subtype",
-    "flow", "\\.y", "child", "parent_equip", "measurement",
+    "flow", "\\.y", "measurement",
     "raw_unit_id", "hash", "e.points", "e.tags"
   ), collapse = "|")
 
